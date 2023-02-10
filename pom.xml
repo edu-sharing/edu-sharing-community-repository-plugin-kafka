@@ -15,5 +15,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <modules>
+    <module>notifications</module>
+  </modules>
 
 </project>
