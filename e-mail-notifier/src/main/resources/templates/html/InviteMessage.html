@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <p>Sie haben eine Einladung von <em th:text="${creator.displayName}"></em> zu <a th:href="${node.properties.downloadUrl}" th:text="${node.properties.title}"></a> mit folgenden Berechtigungen erhalten:</p>
+    <tr th:each="permission: ${permissions}">
+        <td th:text="${permission}"/>
+    </tr>
+    </br>
+
+    </br>
+    <p th:text="${userComment}"></p>
+</body>
+</html>
