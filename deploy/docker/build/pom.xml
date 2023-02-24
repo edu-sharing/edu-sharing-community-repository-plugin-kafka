@@ -39,7 +39,9 @@
   </build>
 
   <modules>
-
+    <module>kafka</module>
+    <module>service</module>
+    <module>zookeeper</module>
   </modules>
 
 </project>
