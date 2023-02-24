@@ -5,15 +5,15 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.edu_sharing</groupId>
-    <artifactId>edu_sharing-community-repository-plugin-kafka-backend-service</artifactId>
+    <artifactId>edu_sharing-community-repository-plugin-kafka-backend-services</artifactId>
     <relativePath>../pom.xml</relativePath>
     <version>git</version>
   </parent>
 
-  <artifactId>edu_sharing-community-repository-plugin-kafka-backend-service-module</artifactId>
+  <artifactId>edu_sharing-community-repository-plugin-kafka-backend-services-module</artifactId>
   <packaging>jar</packaging>
 
-  <name>edu_sharing-community-repository-plugin-kafka-backend-service-module</name>
+  <name>edu_sharing-community-repository-plugin-kafka-backend-services-module</name>
 
   <build>
 
@@ -75,6 +75,11 @@
   <dependencies>
 
     <!-- provided -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.alfresco</groupId>
@@ -109,6 +114,19 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>edu_sharing-community-repository-plugin-kafka-backend-alfresco-module</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
       <scope>provided</scope>
     </dependency>
 

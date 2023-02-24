@@ -10,10 +10,10 @@
     <version>git</version>
   </parent>
 
-  <artifactId>edu_sharing-community-repository-plugin-kafka-backend-service</artifactId>
+  <artifactId>edu_sharing-community-repository-plugin-kafka-backend-services</artifactId>
   <packaging>pom</packaging>
 
-  <name>edu_sharing-community-repository-plugin-kafka-backend-service</name>
+  <name>edu_sharing-community-repository-plugin-kafka-backend-services</name>
 
   <modules>
     <module>module</module>

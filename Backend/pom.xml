@@ -58,6 +58,18 @@
 
   </build>
 
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>3.3.2</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
   <modules>
     <module>alfresco</module>
     <module>services</module>
