@@ -1,8 +1,11 @@
 package org.edu_sharing.plugin_kafka.config;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import org.edu_sharing.plugin_kafka.kafka.KafkaProducerFactory;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.plugin_kafka.messages.BaseMessage;
@@ -14,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,11 +40,12 @@ public class KafkaConfig {
                 () -> new JsonSerializer<>(JsonMapper.builder()
                         .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .activateDefaultTyping(BasicPolymorphicTypeValidator.builder().build())
                         .build()));
     }
 
     @Bean
     public KafkaTemplate<String, BaseMessage> kafkaNotificationTemplate(KafkaProducerFactory<String, BaseMessage> kafkaProducerFactory) {
-        return new KafkaTemplate<>(kafkaProducerFactory, kafkaSettings::getCloseTimeout);
+        return new KafkaTemplate<>(kafkaProducerFactory, kafkaSettings::getCloseTimeout, kafkaSettings::getNotificationTopic);
     }
 }

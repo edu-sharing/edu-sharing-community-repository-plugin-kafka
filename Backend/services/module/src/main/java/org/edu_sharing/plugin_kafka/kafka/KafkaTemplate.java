@@ -24,7 +24,8 @@ public class KafkaTemplate<K,V> {
 
     @Getter
     @Setter
-    private String defaultTopic;
+    private Supplier<String> defaultTopicSupplier;
+
 
 
     public KafkaTemplate(KafkaProducerFactory<K, V> producerFactory) {
@@ -32,13 +33,17 @@ public class KafkaTemplate<K,V> {
     }
 
     public KafkaTemplate(KafkaProducerFactory<K, V> producerFactory, Supplier<Duration> closeTimeoutSupplier) {
-        this(producerFactory, closeTimeoutSupplier, null);
+        this(producerFactory, closeTimeoutSupplier, ()->null);
     }
 
     public KafkaTemplate(KafkaProducerFactory<K, V> producerFactory,  Supplier<Duration> closeTimeoutSupplier, String defaultTopic) {
+        this(producerFactory, closeTimeoutSupplier, () -> defaultTopic);
+    }
+
+    public KafkaTemplate(KafkaProducerFactory<K, V> producerFactory,  Supplier<Duration> closeTimeoutSupplier, Supplier<String> defaultTopicSupplier) {
         this.producerFactory = producerFactory;
         this.closeTimeoutSupplier = closeTimeoutSupplier;
-        this.defaultTopic = defaultTopic;
+        this.defaultTopicSupplier = defaultTopicSupplier;
     }
 
 
@@ -49,7 +54,7 @@ public class KafkaTemplate<K,V> {
      * @return a Future for the {@link SendResult}.
      */
     public CompletableFuture<SendResult<K, V>> sendDefault(V data) {
-        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopic, data);
+        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopicSupplier.get(), data);
         return send(producerRecord);
     }
 
@@ -60,7 +65,7 @@ public class KafkaTemplate<K,V> {
      * @return a Future for the {@link SendResult}.
      */
     public CompletableFuture<SendResult<K, V>> sendDefault(K key, V data) {
-        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopic, key, data);
+        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopicSupplier.get(), key, data);
         return send(producerRecord);
     }
 
@@ -72,7 +77,7 @@ public class KafkaTemplate<K,V> {
      * @return a Future for the {@link SendResult}.
      */
     public CompletableFuture<SendResult<K, V>> sendDefault(Integer partition, K key, V data) {
-        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopic, partition, key, data);
+        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopicSupplier.get(), partition, key, data);
         return send(producerRecord);
     }
 
@@ -85,7 +90,7 @@ public class KafkaTemplate<K,V> {
      * @return a Future for the {@link SendResult}.
      */
     public CompletableFuture<SendResult<K, V>> sendDefault(Integer partition, Long timestamp, K key, V data) {
-        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopic, partition, timestamp, key, data);
+        ProducerRecord<K, V> producerRecord = new ProducerRecord<>(defaultTopicSupplier.get(), partition, timestamp, key, data);
         return send(producerRecord);
     }
 

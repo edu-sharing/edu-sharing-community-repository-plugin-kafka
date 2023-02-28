@@ -17,6 +17,7 @@ import java.util.Date;
         visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = InviteMessage.class, name="InviteMessage"),
+        @JsonSubTypes.Type(value = NodeIssueMessage.class, name="NodeIssueMessage"),
         @JsonSubTypes.Type(value = WorkflowMessage.class, name="WorkflowMessage"),
 })
 public abstract class BaseMessage {

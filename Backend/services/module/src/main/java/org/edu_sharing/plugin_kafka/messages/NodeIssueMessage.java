@@ -6,8 +6,8 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-@JsonTypeName("InviteMessage")
-public class InviteMessage extends NodeBaseMessage {
+@JsonTypeName("NodeIssueMessage")
+public class NodeIssueMessage extends NodeBaseMessage {
+    private  String reason;
     private  String userComment;
-    private  String[] permissions;
 }

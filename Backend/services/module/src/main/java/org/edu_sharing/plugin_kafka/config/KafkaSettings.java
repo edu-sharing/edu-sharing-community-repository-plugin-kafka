@@ -1,5 +1,6 @@
 package org.edu_sharing.plugin_kafka.config;
 
+import com.fasterxml.jackson.databind.JsonSerializer;
 import lombok.Data;
 import org.edu_sharing.lightbend.ConfigurationProperties;
 
