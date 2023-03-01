@@ -39,6 +39,7 @@
   </build>
 
   <modules>
+    <module>email-notifier</module>
     <module>kafka</module>
     <module>mongodb-kafka-connector</module>
     <module>notification-manager</module>

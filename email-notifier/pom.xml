@@ -11,14 +11,13 @@
 
   <artifactId>edu_sharing-community-repository-plugin-kafka-email-notifier</artifactId>
   <version>git</version>
-  <name>edu_sharing-e-mail-notifier</name>
-  <description>e-mail-notifier</description>
+  <name>edu_sharing-community-repository-plugin-kafka-email-notifier</name>
 
   <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>18</maven.compiler.source>
+    <maven.compiler.target>18</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>17</java.version>
+    <java.version>18</java.version>
   </properties>
 
   <dependencyManagement>
@@ -126,7 +125,18 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
         <configuration>
+          <layers>
+            <enabled>true</enabled>
+          </layers>
           <excludes>
             <exclude>
               <groupId>org.projectlombok</groupId>

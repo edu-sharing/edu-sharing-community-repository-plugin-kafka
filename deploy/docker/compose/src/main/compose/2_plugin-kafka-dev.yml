@@ -1,6 +1,7 @@
 version: '3.7'
 
 services:
+
   repository-service:
     volumes:
       - "${GIT_ROOT}/repository-kafka/Backend/alfresco/module/target/edu_sharing-community-repository-plugin-kafka-backend-alfresco-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-alfresco-module:amp.version}.amp:/opt/alfresco/amps/alfresco/1/edu_sharing-community-repository-plugin-kafka-backend-alfresco-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-alfresco-module:amp.version}.amp"

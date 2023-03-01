@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <h1>Hello!</h1>
+    <h2 th:text="${creator.displayName} has reported a problem with the material'${node.properties.name}' (${node.properties.id})"/>
+    Reason: <span th:text="${reason}"/> <br><br><br>
+    <p th:if="${userComment}">additional information provided by the user: <br>
+        <span th:text="${userComment}"/>
+        <br><br><br>
+    </p>
+    <div class="center"><a class="btn" th:href="${link}">Link to the material in question</a></div>
+    <br><br>
+</body>
+</html>

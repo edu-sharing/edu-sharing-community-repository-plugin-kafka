@@ -1,6 +1,17 @@
 version: '3.7'
 
 services:
+  kafka:
+    restart: unless-stopped
+
+  notification-manager:
+    restart: unless-stopped
+
+  email-notifier:
+    restart: unless-stopped
+
+  mongodb-kafka-connector:
+    restart: unless-stopped
 
   repository-mongo-primary:
     restart: unless-stopped

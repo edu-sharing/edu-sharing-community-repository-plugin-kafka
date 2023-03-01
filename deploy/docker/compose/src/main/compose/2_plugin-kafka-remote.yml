@@ -1,6 +1,17 @@
 version: '3.7'
 
 services:
+  kafka:
+    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-kafka:${docker.tag}"
+
+  notification-manager:
+    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-notification-manager:${docker.tag}"
+
+  email-notifier:
+    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-email-notifier:${docker.tag}"
+
+  mongodb-kafka-connector:
+    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongdb-kafka-connector:${docker.tag}"
 
   repository-mongo-primary:
     image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongo:${docker.tag}"
