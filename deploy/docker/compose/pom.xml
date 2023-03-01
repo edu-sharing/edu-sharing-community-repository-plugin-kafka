@@ -75,6 +75,17 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>edu_sharing-community-repository-plugin-kafka-notification-manager</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>edu_sharing-community-repository-plugin-kafka-email-notifier</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
 </project>

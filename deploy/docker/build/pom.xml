@@ -41,6 +41,7 @@
   <modules>
     <module>kafka</module>
     <module>mongodb-kafka-connector</module>
+    <module>notification-manager</module>
     <module>service</module>
     <module>zookeeper</module>
   </modules>
