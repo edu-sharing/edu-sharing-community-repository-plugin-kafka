@@ -1,4 +1,4 @@
-package org.edu_sharing.plugin_kafka.messages;
+package org.edu_sharing.kafka.notification.events;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
@@ -6,8 +6,8 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-@JsonTypeName("InviteMessage")
-public class InviteMessage extends NodeBaseMessage {
+@JsonTypeName("NodeIssueMessage")
+public class NodeIssueEvent extends NodeBaseEvent {
+    private  String reason;
     private  String userComment;
-    private  String[] permissions;
 }

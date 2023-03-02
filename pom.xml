@@ -216,6 +216,13 @@
         <version>${project.version}</version>
       </dependency>
 
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>edu_sharing-community-repository-plugin-kafka-notification-data-contract</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
     </dependencies>
 
   </dependencyManagement>
@@ -256,6 +263,7 @@
     <module>Backend</module>
     <module>config</module>
     <module>deploy</module>
+    <module>notification-data-contract</module>
   </modules>
 
 </project>

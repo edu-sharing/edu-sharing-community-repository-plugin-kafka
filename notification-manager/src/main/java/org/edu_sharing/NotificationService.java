@@ -1,6 +1,7 @@
 package org.edu_sharing;
 
 import lombok.AllArgsConstructor;
+import org.edu_sharing.kafka.notification.events.NotificationEvent;
 import org.edu_sharing.messages.BaseMessage;
 import org.edu_sharing.messages.Status;
 import org.edu_sharing.repository.NotificationRepository;
@@ -16,23 +17,26 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 public class NotificationService {
 
-    private final KafkaTemplate<String, BaseMessage> kafkaTemplate;
+    private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
     private final NotificationRepository notificationRepository;
 
     private final MongoTemplate mongoTemplate;
 
-    public void sendNotification(BaseMessage message) {
+    public void sendNotification(NotificationEvent message) {
         kafkaTemplate.send(AppConstants.TOPIC_NAME_NOTIFICATION, message.getId(), message);
     }
 
+    // TODO BaseMessage -> NotificationEvent
     public Slice<BaseMessage> getNotificationsByCreatorId(String creatorId, Pageable paging) {
         return notificationRepository.findAllByCreatorId(creatorId, paging);
     }
 
+    // TODO BaseMessage -> NotificationEvent
     public Slice<BaseMessage> getAllNotifications(Pageable paging){
         return notificationRepository.findAll(paging);
     }
 
+    // TODO BaseMessage -> NotificationEvent
     public BaseMessage setStatus(String id, Status status) {
         BaseMessage notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No Message for " + id + "found!"));

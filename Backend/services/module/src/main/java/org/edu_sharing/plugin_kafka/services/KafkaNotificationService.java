@@ -3,13 +3,14 @@ package org.edu_sharing.plugin_kafka.services;
 import com.sun.star.lang.IllegalArgumentException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.lang3.StringUtils;
+import org.edu_sharing.kafka.notification.events.NodeIssueEvent;
+import org.edu_sharing.kafka.notification.events.NotificationEvent;
+import org.edu_sharing.kafka.notification.events.data.NodeData;
+import org.edu_sharing.kafka.notification.events.data.UserInfo;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
-import org.edu_sharing.plugin_kafka.config.KafkaSettings;
 import org.edu_sharing.plugin_kafka.kafka.SendResult;
-import org.edu_sharing.plugin_kafka.messages.*;
 import org.edu_sharing.repository.client.tools.CCConstants;
 import org.edu_sharing.repository.server.tools.Mail;
 import org.edu_sharing.repository.server.tools.URLTool;
@@ -28,11 +29,11 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class KafkaNotificationService implements NotificationService {
 
-    private final KafkaTemplate<String, BaseMessage> kafkaTemplate;
+    private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
     private final NodeService nodeService;
 
-    public CompletableFuture<SendResult<String, BaseMessage>> send(BaseMessage baseMessage) {
-        return kafkaTemplate.sendDefault(baseMessage.getId(), baseMessage);
+    public CompletableFuture<SendResult<String, NotificationEvent>> send(NotificationEvent notificationMessage) {
+        return kafkaTemplate.sendDefault(notificationMessage.getId(), notificationMessage);
     }
 
     @Override
@@ -51,7 +52,7 @@ public class KafkaNotificationService implements NotificationService {
             throw new IllegalArgumentException("No report receiver is set in the configuration");
         }
 
-        NodeIssueMessage message = NodeIssueMessage.builder()
+        NodeIssueEvent event = NodeIssueEvent.builder()
                 .id(generateMessageId())
                 .timestamp(DateTime.now().toDate())
                 .creator(UserInfo.builder()
@@ -62,14 +63,14 @@ public class KafkaNotificationService implements NotificationService {
                         .build())
                 .reason(reason)
                 .userComment(reason)
-                .node(Node.builder()
+                .node(NodeData.builder()
                         .property("name", properties.get(CCConstants.CM_NAME).toString())
                         .property("link", URLTool.getNgRenderNodeUrl(nodeId, null, true))
                         .property("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false))
                         .build())
                 .build();
 
-        send(message);
+        send(event);
     }
 
     private String generateMessageId() {

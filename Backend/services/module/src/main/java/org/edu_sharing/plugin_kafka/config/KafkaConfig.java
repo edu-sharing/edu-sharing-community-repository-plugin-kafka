@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import org.edu_sharing.kafka.notification.events.NotificationEvent;
 import org.edu_sharing.plugin_kafka.kafka.KafkaProducerFactory;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
-import org.edu_sharing.plugin_kafka.messages.BaseMessage;
 import org.edu_sharing.plugin_kafka.kafka.support.JsonSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +34,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaProducerFactory<String, BaseMessage> notificationProducer() {
+    public KafkaProducerFactory<String, NotificationEvent> notificationProducer() {
         return new KafkaProducerFactory<>(kafkaProperties(),
                 StringSerializer::new,
                 () -> new JsonSerializer<>(JsonMapper.builder()
@@ -45,7 +45,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, BaseMessage> kafkaNotificationTemplate(KafkaProducerFactory<String, BaseMessage> kafkaProducerFactory) {
+    public KafkaTemplate<String, NotificationEvent> kafkaNotificationTemplate(KafkaProducerFactory<String, NotificationEvent> kafkaProducerFactory) {
         return new KafkaTemplate<>(kafkaProducerFactory, kafkaSettings::getCloseTimeout, kafkaSettings::getNotificationTopic);
     }
 }

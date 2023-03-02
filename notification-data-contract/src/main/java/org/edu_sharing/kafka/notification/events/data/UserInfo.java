@@ -1,4 +1,4 @@
-package org.edu_sharing.plugin_kafka.messages;
+package org.edu_sharing.kafka.notification.events.data;
 
 import lombok.Builder;
 import lombok.Getter;

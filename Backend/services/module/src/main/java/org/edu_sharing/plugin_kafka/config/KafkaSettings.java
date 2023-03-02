@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @ConfigurationProperties(prefix = "kafka")
 public class KafkaSettings {
-    String notificationTopic = "Notification";
+    String notificationTopic = "notification";
     List<String> servers = Collections.singletonList("kafka:9093");
     Duration closeTimeout = Duration.ofSeconds(5);
 }

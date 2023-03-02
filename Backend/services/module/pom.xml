@@ -74,6 +74,17 @@
 
   <dependencies>
 
+    <dependency>
+      <groupId>org.edu_sharing</groupId>
+      <artifactId>edu_sharing-community-repository-plugin-kafka-notification-data-contract</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <!-- provided -->
     <dependency>
       <groupId>org.slf4j</groupId>

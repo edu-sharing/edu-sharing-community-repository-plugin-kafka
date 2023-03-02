@@ -2,7 +2,6 @@ package org.edu_sharing.plugin_kafka.kafka;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
-import org.edu_sharing.plugin_kafka.messages.BaseMessage;
 
 public class KafkaProducerException extends KafkaException {
 

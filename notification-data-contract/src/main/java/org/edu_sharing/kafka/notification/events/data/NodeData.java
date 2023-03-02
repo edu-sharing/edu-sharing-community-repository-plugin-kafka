@@ -1,7 +1,6 @@
-package org.edu_sharing.plugin_kafka.messages;
+package org.edu_sharing.kafka.notification.events.data;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Singular;
 
@@ -10,7 +9,7 @@ import java.util.Map;
 
 @Getter
 @Builder
-public class Node {
+public class NodeData {
     @Singular
     private Map<String, Serializable> properties;
 }
