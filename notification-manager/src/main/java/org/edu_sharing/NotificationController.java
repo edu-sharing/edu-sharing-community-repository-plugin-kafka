@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.edu_sharing.messages.BaseMessage;
-import org.edu_sharing.messages.Status;
+import org.edu_sharing.messages.data.Status;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
