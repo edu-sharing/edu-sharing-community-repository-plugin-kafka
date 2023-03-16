@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @JsonTypeName("InviteMessage")
-public class InviteEvent extends NodeBaseEvent {
+public class InviteEventDTO extends NodeBaseEventDTO {
     private  String userComment;
     private  String[] permissions;
 }

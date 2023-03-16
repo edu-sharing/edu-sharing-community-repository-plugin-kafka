@@ -6,7 +6,7 @@ import org.edu_sharing.kafka.notification.events.data.NodeData;
 
 @Getter
 @SuperBuilder
-public abstract class NodeBaseEvent extends NotificationEvent {
+public abstract class NodeBaseEventDTO extends NotificationEventDTO {
     private NodeData node;
 }
 

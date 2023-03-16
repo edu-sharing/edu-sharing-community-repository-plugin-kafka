@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Getter
 @SuperBuilder
-public abstract class NotificationEvent {
+public abstract class NotificationEventDTO {
     @JsonProperty("_id")
     private String id;
     private Date timestamp;

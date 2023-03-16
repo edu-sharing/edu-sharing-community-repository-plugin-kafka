@@ -3,7 +3,7 @@ package org.edu_sharing;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
-import org.edu_sharing.kafka.notification.events.NotificationEvent;
+import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.edu_sharing.messages.BaseMessage;
 import org.edu_sharing.messages.Status;
 import org.springframework.data.domain.PageRequest;
@@ -19,7 +19,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping
-    public void send(@RequestBody NotificationEvent request) {
+    public void send(@RequestBody NotificationEventDTO request) {
         notificationService.sendNotification(request);
     }
 

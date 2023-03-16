@@ -1,7 +1,7 @@
 package org.edu_sharing;
 
 import lombok.AllArgsConstructor;
-import org.edu_sharing.kafka.notification.events.NotificationEvent;
+import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.edu_sharing.messages.BaseMessage;
 import org.edu_sharing.messages.Status;
 import org.edu_sharing.repository.NotificationRepository;
@@ -17,12 +17,12 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 public class NotificationService {
 
-    private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
+    private final KafkaTemplate<String, NotificationEventDTO> kafkaTemplate;
     private final NotificationRepository notificationRepository;
 
     private final MongoTemplate mongoTemplate;
 
-    public void sendNotification(NotificationEvent message) {
+    public void sendNotification(NotificationEventDTO message) {
         kafkaTemplate.send(AppConstants.TOPIC_NAME_NOTIFICATION, message.getId(), message);
     }
 

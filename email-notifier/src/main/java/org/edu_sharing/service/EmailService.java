@@ -6,7 +6,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.domain.UserSettings;
-import org.edu_sharing.kafka.notification.events.NotificationEvent;
+import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -28,7 +28,7 @@ public class EmailService {
     @Value("${mail.settings.from}")
     private String fromEmailAddress;
 
-    public void send(NotificationEvent event) throws MessagingException {
+    public void send(NotificationEventDTO event) throws MessagingException {
         Optional<UserSettings> receiverSetting = userSettings.getUserSetting(event.getReceiver().getId());
         if (receiverSetting.isEmpty()) {
             log.info("User does not exists {}", event.getReceiver());
@@ -48,7 +48,7 @@ public class EmailService {
         sendHtmlMessage(receiverSetting.get().getEmailAddress(), subject, body);
     }
 
-    private String createContentFromTemplate(NotificationEvent event, String template) {
+    private String createContentFromTemplate(NotificationEventDTO event, String template) {
         Context mailContext = new Context();
         ObjectMapper model = new ObjectMapper();
         mailContext.setVariables(model.convertValue(event, Map.class));
@@ -67,7 +67,7 @@ public class EmailService {
         emailSender.send(message);
     }
 
-    private static String getMessageType(NotificationEvent event) {
+    private static String getMessageType(NotificationEventDTO event) {
         return event.getClass().getSimpleName().replace("Event", "Message");
     }
 }

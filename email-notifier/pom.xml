@@ -14,10 +14,11 @@
   <name>edu_sharing-community-repository-plugin-kafka-email-notifier</name>
 
   <properties>
-    <maven.compiler.source>18</maven.compiler.source>
-    <maven.compiler.target>18</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>18</java.version>
+    <java.version>17</java.version>
   </properties>
 
   <dependencyManagement>
@@ -113,24 +114,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-toolchains-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>toolchain</goal>
-            </goals>
-            <configuration>
-              <toolchains>
-                <jdk>
-                  <version>18</version>
-                </jdk>
-              </toolchains>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.springframework.boot</groupId>

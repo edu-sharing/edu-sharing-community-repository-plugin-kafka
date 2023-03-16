@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @JsonTypeName("NodeIssueMessage")
-public class NodeIssueEvent extends NodeBaseEvent {
+public class NodeIssueEventDTO extends NodeBaseEventDTO {
     private  String reason;
     private  String userComment;
 }
