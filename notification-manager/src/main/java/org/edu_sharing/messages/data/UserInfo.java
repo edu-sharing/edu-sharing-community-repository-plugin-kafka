@@ -1,4 +1,4 @@
-package org.edu_sharing.messages;
+package org.edu_sharing.messages.data;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Field;

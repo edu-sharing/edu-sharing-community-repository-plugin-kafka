@@ -3,7 +3,7 @@ package org.edu_sharing;
 import lombok.AllArgsConstructor;
 import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.edu_sharing.messages.BaseMessage;
-import org.edu_sharing.messages.Status;
+import org.edu_sharing.messages.data.Status;
 import org.edu_sharing.repository.NotificationRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

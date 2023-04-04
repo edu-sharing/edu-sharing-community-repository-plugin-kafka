@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "Notification")
 @TypeAlias("WorkflowMessage")
 @JsonTypeName("WorkflowMessage")
-public class WorkflowMessage extends BaseMessage {
+public class WorkflowMessage extends NodeBaseMessage {
     private String workflowStatus;
     private  String userComment;
 }
