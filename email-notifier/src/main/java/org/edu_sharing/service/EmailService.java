@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,24 +29,26 @@ public class EmailService {
     @Value("${mail.settings.from}")
     private String fromEmailAddress;
 
-    public void send(NotificationEventDTO event) throws MessagingException {
-        Optional<UserSettings> receiverSetting = userSettings.getUserSetting(event.getReceiver().getId());
-        if (receiverSetting.isEmpty()) {
-            log.info("User does not exists {}", event.getReceiver());
-            return;
+    public void send(List<NotificationEventDTO> events) throws MessagingException {
+        for (NotificationEventDTO event: events) {
+            Optional<UserSettings> receiverSetting = userSettings.getUserSetting(event.getReceiver().getId());
+            if (receiverSetting.isEmpty()) {
+                log.info("User does not exists {}", event.getReceiver());
+                return;
+            }
+
+            if (receiverSetting.map(UserSettings::getDisabledMessageTypes).map(x -> x.contains(getMessageType(event))).orElse(false)) {
+                log.info("{} disabled for {}", getMessageType(event), event.getReceiver());
+                return;
+            }
+
+            String messageType = getMessageType(event);
+            String body = createContentFromTemplate(event, "html/" + messageType + ".html");
+            //String subject = createContentFromTemplate(event, "txt/" + messageType + ".txt");
+            String subject = "edu-sharing notification";
+
+            sendHtmlMessage(receiverSetting.get().getEmailAddress(), subject, body);
         }
-
-        if (receiverSetting.map(UserSettings::getDisabledMessageTypes).map(x->x.contains(getMessageType(event))).orElse(false)) {
-            log.info("{} disabled for {}", getMessageType(event), event.getReceiver());
-            return;
-        }
-
-        String messageType = getMessageType(event);
-        String body = createContentFromTemplate(event, "html/" + messageType + ".html");
-        //String subject = createContentFromTemplate(event, "txt/" + messageType + ".txt");
-        String subject = "edu-sharing notification";
-
-        sendHtmlMessage(receiverSetting.get().getEmailAddress(), subject, body);
     }
 
     private String createContentFromTemplate(NotificationEventDTO event, String template) {

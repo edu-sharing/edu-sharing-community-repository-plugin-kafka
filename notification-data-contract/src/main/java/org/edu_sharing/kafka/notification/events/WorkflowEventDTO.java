@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @JsonTypeName("WorkflowMessage")
-public class WorkflowEventDTO extends NotificationEventDTO {
+public class WorkflowEventDTO extends NodeBaseEventDTO {
     private String workflowStatus;
     private  String userComment;
 }

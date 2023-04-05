@@ -1,9 +1,10 @@
 package org.edu_sharing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
-import org.edu_sharing.messages.BaseMessage;
-import org.edu_sharing.messages.data.Status;
+import org.edu_sharing.kafka.notification.events.data.Status;
+import org.edu_sharing.model.NotificationEvent;
 import org.edu_sharing.repository.NotificationRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -27,18 +28,18 @@ public class NotificationService {
     }
 
     // TODO BaseMessage -> NotificationEvent
-    public Slice<BaseMessage> getNotificationsByCreatorId(String creatorId, Pageable paging) {
+    public Slice<NotificationEvent> getNotificationsByCreatorId(String creatorId, Pageable paging) {
         return notificationRepository.findAllByCreatorId(creatorId, paging);
     }
 
     // TODO BaseMessage -> NotificationEvent
-    public Slice<BaseMessage> getAllNotifications(Pageable paging){
+    public Slice<NotificationEvent> getAllNotifications(Pageable paging){
         return notificationRepository.findAll(paging);
     }
 
     // TODO BaseMessage -> NotificationEvent
-    public BaseMessage setStatus(String id, Status status) {
-        BaseMessage notification = notificationRepository.findById(id)
+    public NotificationEvent setStatus(String id, Status status) {
+        NotificationEvent notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No Message for " + id + "found!"));
 
         notification.setStatus(status);

@@ -1,15 +1,19 @@
-package org.edu_sharing.messages;
+package org.edu_sharing.model;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
-@Document(collection = "Notification")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @TypeAlias("RatingMessage")
-@JsonTypeName("RatingMessage")
-public class RatingMessage extends NodeBaseMessage {
+@Document(collation = "notification")
+public class RatingEvent extends NodeBaseEvent {
     /**
      * the new rating that was given
      */
