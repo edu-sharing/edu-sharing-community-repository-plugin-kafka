@@ -1,0 +1,114 @@
+<templates>
+	<template name="header">
+		<message><![CDATA[
+			<div class="logo">
+			<img src="{{image:/images/logos/edu-sharing-mail.png}}">
+			</div>
+		]]>
+		</message>
+	</template>
+	<template name="invited">
+		<subject>{{inviter.firstName}} {{inviter.lastName}} hat Sie zu einem Material eingeladen.</subject>
+		<message><![CDATA[
+			<h1>Hallo {{firstName}} {{lastName}}</h1>
+			<h2>{{inviter.firstName}} {{inviter.lastName}} hat "{{name}}" für Sie freigegeben.</h2>
+			Ihnen wurden die folgenden Rechte zugeteilt:<br>
+			<div class="rights">{{permissions}}</div>
+			<br>
+			<div class="center"><a class="btn" href="{{link}}">Link zum Material</a></div>
+			<br><br>
+			{{if message}}Nachricht vom Nutzer:<br>
+				{{message}}
+			{{endif}}
+		]]>
+		</message>
+	</template>
+	<template name="WorkflowEvent">
+		<subject>{{assigner.firstName}} {{assigner.lastName}} hat Ihnen ein Material zugewiesen.</subject>
+		<message><![CDATA[
+			<h1>Hallo {{firstName}} {{lastName}}</h1>
+			<h2>{{assigner.firstName}} {{assigner.lastName}} hat Ihnen "{{node.cm:name}}" mit den Status "{{status}}" zugewiesen.</h2>
+			<br>
+			<div class="center"><a class="btn" href="{{link}}">Link zum Material</a></div>
+			<br><br>
+			{{if comment}}Kommentar vom Nutzer:<br>
+				{{comment}}
+			{{endif}}
+		]]>
+		</message>
+	</template>
+	<template name="invited_safe">
+		<subject>{{inviter.firstName}} {{inviter.lastName}} hat Sie zu einem Material eingeladen.</subject>
+		<message><![CDATA[
+			<h1>Hallo {{firstName}} {{lastName}}</h1>
+			<h2>{{inviter.firstName}} {{inviter.lastName}} hat "{{name}}" für Sie freigegeben.</h2>
+			Ihnen wurden die folgenden Rechte zugeteilt:<br>
+			<div class="rights">{{permissions}}</div>
+			<br>
+			Nach Login in den Safe ist das Element im Bereich "Für mich freigegeben" zu finden.
+			<br><br>
+			{{if message}}Nachricht vom Nutzer:<br>
+				{{message}}
+			{{endif}}
+		]]>
+		</message>
+	</template>
+	<template name="invited_collection">
+		<subject>{{inviter.firstName}} {{inviter.lastName}} hat Sie zur Mitarbeit an einer Sammlung eingeladen.</subject>
+		<message><![CDATA[
+			<h1>Hallo {{firstName}} {{lastName}}</h1>
+			<h2>{{inviter.firstName}} {{inviter.lastName}} hat die Sammlung "{{name}}" für Sie freigegeben.</h2>
+			Ihnen wurden die folgenden Rechte zugeteilt:<br>
+			<div class="rights">{{permissions}}</div>
+			<br>
+			<div class="center"><a class="btn" href="{{link}}">Link zur Sammlung</a></div>
+			<br><br>
+			{{if message}}Nachricht vom Nutzer:<br>
+				{{message}}
+			{{endif}}
+		]]>
+		</message>
+	</template>
+
+	<template name="NodeIssueEvent">
+		<subject>{{reporterEmail}} hat ein Problem gemeldet</subject>
+		<message><![CDATA[
+			<h1>Hallo!</h1>
+			<h2>{{reporterEmail}} hat ein Problem mit dem Element "{{name}}" ({{id}}) gemeldet.</h2>
+			Die Begründung der Meldung: {{reason}}<br><br><br>
+			{{if userComment}}Weitere Informationen vom Nutzer:<br>
+				{{userComment}}
+				<br><br><br>
+			{{endif}}
+			<div class="center"><a class="btn" href="{{link}}">Zum gemeldeten Material</a></div>
+			<br><br>		
+		]]>
+		</message>
+	</template>
+	<template name="mdsValuespaceSuggestion">
+		<subject>Ein neuer Metadaten-Vorschlag für {{widgetCaption}}</subject>
+		<message><![CDATA[
+			<h1>Hallo!</h1>
+			<h2>{{firstName}} {{lastName}} hat einen neuen Wertebereichseintrag vorgeschlagen:</h2>
+			<br>
+			Feld: {{widgetCaption}} ({{widgetId}})<br>
+			Vorgeschlagener Wert: {{caption}} ({{id}})<br>
+			{{if parentId}}Übergerodneter Wert: {{parentCaption}} ({{parentId}})<br>
+			{{endif}}
+			{{if link}}
+				<br><br>
+				Vorgeschlagen für Element "{{node.cm:name}}"
+				<br><br>
+				<div class="center"><a class="btn" href="{{link}}">Link zum Element</a></div>
+			{{endif}}
+		]]>
+		</message>
+	</template>
+	<template name="footer">
+		<message><![CDATA[
+			<a href="http://edu-sharing.com" style="float:left;">www.edu-sharing.com</a>
+			<a href="https://twitter.com/edusharing" style="float:right;">@edusharing</a>
+		]]>
+		</message>
+	</template>
+</templates>

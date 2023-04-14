@@ -12,12 +12,3 @@ services:
 
   mongodb-kafka-connector:
     image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongdb-kafka-connector:${docker.tag}"
-
-  repository-mongo-primary:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongo:${docker.tag}"
-
-  repository-mongo-secondary:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongo:${docker.tag}"
-
-  repository-mongo-arbiter:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongo:${docker.tag}"

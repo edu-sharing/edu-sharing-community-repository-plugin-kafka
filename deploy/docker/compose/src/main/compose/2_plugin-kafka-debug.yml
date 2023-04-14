@@ -1,15 +1,16 @@
 version: '3.7'
 
 services:
-
-  repository-mongo-primary:
+  email-notifier:
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
     ports:
-      - "${COMMON_BIND_HOST:-127.0.0.1}:${REPOSITORY_MONGO_PORT:-8500}:27017"
+      - "${COMMON_BIND_HOST:-127.0.0.1}:8402:8000"
 
-  repository-mongo-secondary:
+  notification-manager:
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
     ports:
-      - "${COMMON_BIND_HOST:-127.0.0.1}:8502:27017"
+      - "${COMMON_BIND_HOST:-127.0.0.1}:8403:8000"
 
-  repository-mongo-arbiter:
-    ports:
-      - "${COMMON_BIND_HOST:-127.0.0.1}:8503:27017"
+

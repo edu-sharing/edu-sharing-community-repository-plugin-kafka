@@ -11,6 +11,7 @@ import org.edu_sharing.kafka.notification.events.data.NodeData;
 import org.edu_sharing.kafka.notification.events.data.UserInfo;
 import org.edu_sharing.metadataset.v2.MetadataWidget;
 import org.edu_sharing.plugin_kafka.config.MailSettings;
+import org.edu_sharing.plugin_kafka.config.Report;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.plugin_kafka.kafka.SendResult;
 import org.edu_sharing.repository.client.tools.CCConstants;
@@ -31,11 +32,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
-@Service
+@Service("kafkaNotificationService")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class KafkaNotificationService implements NotificationService {
 
@@ -54,17 +56,19 @@ public class KafkaNotificationService implements NotificationService {
 
         HashMap<String, Object> properties = nodeService.getProperties(StoreRef.PROTOCOL_WORKSPACE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier(), nodeId);
 
-        try {
-            if (StringUtils.isBlank(mailSettings.getAddReplyTo())) {
-                throw new IllegalArgumentException("No report receiver is set in the configuration");
-            }
-        } catch (Exception ex) {
+        if (Optional.of(mailSettings).map(MailSettings::getReport).map(Report::getReceiver).map(StringUtils::isBlank).orElse(true)) {
             throw new IllegalArgumentException("No report receiver is set in the configuration");
         }
 
         send(NodeIssueEventDTO.builder()
-                .creator(UserInfo.builder().email(userEmail).build())
-                .receiver(UserInfo.builder().email(mailSettings.getAddReplyTo()).build())
+                .creator(UserInfo.builder()
+                        .email(userEmail)
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
+                        .build())
+                .receiver(UserInfo.builder()
+                        .email(mailSettings.getReport().getReceiver())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
+                        .build())
                 .reason(reason)
                 .userComment(reason)
                 .node(NodeData.builder()
@@ -81,6 +85,7 @@ public class KafkaNotificationService implements NotificationService {
                 .creator(UserInfo.builder()
                         .displayName(sender.getFullName())
                         .email(sender.getEmail())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
                         .build())
                 .receiver(UserInfo.builder().email(receiver).build())
                 .userComment(comment)
@@ -117,10 +122,12 @@ public class KafkaNotificationService implements NotificationService {
                 .creator(UserInfo.builder()
                         .displayName(sender.getFullName())
                         .email(sender.getEmail())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
                         .build())
                 .receiver(UserInfo.builder()
                         .displayName(receiver.getFullName())
                         .email(receiver.getEmail())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
                         .build())
                 .commentContent(comment)
                 .commentReference(commentReference)
@@ -141,10 +148,12 @@ public class KafkaNotificationService implements NotificationService {
                 .creator(UserInfo.builder()
                         .displayName(sender.getFullName())
                         .email(sender.getEmail())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
                         .build())
                 .receiver(UserInfo.builder()
                         .displayName(receiver.getFullName())
                         .email(receiver.getEmail())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
                         .build())
                 .collection(Collection.builder()
                         .properties(collectionProperties)
@@ -159,15 +168,21 @@ public class KafkaNotificationService implements NotificationService {
         String receiverAuthority = nodeService.getProperty(StoreRef.PROTOCOL_WORKSPACE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier(), nodeId, CCConstants.CM_PROP_OWNER);
         MailTemplate.UserMail receiver = MailTemplate.getUserMailData(receiverAuthority);
 
+        if (Optional.of(mailSettings).map(MailSettings::getReport).map(Report::getReceiver).map(StringUtils::isBlank).orElse(true)) {
+            log.warn("notifyRatingChanged: No report receiver is set in the configuration");
+            return;
+        }
 
         send(RatingEventDTO.builder()
                 .creator(UserInfo.builder()
                         .displayName(mailSettings.getFrom())
-                        .email(mailSettings.getAddReplyTo())
+                        .email(mailSettings.getReport().getReceiver())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
                         .build())
                 .receiver(UserInfo.builder()
                         .displayName(receiver.getFullName())
                         .email(receiver.getEmail())
+                        .locale(new AuthenticationToolAPI().getCurrentLocale()) // TODO
                         .build())
                 .newRating(rating)
                 .ratingCount(accumulatedRatings.getOverall().getCount())

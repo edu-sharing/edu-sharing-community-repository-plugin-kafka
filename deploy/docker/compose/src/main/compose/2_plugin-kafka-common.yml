@@ -2,13 +2,6 @@ version: '3.7'
 
 services:
 
-#  zookeeper:
-#    image: "${docker.repository}/${docker.prefix}-deploy-docker-build-zookeeper:${docker.tag}"
-#    expose:
-#      - '2181'
-#    environment:
-#      ALLOW_ANONYMOUS_LOGIN: "yes"
-
   kafka:
     image: "${docker.repository}/${docker.prefix}-deploy-docker-build-kafka:${docker.tag}"
     expose:
@@ -26,11 +19,8 @@ services:
       KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "CLIENT"
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@127.0.0.1:9094"
       ALLOW_PLAINTEXT_LISTENER: "yes"
-      #KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper:2181"
     ports:
       - "${COMMON_BIND_HOST:-127.0.0.1}:${KAFKA_EXTERNAL_PORT:-9093}:9093"
-#    depends_on:
-#      - zookeeper
 
   # todo
   kafka-consumer-client:
@@ -56,6 +46,8 @@ services:
       - "8080"
     depends_on:
       - kafka
+    ports:
+      - "${COMMON_BIND_HOST:-127.0.0.1}:8700:8080"
 
   email-notifier:
     image: "${docker.repository}/${docker.prefix}-deploy-docker-build-email-notifier:${docker.tag}"
@@ -100,55 +92,3 @@ services:
       MONGODB_DOCUMENT_ID_STRATEGY: "${REPOSITORY_MONGO_NOTIFICATION_DOCUMENT_ID_STRATEGY:-com.mongodb.kafka.connect.sink.processor.id.strategy.UuidProvidedInValueStrategy}"
     depends_on:
       - kafka
-#
-#
-#  repository-mongo-primary:
-#    image: "bitnami/mongodb:4.4.15" # TODO
-#    environment:
-#      ALLOW_EMPTY_PASSWORD: "false"
-#      MONGODB_ADVERTISED_HOSTNAME: "repository-mongo-primary"
-#      MONGODB_REPLICA_SET_MODE: "primary"
-#      MONGODB_DATABASE: "${REPOSITORY_MONGO_DATABASE:-edu-sharing}"
-#      MONGODB_USERNAME: "${REPOSITORY_MONGO_USER:-repository}"
-#      MONGODB_PASSWORD: "${REPOSITORY_MONGO_PASS:-repository}"
-#      MONGODB_ROOT_USER: "${REPOSITORY_MONGO_ROOT_USER:-root}"
-#      MONGODB_ROOT_PASSWORD: "${REPOSITORY_MONGO_ROOT_PASS:-root}"
-#      MONGODB_REPLICA_SET_KEY: "${REPOSITORY_MONGO_REPLICATION_SET_KEY:-repository}"
-#    expose:
-#      - "27017"
-#    volumes:
-#      - "repository-mongo-volume-data-primary:/bitnami/mongodb"
-#
-#  repository-mongo-secondary:
-#    image: "bitnami/mongodb:4.4.15" # TODO
-#    depends_on:
-#      - repository-mongo-primary
-#    environment:
-#      MONGODB_ADVERTISED_HOSTNAME: "repository-mongo-secondary"
-#      MONGODB_REPLICA_SET_MODE: "secondary"
-#      MONGODB_INITIAL_PRIMARY_HOST: "repository-mongo-primary"
-#      MONGODB_INITIAL_PRIMARY_PORT_NUMBER: "27017"
-#      MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD: "${REPOSITORY_MONGO_ROOT_PASS:-root}"
-#      MONGODB_REPLICA_SET_KEY: "${REPOSITORY_MONGO_REPLICATION_SET_KEY:-repository}"
-#    expose:
-#      - "27017"
-#    volumes:
-#      - "repository-mongo-volume-data-secondary:/bitnami/mongodb"
-#
-#  repository-mongo-arbiter:
-#    image: "bitnami/mongodb:4.4.15" # TODO
-#    depends_on:
-#      - repository-mongo-primary
-#    environment:
-#      MONGODB_ADVERTISED_HOSTNAME: "repository-mongo-arbiter"
-#      MONGODB_REPLICA_SET_MODE: "arbiter"
-#      MONGODB_INITIAL_PRIMARY_HOST: "repository-mongo-primary"
-#      MONGODB_INITIAL_PRIMARY_PORT_NUMBER: "27017"
-#      MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD: "${REPOSITORY_MONGO_ROOT_PASS:-root}"
-#      MONGODB_REPLICA_SET_KEY: "${REPOSITORY_MONGO_REPLICATION_SET_KEY:-repository}"
-#    expose:
-#        - "27017"
-#
-#volumes:
-#  repository-mongo-volume-data-primary:
-#  repository-mongo-volume-data-secondary:

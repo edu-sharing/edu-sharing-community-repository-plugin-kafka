@@ -1,27 +1,30 @@
 package org.edu_sharing.plugin_kafka.services;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.NotImplementedException;
 import org.edu_sharing.service.factory.ServiceFactory;
 import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.spring.ApplicationContextFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-@Primary
-@Component("notificationServiceFactory")
+@RequiredArgsConstructor
 public class KafkaNotificationServiceFactory implements ServiceFactory {
 
-    public KafkaNotificationServiceFactory(){
 
-    }
+    private final KafkaNotificationService notificationService;
 
     @Override
     public NotificationService getServiceByAppId(String appId) {
-        throw new NotImplementedException("getServiceByAppId is not supported for KafkaNotificationServiceFactory");
+        return notificationService;
+        //throw new NotImplementedException("getServiceByAppId is not supported for KafkaNotificationServiceFactory");
     }
 
     @Override
     public NotificationService getLocalService() {
-        return ApplicationContextFactory.getApplicationContext().getBean(KafkaNotificationService.class);
+        return notificationService;
     }
 }

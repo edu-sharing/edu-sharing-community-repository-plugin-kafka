@@ -1,6 +1,7 @@
 package org.edu_sharing.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.edu_sharing.model.NotificationEvent;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -13,13 +14,13 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
     @Override
     public void removeUserName(String userId){
         mongoTemplate.updateMulti(
-                new Query().addCriteria(Criteria.where("creator.id").is(userId)),
+                Query.query(Criteria.where("creator.id").is(userId)),
                 new Update().unset("creator.displayName"),
-                BaseMessage.class);
+                NotificationEvent.class);
 
         mongoTemplate.updateMulti(
-                new Query().addCriteria(Criteria.where("receiver.id").is(userId)),
+                Query.query(Criteria.where("receiver.id").is(userId)),
                 new Update().unset("receiver.displayName"),
-                BaseMessage.class);
+                NotificationEvent.class);
     }
 }

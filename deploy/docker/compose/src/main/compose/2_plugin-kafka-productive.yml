@@ -12,12 +12,3 @@ services:
 
   mongodb-kafka-connector:
     restart: unless-stopped
-
-  repository-mongo-primary:
-    restart: unless-stopped
-
-  repository-mongo-secondary:
-    restart: unless-stopped
-
-  repository-mongo-arbiter:
-    restart: unless-stopped

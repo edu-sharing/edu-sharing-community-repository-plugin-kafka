@@ -1,23 +1,19 @@
 package org.edu_sharing.plugin_kafka.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.edu_sharing.plugin_kafka.kafka.KafkaProducerFactory;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
-import org.edu_sharing.plugin_kafka.kafka.support.JsonSerializer;
+import org.edu_sharing.plugin_kafka.kafka.support.serializer.JsonSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,13 +31,16 @@ public class KafkaConfig {
 
     @Bean
     public KafkaProducerFactory<String, NotificationEventDTO> notificationProducer() {
+//        return new KafkaProducerFactory<>(kafkaProperties(),
+//                StringSerializer::new,
+//                () -> new JsonSerializer<>(JsonMapper.builder()
+//                        .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
+//                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+//                        .activateDefaultTyping(BasicPolymorphicTypeValidator.builder().build())
+//                        .build()));
         return new KafkaProducerFactory<>(kafkaProperties(),
                 StringSerializer::new,
-                () -> new JsonSerializer<>(JsonMapper.builder()
-                        .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
-                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .activateDefaultTyping(BasicPolymorphicTypeValidator.builder().build())
-                        .build()));
+                JsonSerializer::new);
     }
 
     @Bean

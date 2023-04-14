@@ -24,10 +24,6 @@ RUN set -eux \
 
 USER worker
 
-ENV PATH /application/bin:$PATH
-COPY assets/entrypoint.sh bin/
-RUN echo "entrypoint" && ls bin/
-
 COPY --from=builder application/dependencies/ ./
 COPY --from=builder application/spring-boot-loader/ ./
 COPY --from=builder application/snapshot-dependencies/ ./
@@ -45,7 +41,7 @@ COPY --chown=worker:worker assets/profiler profiler/
 
 EXPOSE 8080
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher", "${JAVA_OPTS:-}"]
 
 ########################################################################################################################
 

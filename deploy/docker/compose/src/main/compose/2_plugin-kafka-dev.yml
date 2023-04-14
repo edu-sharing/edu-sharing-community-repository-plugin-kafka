@@ -1,6 +1,17 @@
+
 version: '3.7'
 
 services:
+
+  email-notifier:
+    entrypoint: "/bin/sh -c \"java  $${JAVA_OPTS:-} -jar /application/app.jar\""
+    volumes:
+      - "${GIT_ROOT}/repository-kafka/email-notifier/target/edu_sharing-community-repository-plugin-kafka-email-notifier-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-email-notifier:jar.version}.jar:/application/app.jar"
+
+  notification-manager:
+    entrypoint: "/bin/sh -c \"java  $${JAVA_OPTS:-} -jar /application/app.jar\""
+    volumes:
+      - "${GIT_ROOT}/repository-kafka/notification-manager/target/edu_sharing-community-repository-plugin-kafka-notification-manager-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-notification-manager:jar.version}.jar:/application/app.jar"
 
   repository-service:
     volumes:
