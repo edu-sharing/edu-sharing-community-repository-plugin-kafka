@@ -9,7 +9,6 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Jacksonized
 @SuperBuilder
-@JsonTypeName("WorkflowEvent")
 public class WorkflowEventDTO extends NodeBaseEventDTO {
     private String workflowStatus;
     private  String userComment;

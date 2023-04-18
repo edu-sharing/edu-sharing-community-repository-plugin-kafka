@@ -7,10 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Builder
 @Jacksonized
-public class UserInfo {
-    String id;
-    String firstName;
-    String lastName;
-    String email;
-    String locale;
+public class WidgetData {
+    private String id;
+    private String caption;
 }

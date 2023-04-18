@@ -9,7 +9,6 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Jacksonized
 @SuperBuilder
-@JsonTypeName("RatingEvent")
 public class RatingEventDTO extends NodeBaseEventDTO {
     /**
      * the new rating that was given

@@ -9,7 +9,6 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Jacksonized
 @SuperBuilder
-@JsonTypeName("CommentEvent")
 public class CommentEventDTO extends NodeBaseEventDTO {
     private  String commentContent;
 

@@ -1,0 +1,1 @@
+[(#{workflowEvent_Subject(${creator.firstName}, ${creator.lastName})})]

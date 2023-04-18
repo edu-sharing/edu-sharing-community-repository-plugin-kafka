@@ -23,6 +23,7 @@ import java.util.Date;
         @JsonSubTypes.Type(value = NodeIssueEventDTO.class, name="NodeIssueEvent"),
         @JsonSubTypes.Type(value = RatingEventDTO.class, name="RatingEvent"),
         @JsonSubTypes.Type(value = WorkflowEventDTO.class, name="WorkflowEvent"),
+        @JsonSubTypes.Type(value = MetadataSuggestionEventDTO.class, name="MetadataSuggestionEvent"),
 })
 public abstract class NotificationEventDTO {
     @JsonProperty("_id")

@@ -7,6 +7,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 @Getter

@@ -1,0 +1,86 @@
+<div th:fragment="NodeIssueEvent">
+    <h1 th:text="#{greetings}"></h1>
+    <h2 th:text="#{nodeIssue_H2(${creator.email}, ${node.properties.cm_name})}"></h2>
+    <span th:text="#{nodeIssue_Reason(${reason})}"></span>
+    <br>
+    <br>
+    <br>
+    <div th:if="${!#strings.isEmpty(userComment)}">
+        <span th:text="#{userCommentInfo}"></span>
+        <br>
+        <span th:text="${userComment}">{userComment}</span>
+        <br><br><br>
+    </div>
+    <div class="center">
+        <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
+    </div>
+    <br><br>
+</div>
+
+
+<div th:fragment="WorkflowEvent">
+    <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
+    <h2 th:text="#{workflowEvent_H2(${creator.firstName}, ${creator.lastName}, ${node.properties.cm_name}, ${workflowStatus})}"></h2>
+    <br>
+    <div th:if="${!#strings.isEmpty(userComment)}">
+        <span th:text="#{userCommentInfo}"></span>
+        <br>
+        <span th:text="${userComment}">{userComment}</span>
+        <br><br><br>
+    </div>
+    <div class="center">
+        <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
+    </div>
+    <br><br>
+</div>
+
+<div th:fragment="MetadataSuggestionEvent">
+    <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
+    <h2 th:text="#{metadataSuggestionEvent_H2(${creator.firstName}, ${creator.lastName})}"></h2>
+    <br>
+    <span th:text="#{metadataSuggestionEvent_Field(${widget.caption}, ${widget.id})}"></span><br>
+    <span th:text="#{metadataSuggestionEvent_Suggestion(${caption}, ${id})}"></span><br>
+    <div th:if="${!#strings.isEmpty(parentId)}">
+        <span th:text="#{metadataSuggestionEvent_ParentValue(${parentCaption}, ${parentId})}"></span>
+        <br>
+    </div>
+
+    <div th:if="${node != null }">
+        <br>
+        <br>
+        <span th:text="#{metadataSuggestionEvent_SuggestedElement(${node.properties.cm_name})}"></span>
+        <br>
+        <br>
+        <div class="center">
+            <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="InviteEvent">
+    <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
+
+    <div th:switch="${type}">
+        <h2 th:case="invited_collection" th:text="#{inviteEvent_H2Collection(${creator.firstName}, ${creator.lastName}, ${name})}"></h2>
+        <h2 th:case="*" th:text="#{inviteEvent_H2Material(${creator.firstName}, ${creator.lastName}, ${name})}"></h2>
+    </div>
+    <div class="rights" th:text="${#strings.listJoin(permissions, '\n')}"></div><br>
+    <div th:if="${type == invite_safe}">
+        <span th:text="#{inviteEvent_Safe}"></span>
+        <br><br>
+    </div>
+    <span th:text="#{inviteEvent_Rights}"></span><br>
+    <div th:if="${!#strings.isEmpty(userComment)}">
+        <span th:text="#{userCommentInfo}"></span>
+        <br>
+        <span th:text="${userComment}">{userComment}</span>
+        <br><br><br>
+    </div>
+
+    <div class="center">
+        <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
+    </div>
+</div>
+
+
+

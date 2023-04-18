@@ -10,7 +10,6 @@ import org.edu_sharing.kafka.notification.events.data.Collection;
 @Getter
 @Jacksonized
 @SuperBuilder
-@JsonTypeName("AddToCollectionEvent")
 public class AddToCollectionEventDTO extends NodeBaseEventDTO {
     /**
      * the collection the node has been added to
