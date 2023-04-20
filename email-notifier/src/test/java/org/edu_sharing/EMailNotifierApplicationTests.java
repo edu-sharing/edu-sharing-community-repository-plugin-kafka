@@ -8,6 +8,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.kafka.notification.events.*;
+import org.edu_sharing.kafka.notification.events.data.Collection;
 import org.edu_sharing.kafka.notification.events.data.NodeData;
 import org.edu_sharing.kafka.notification.events.data.UserInfo;
 import org.edu_sharing.kafka.notification.events.data.WidgetData;
@@ -63,8 +64,8 @@ class EMailNotifierApplicationTests {
                 .build();
 
         NodeData nodeData = NodeData.builder()
-                .property("cm_name", "Some Node")
-                .property("link", "www.example.de")
+                .property("cm_name", "Some Material")
+                .property("link", "www.example.de/some_material")
                 .build();
 
         return Arrays.asList(
@@ -121,6 +122,31 @@ class EMailNotifierApplicationTests {
                                 .id("4411")
                                 .caption("Some Widget Caption")
                                 .build())
+                        .build()),
+                Collections.singletonList(CommentEventDTO.builder()
+                        .creator(creator)
+                        .receiver(receiver)
+                        .node(nodeData)
+                        .commentContent("Some comment")
+                        .commentReference(null)
+                        .event("added")
+                        .build()),
+                Collections.singletonList(AddToCollectionEventDTO.builder()
+                        .creator(creator)
+                        .receiver(receiver)
+                        .node(nodeData)
+                        .collection(Collection.builder()
+                                .property("cm_name", "Some Collection")
+                                .property("link", "www.example.de/some_collection")
+                                .build())
+                        .build()),
+                Collections.singletonList(RatingEventDTO.builder()
+                        .creator(creator)
+                        .receiver(receiver)
+                        .node(nodeData)
+                        .newRating(4)
+                        .ratingSum(45)
+                        .ratingCount(10)
                         .build())
         );
     }
