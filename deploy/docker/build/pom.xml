@@ -39,6 +39,8 @@
   </build>
 
   <modules>
+    <module>mongo</module>
+    <module>mongo_exporter</module>
     <module>email-notifier</module>
     <module>kafka</module>
     <module>mongodb-kafka-connector</module>

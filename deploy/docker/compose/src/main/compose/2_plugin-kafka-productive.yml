@@ -12,3 +12,6 @@ services:
 
   mongodb-kafka-connector:
     restart: unless-stopped
+
+  notification-db:
+    restart: unless-stopped
