@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class KafkaNotificationServiceFactory implements ServiceFactory {
 
 
-    private final KafkaNotificationService notificationService;
+    private final NotificationService notificationService;
 
     @Override
     public NotificationService getServiceByAppId(String appId) {
