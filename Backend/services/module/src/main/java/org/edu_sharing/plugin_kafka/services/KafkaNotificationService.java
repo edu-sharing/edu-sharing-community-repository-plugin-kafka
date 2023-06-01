@@ -1,6 +1,8 @@
 package org.edu_sharing.plugin_kafka.services;
 
 import com.sun.star.lang.IllegalArgumentException;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -23,6 +25,7 @@ import org.edu_sharing.repository.server.tools.I18nServer;
 import org.edu_sharing.repository.server.tools.URLTool;
 import org.edu_sharing.repository.server.tools.mailtemplates.MailTemplate;
 import org.edu_sharing.restservices.mds.v1.model.MdsValue;
+import org.edu_sharing.service.notification.NotificationConfig;
 import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.service.notification.Status;
 import org.edu_sharing.service.rating.RatingDetails;
@@ -36,11 +39,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service("kafkaNotificationService")
+@NoArgsConstructor  // Required for proxying by CGLib (CGLib is used because we don't use an interface here...)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class KafkaNotificationService implements NotificationService {
 
-    private final KafkaTemplate<String, NotificationEventDTO> kafkaTemplate;
-    private final MailSettings mailSettings;
+
+    @NonNull
+    private KafkaTemplate<String, NotificationEventDTO> kafkaTemplate;
+    @NonNull
+    private MailSettings mailSettings;
 
     public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO.NotificationEventDTOBuilder<?, ?> notificationMessageBuilder) {
         notificationMessageBuilder.id(generateMessageId()).timestamp(DateTime.now().toDate());
@@ -301,7 +308,14 @@ public class KafkaNotificationService implements NotificationService {
         return nodeProperties.entrySet().stream().collect(Collectors.toMap(x -> CCConstants.getValidLocalName(x.getKey()).replace(":","_"), Map.Entry::getValue));
     }
 
+
     private String generateMessageId() {
         return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void setConfig(NotificationConfig config) throws Exception {
+        NotificationService.super.setConfig(config);
+        // @TODO: send config to kafka
     }
 }
