@@ -204,7 +204,7 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyComment(String node, String comment, String commentReference, Map<String, Object> nodeProperties, Status status) {
-        String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_OWNER);
+        String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
         nodeProperties = getSimplifiedNodeProperties(nodeProperties);
 
         MailTemplate.UserMail sender = MailTemplate.getUserMailData(new AuthenticationToolAPI().getCurrentUser());
@@ -233,7 +233,7 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyCollection(String collectionId, String refNodeId, Map<String, Object> collectionProperties, Map<String, Object> nodeProperties, Status status) {
 
-        String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_OWNER);
+        String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
         MailTemplate.UserMail sender = MailTemplate.getUserMailData(new AuthenticationToolAPI().getCurrentUser());
         MailTemplate.UserMail receiver = MailTemplate.getUserMailData(receiverAuthority);
 
@@ -261,7 +261,7 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyRatingChanged(String nodeId, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
-        String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_OWNER);
+        String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
         MailTemplate.UserMail receiver = MailTemplate.getUserMailData(receiverAuthority);
 
         if (Optional.of(mailSettings).map(MailSettings::getReport).map(Report::getReceiver).map(StringUtils::isBlank).orElse(true)) {
