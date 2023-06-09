@@ -11,6 +11,7 @@ import org.apache.kafka.common.KafkaException;
 import org.edu_sharing.plugin_kafka.kafka.support.KafkaUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -46,7 +47,10 @@ public class KafkaTemplate<K,V> {
         this.defaultTopicSupplier = defaultTopicSupplier;
     }
 
+    @PostConstruct
+    public void Initialization(){
 
+    }
 
     /**
      * Send the data to the default topic with no key or partition.

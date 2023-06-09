@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-
 public class KafkaProducerFactory<K,V> {
 
     final Map<String, Object> configs;

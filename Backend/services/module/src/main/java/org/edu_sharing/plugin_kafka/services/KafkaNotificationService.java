@@ -1,9 +1,7 @@
 package org.edu_sharing.plugin_kafka.services;
 
 import com.sun.star.lang.IllegalArgumentException;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +29,7 @@ import org.edu_sharing.service.notification.Status;
 import org.edu_sharing.service.rating.RatingDetails;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -39,14 +38,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service("kafkaNotificationService")
-@NoArgsConstructor  // Required for proxying by CGLib (CGLib is used because we don't use an interface here...)
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class KafkaNotificationService implements NotificationService {
 
-
-    @NonNull
+    @Setter
+    @Autowired
+    @Qualifier("kafkaNotificationTemplate")
     private KafkaTemplate<String, NotificationEventDTO> kafkaTemplate;
-    @NonNull
+
+    @Setter
+    @Autowired
     private MailSettings mailSettings;
 
     public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO.NotificationEventDTOBuilder<?, ?> notificationMessageBuilder) {
