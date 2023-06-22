@@ -39,6 +39,20 @@ public class UserDataService {
     }
 
     private UserData tranform(UserDataDTO userDataDTO) {
-        return objectMapper.convertValue(userDataDTO, UserData.class);
+        return new UserData(
+                null,
+                userDataDTO.getFirstName(),
+                userDataDTO.getLastName(),
+                userDataDTO.getEmail(),
+                userDataDTO.getLocale(),
+                NotificationInterval.valueOf(userDataDTO.getAddToCollectionEvent().toString()),
+                 NotificationInterval.valueOf(userDataDTO.getCommentEvent().toString()),
+                 NotificationInterval.valueOf(userDataDTO.getInviteEvent().toString()),
+                 NotificationInterval.valueOf(userDataDTO.getNodeIssueEvent().toString()),
+                 NotificationInterval.valueOf(userDataDTO.getRatingEvent().toString()),
+                 NotificationInterval.valueOf(userDataDTO.getWorkflowEvent().toString()),
+                 NotificationInterval.valueOf(userDataDTO.getMetadataSuggestionEvent().toString())
+        );
+
     }
 }

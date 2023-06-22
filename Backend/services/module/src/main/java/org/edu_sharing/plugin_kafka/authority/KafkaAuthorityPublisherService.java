@@ -75,7 +75,7 @@ public class KafkaAuthorityPublisherService {
         kafkaUserTemplate.sendDefault(properties.get(QName.createQName(CCConstants.SYS_PROP_NODE_UID)).toString(), userDataDTO);
     }
 
-    private static NotificationInterval mapNotificationInterval(NotificationConfig.NotificationConfigInterval notificationConfigInterval) {
+    private static NotificationInterval mapNotificationInterval(NotificationConfig.NotificationInterval notificationConfigInterval) {
         return NotificationInterval.valueOf(notificationConfigInterval.name());
     }
 
