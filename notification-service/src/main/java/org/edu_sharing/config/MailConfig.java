@@ -13,7 +13,6 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathFactory;
 import java.util.Collections;
-import java.util.Locale;
 
 @Configuration
 public class MailConfig {
