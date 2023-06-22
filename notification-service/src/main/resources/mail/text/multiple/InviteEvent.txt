@@ -1,0 +1,2 @@
+[${#lists.size(events)}]
+[(#{inviteEvent_Multiple_Subject(${#lists.size(events)})})]

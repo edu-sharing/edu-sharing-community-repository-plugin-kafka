@@ -1,0 +1,1 @@
+[(#{addToCollectionEvent_Single_Subject(${creator.firstName}, ${creator.lastName})})]

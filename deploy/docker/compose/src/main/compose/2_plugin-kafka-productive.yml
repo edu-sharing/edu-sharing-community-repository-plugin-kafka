@@ -4,14 +4,8 @@ services:
   kafka:
     restart: unless-stopped
 
-  notification-manager:
+  notification-service:
     restart: unless-stopped
 
-  email-notifier:
-    restart: unless-stopped
-
-  mongodb-kafka-connector:
-    restart: unless-stopped
-
-  notification-db:
+  notification-service-db:
     restart: unless-stopped

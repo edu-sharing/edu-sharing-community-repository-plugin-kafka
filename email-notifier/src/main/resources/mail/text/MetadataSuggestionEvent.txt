@@ -1,1 +1,0 @@
-[(#{metadataSuggestionEvent_Subject(${widget.caption})})]

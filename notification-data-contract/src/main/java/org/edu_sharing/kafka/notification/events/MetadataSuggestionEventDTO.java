@@ -9,7 +9,7 @@ import org.edu_sharing.kafka.notification.events.data.WidgetData;
 @Jacksonized
 @SuperBuilder
 public class MetadataSuggestionEventDTO extends NodeBaseEventDTO  {
-    private String id;
+    private String captionId;
     private String caption;
     private String parentId;
     private String parentCaption;

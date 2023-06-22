@@ -1,1 +1,0 @@
-[(#{nodeIssue_Subject(${creator.email})})]

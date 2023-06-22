@@ -1,0 +1,1 @@
+[(#{workflowEvent_Multiple_Subject(${#lists.size(events)})})]

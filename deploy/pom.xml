@@ -22,13 +22,13 @@
     <helm.prefix>edu_sharing-enterprise-repository-plugin-kafka</helm.prefix>
 
 
-    <docker.from.openjdk.18>
-      dockerio.mirror.docker.edu-sharing.com/openjdk:18-jdk
-    </docker.from.openjdk.18>
+    <docker.from.openjdk.17>
+      dockerio.mirror.docker.edu-sharing.com/openjdk:17-jdk
+    </docker.from.openjdk.17>
 
-    <docker.from.eclipse-temurin.18>
-      dockerio.mirror.docker.edu-sharing.com/eclipse-temurin:18-jre-alpine
-    </docker.from.eclipse-temurin.18>
+    <docker.from.eclipse-temurin.17>
+      dockerio.mirror.docker.edu-sharing.com/eclipse-temurin:17-jre-alpine
+    </docker.from.eclipse-temurin.17>
 
   </properties>
   <modules>

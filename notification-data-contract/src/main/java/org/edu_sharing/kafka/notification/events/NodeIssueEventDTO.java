@@ -10,6 +10,7 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @SuperBuilder
 public class NodeIssueEventDTO extends NodeBaseEventDTO {
-    private  String reason;
-    private  String userComment;
+    private String email;
+    private String reason;
+    private String userComment;
 }

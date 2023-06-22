@@ -1,0 +1,4 @@
+[# th:switch="${type}"]
+    [# th:case="invited_collection" th:utext="#{inviteEvent_Collection_Single_Subject(${creator.firstName}, ${creator.lastName})}" /]
+    [# th:case="*" th:utext="#{inviteEvent_Material_Single_Subject(${creator.firstName}, ${creator.lastName})}" /]
+[/]

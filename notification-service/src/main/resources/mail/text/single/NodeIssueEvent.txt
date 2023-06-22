@@ -1,0 +1,1 @@
+[(#{nodeIssue_Single_Subject(${creator.email})})]

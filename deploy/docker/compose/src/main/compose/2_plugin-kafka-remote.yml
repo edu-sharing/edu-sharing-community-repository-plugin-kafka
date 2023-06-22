@@ -4,14 +4,8 @@ services:
   kafka:
     image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-kafka:${docker.tag}"
 
-  notification-manager:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-notification-manager:${docker.tag}"
+  notification-service:
+    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-notification-service:${docker.tag}"
 
-  email-notifier:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-email-notifier:${docker.tag}"
-
-  mongodb-kafka-connector:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongdb-kafka-connector:${docker.tag}"
-
-  notification-db:
+  notification-service-mongo-db:
     image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongo:${docker.tag}"
