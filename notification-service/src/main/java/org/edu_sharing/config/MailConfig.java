@@ -74,7 +74,7 @@ public class MailConfig {
         final StringTemplateResolver templateResolver = new StringTemplateResolver();
         templateResolver.setOrder(3);
         // No resolvable pattern, will simply process as a String template everything not previously matched
-        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setTemplateMode(TemplateMode.TEXT);
         templateResolver.setCacheable(false);
         return templateResolver;
     }
