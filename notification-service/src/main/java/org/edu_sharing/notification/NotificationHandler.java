@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
 
 @Slf4j
 @Service
@@ -32,6 +31,9 @@ public class NotificationHandler {
     }
 
     public void handleIncomingNotifications(List<NotificationEvent> notificationEvents) {
+        notificationEvents.forEach(notificationManager::saveNotification);
+
+
         List<NotificationEvent> filteredEvents = notificationEvents.stream().filter(x -> {
             UserData userData = userDataRepository.findById(x.getReceiverId()).orElse(new UserData());
             return userData.getNotificationInterval(x) == NotificationInterval.immediately;

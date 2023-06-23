@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias("MetadataSuggestionEvent")
-@Document(collation = "notification")
+@Document(collection = "notification")
 public class MetadataSuggestionEvent extends NodeBaseEvent {
     private String captionId;
     private String caption;

@@ -3,8 +3,9 @@ package org.edu_sharing.plugin_kafka.notification;
 import com.sun.star.lang.IllegalArgumentException;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.edu_sharing.alfresco.workspace_administration.NodeServiceInterceptor;
 import org.edu_sharing.kafka.notification.events.*;
 import org.edu_sharing.kafka.notification.events.data.Collection;
@@ -22,6 +23,7 @@ import org.edu_sharing.repository.server.tools.I18nServer;
 import org.edu_sharing.repository.server.tools.URLTool;
 import org.edu_sharing.repository.server.tools.mailtemplates.MailTemplate;
 import org.edu_sharing.restservices.mds.v1.model.MdsValue;
+import org.edu_sharing.service.authority.AuthorityService;
 import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.service.notification.Status;
 import org.edu_sharing.service.rating.RatingDetails;
@@ -43,6 +45,9 @@ public class KafkaNotificationService implements NotificationService {
     @Qualifier("kafkaNotificationTemplate")
     private KafkaTemplate<String, NotificationEventDTO> kafkaNotificationTemplate;
 
+    @Setter
+    @Autowired
+    private AuthorityService authorityService;
 
     @Setter
     @Autowired
@@ -58,7 +63,7 @@ public class KafkaNotificationService implements NotificationService {
     public void notifyNodeIssue(String nodeId, String reason, Map<String, Object> nodeProperties, String userEmail, String userComment) throws Throwable {
 
         if (Optional.of(mailSettings).map(MailSettings::getReport).map(Report::getReceiver).map(StringUtils::isBlank).orElse(true)) {
-            throw new IllegalArgumentException("No report receiver is set in the configuration");
+            throw new IllegalArgumentException("No report receiverAuthority is set in the configuration");
         }
 
 
@@ -72,10 +77,13 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public void notifyWorkflowChanged(String nodeId, Map<String, Object> nodeProperties, String receiver, String comment, String status) {
+    public void notifyWorkflowChanged(String nodeId, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
+        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+
         send(WorkflowEventDTO.builder()
-                .creatorId(new AuthenticationToolAPI().getCurrentUser())
-                .receiverId(receiver)
+                .creatorId(senderId)
+                .receiverId(receiverId)
                 .userComment(comment)
                 .workflowStatus(I18nAngular.getTranslationAngular("common", "WORKFLOW." + status))
                 .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
@@ -100,12 +108,15 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyPermissionChanged(String senderAuthority, String receiverAuthority, String nodeId, Map<String, Object> nodeProperties, String[] aspects, String[] permissions, String mailText) throws Throwable {
 
-
-        // if the receiver is the creator itself, skip it (because it is automatically added)
+        // if the receiverAuthority is the creator itself, skip it (because it is automatically added)
         String nodeCreator = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
         if (receiverAuthority.equals(nodeCreator)) {
             return;
         }
+
+        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
+        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+
 
         String nodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
         String invitationType = "invited";
@@ -129,16 +140,16 @@ public class KafkaNotificationService implements NotificationService {
 
         if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
             send(InviteSafeEventDTO.builder()
-                    .creatorId(senderAuthority)
-                    .receiverId(receiverAuthority)
+                    .creatorId(senderId)
+                    .receiverId(receiverId)
                     .name(name)
                     .userComment(mailText)
                     .permissions(permissionList)
                     .node(createNodeData(nodeId, nodeProperties)));
         }else {
             send(InviteEventDTO.builder()
-                    .creatorId(senderAuthority)
-                    .receiverId(receiverAuthority)
+                    .creatorId(senderId)
+                    .receiverId(receiverId)
                     .name(name)
                     .type(invitationType)
                     .userComment(mailText)
@@ -150,13 +161,14 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<Map<String, Object>> nodePropertiesList) throws Throwable {
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
 
         String[] receivers = widgetDefinition.getSuggestionReceiver().split(",");
         for (String receiverAuthority : receivers) {
+            String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
             MetadataSuggestionEventDTO.MetadataSuggestionEventDTOBuilder<?,?> builder = MetadataSuggestionEventDTO.builder()
-                    .creatorId(currentUser)
-                    .receiverId(receiverAuthority)
+                    .creatorId(senderId)
+                    .receiverId(receiverId)
                     .widget(WidgetData.builder()
                             .id(widgetDefinition.getId())
                             .caption(widgetDefinition.getCaption())
@@ -183,11 +195,12 @@ public class KafkaNotificationService implements NotificationService {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
         nodeProperties = getSimplifiedNodeProperties(nodeProperties);
 
-        String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
+        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
         send(CommentEventDTO.builder()
-                .creatorId(senderAuthority)
-                .receiverId(receiverAuthority)
+                .creatorId(senderId)
+                .receiverId(receiverId)
                 .commentContent(comment)
                 .commentReference(commentReference)
                 .event(status.toString())
@@ -201,9 +214,12 @@ public class KafkaNotificationService implements NotificationService {
         String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
 
+        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
+        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+
         send(AddToCollectionEventDTO.builder()
-                .creatorId(senderAuthority)
-                .receiverId(receiverAuthority)
+                .creatorId(senderId)
+                .receiverId(receiverId)
                 .collection(Collection.builder()
                         .properties(getSimplifiedNodeProperties(collectionProperties))
                         .property("link", URLTool.getNgRenderNodeUrl(collectionId, null, true))
@@ -216,16 +232,17 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyRatingChanged(String nodeId, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
-        MailTemplate.UserMail receiver = MailTemplate.getUserMailData(receiverAuthority);
+
+        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
         if (Optional.of(mailSettings).map(MailSettings::getFrom).map(StringUtils::isBlank).orElse(true)) {
-            log.warn("notifyRatingChanged: No send mail receiver is set in the configuration");
+            log.warn("notifyRatingChanged: No send mail receiverAuthority is set in the configuration");
             return;
         }
 
         send(RatingEventDTO.builder()
                 .creatorId("system")
-                .receiverId(receiverAuthority)
+                .receiverId(receiverId)
                 .newRating(rating)
                 .ratingCount(accumulatedRatings.getOverall().getCount())
                 .ratingSum(accumulatedRatings.getOverall().getSum())
@@ -235,7 +252,10 @@ public class KafkaNotificationService implements NotificationService {
 
     private static NodeData createNodeData(String nodeId, Map<String, Object> nodeProperties) {
         return NodeData.builder()
-                .properties(nodeProperties)
+                .properties(nodeProperties.entrySet().stream()
+                        .map(x-> new ImmutablePair<>(CCConstants.getValidLocalName(x.getKey()), x.getValue()))
+                        .filter(x->!StringUtils.isBlank(x.getKey()))
+                        .collect(Collectors.toMap(Pair::getKey, Pair::getValue)))
                 .property("link", URLTool.getNgRenderNodeUrl(nodeId, null, true))
                 .property("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false))
                 .build();

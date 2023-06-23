@@ -16,8 +16,8 @@ import java.util.Date;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collation = "notification")
-public abstract class NotificationEvent {
+@Document(collection = "notification")
+public class NotificationEvent {
     @Id
     private String id;
     private Date timestamp;

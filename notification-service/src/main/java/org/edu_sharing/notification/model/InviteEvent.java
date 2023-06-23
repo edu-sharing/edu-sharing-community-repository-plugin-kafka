@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias("InviteEvent")
-@Document(collation = "notification")
+@Document(collection = "notification")
 public class InviteEvent extends NodeBaseEvent {
     private String name;
     private String type;

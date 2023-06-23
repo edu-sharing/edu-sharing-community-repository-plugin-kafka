@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias("RatingEvent")
-@Document(collation = "notification")
+@Document(collection = "notification")
 public class RatingEvent extends NodeBaseEvent {
     /**
      * the new rating that was given

@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias("WorkflowEvent")
-@Document(collation = "notification")
+@Document(collection = "notification")
 public class WorkflowEvent extends NodeBaseEvent {
     private String workflowStatus;
     private  String userComment;

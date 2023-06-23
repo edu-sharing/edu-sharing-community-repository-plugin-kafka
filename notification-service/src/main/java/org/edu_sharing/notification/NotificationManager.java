@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.edu_sharing.kafka.notification.events.data.Status;
-import org.edu_sharing.notification.model.*;
+import org.edu_sharing.notification.model.NotificationEvent;
 import org.edu_sharing.notification.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -36,15 +38,18 @@ public class NotificationManager {
         notificationRepository.save(notificationEvent);
     }
 
-    public Slice<NotificationEvent> getNotificationsByCreatorId(String creatorId, Pageable paging) {
-        return notificationRepository.findAllByCreatorId(creatorId, paging);
+
+    public Page<NotificationEvent> getAllNotifications(String receiverId, Status status, Pageable paging) {
+
+        NotificationEvent event = new NotificationEvent();
+        event.setReceiverId(receiverId);
+        event.setStatus(status);
+        Example<NotificationEvent> example = Example.of(event, ExampleMatcher.matchingAll().withIgnoreCase().withIgnoreNullValues().withIgnorePaths("type"));
+
+        return notificationRepository.findAll(example, paging);
     }
 
-    public Slice<NotificationEvent> getAllNotifications(Pageable paging){
-        return notificationRepository.findAll(paging);
-    }
-
-    public List<NotificationEvent> getAllNotifications(Date newerThan, Status status){
+    public List<NotificationEvent> getAllNotifications(Date newerThan, Status status) {
         return notificationRepository.findAllByTimestampAfterAndStatus(newerThan, status);
     }
 
@@ -57,12 +62,8 @@ public class NotificationManager {
         return notification;
     }
 
-    public  void deleteNotification(String id) {
+    public void deleteNotification(String id) {
         notificationRepository.deleteById(id);
-    }
-
-    public  void removeUserName(String userId){
-        notificationRepository.removeUserName(userId);
     }
 
 }

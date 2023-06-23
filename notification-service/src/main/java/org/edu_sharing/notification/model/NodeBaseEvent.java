@@ -14,8 +14,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collation = "notification")
-public abstract class NodeBaseEvent extends NotificationEvent {
+@Document(collection = "notification")
+public class NodeBaseEvent extends NotificationEvent {
     private NodeData node;
 }
 

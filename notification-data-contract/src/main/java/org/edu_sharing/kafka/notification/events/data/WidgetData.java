@@ -1,12 +1,13 @@
 package org.edu_sharing.kafka.notification.events.data;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-@Getter
+@Data
 @Builder
 @Jacksonized
+@NoArgsConstructor
+@AllArgsConstructor
 public class WidgetData {
     private String id;
     private String caption;

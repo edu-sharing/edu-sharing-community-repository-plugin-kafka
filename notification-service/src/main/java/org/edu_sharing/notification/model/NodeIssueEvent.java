@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias("NodeIssueEvent")
-@Document(collation = "notification")
+@Document(collection = "notification")
 public class NodeIssueEvent extends NodeBaseEvent {
     private String email;
     private String reason;

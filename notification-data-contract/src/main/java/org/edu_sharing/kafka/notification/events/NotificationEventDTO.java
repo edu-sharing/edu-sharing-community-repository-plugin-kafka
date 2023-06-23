@@ -3,14 +3,18 @@ package org.edu_sharing.kafka.notification.events;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.edu_sharing.kafka.notification.events.data.Status;
 
 import java.util.Date;
 
-@Getter
+@Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
         property = "_class",

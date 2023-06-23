@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias("CommentEvent")
-@Document(collation = "notification")
+@Document(collection = "notification")
 public class CommentEvent extends NodeBaseEvent {
     private  String commentContent;
 

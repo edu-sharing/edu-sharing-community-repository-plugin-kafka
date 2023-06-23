@@ -1,71 +1,109 @@
 package org.edu_sharing.notification;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.edu_sharing.kafka.notification.events.data.Status;
+import org.edu_sharing.notification.mapper.NotificationMapper;
 import org.edu_sharing.notification.model.NotificationEvent;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/notification")
+@Tag(name = "Notifications", description = "Notification Resources")
 public class NotificationController {
     private final NotificationManager notificationManager;
-    private final ObjectMapper mapper;
 
     @PostMapping
+    @Operation(summary = "Endpoint to publish notifications to kafka and to send by notification services",
+            responses = @ApiResponse(responseCode = "200", description = "published notification"))
     public void send(@RequestBody NotificationEventDTO request) {
         notificationManager.publishNotificationToKafka(request);
     }
 
 
     @GetMapping
-    public ResponseEntity<Slice<NotificationEventDTO>> getNotifications(
-            @RequestParam(required = false) String creatorId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "25") int size) {
+    @Parameters({
+            @Parameter(name = "receiverId", description = "receiver identifier",
+                    in = ParameterIn.QUERY, schema = @Schema(type = "string")),
+            @Parameter(name = "status", description = "status",
+                    in = ParameterIn.QUERY, schema = @Schema(implementation = Status.class)),
+            @Parameter(name = "page", description = "page number",
+                    in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
+            @Parameter(name = "size", description = "page size",
+                    in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "25")),
+            @Parameter(name = "sort", description = "sort specification",
+                    in = ParameterIn.QUERY, schema = @Schema(type = "string"))
+    })
+    @Operation(summary = "Retrieve stored notification, filtered by receiver and status",
+            responses = @ApiResponse(responseCode = "200",
+                    description = "received notifications",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotificationResponsePage.class))))
+    public Page<NotificationEventDTO> getNotifications(
+            @RequestParam(required = false) String receiverId,
+            @RequestParam(required = false) Status status,
+            @Parameter(hidden = true)
+            @PageableDefault(size = 25)
+            Pageable pageable) {
 
-        Slice<NotificationEvent> notifications;
-        if(StringUtils.isNotBlank(creatorId)){
-            notifications = notificationManager.getNotificationsByCreatorId(creatorId, PageRequest.of(page, size));
-        }else{
-            notifications = notificationManager.getAllNotifications(PageRequest.of(page, size));
-        }
-        return new ResponseEntity<>(notifications.map(x->mapper.convertValue(x, NotificationEventDTO.class)) , HttpStatus.OK);
+        Page<NotificationEvent> notifications = notificationManager.getAllNotifications(
+                receiverId, status,
+                PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        pageable.getSort()
+                )
+        );
+//        if(StringUtils.isNotBlank(creatorId)){
+//            notifications = notificationManager.getNotificationsByCreatorId(creatorId, PageRequest.of(page, size));
+//        }else{
+//            notifications = notificationManager.getAllNotifications(PageRequest.of(page, size));
+//        }
+        return new NotificationResponsePage(notifications.map(NotificationMapper::map));
     }
+
+    //Wrapper class
+    static class NotificationResponsePage extends PageImpl<NotificationEventDTO> {
+        public NotificationResponsePage(Page<NotificationEventDTO> page) {
+            super(page.getContent(), page.getPageable(), page.getTotalElements());
+        }
+    }
+
 
     @PatchMapping("/updateStatus")
-    public ResponseEntity<NotificationEventDTO> updateStatus(
+    @Operation(summary = "Endpoint to update the notification status",
+            responses = @ApiResponse(responseCode = "200",
+                    description = "set notification status",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = NotificationEventDTO.class)))))
+    public NotificationEventDTO updateStatus(
             @RequestParam String id,
-            @RequestParam Status status){
+            @RequestParam Status status) {
 
-        try {
-            NotificationEvent notification = notificationManager.setStatus(id, status);
-            return new ResponseEntity<>(mapper.convertValue(notification, NotificationEventDTO.class), HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PatchMapping("/removeUserName")
-    public void removeUserName(@RequestParam String userId){
-        notificationManager.removeUserName(userId);
+        NotificationEvent notification = notificationManager.setStatus(id, status);
+        return NotificationMapper.map(notification);
     }
 
     @DeleteMapping
+    @Operation(summary = "Endpoint to delete notification by id",
+            responses = @ApiResponse(responseCode = "200", description = "deleted notification"))
     public void deleteNotification(@RequestParam String id) {
         notificationManager.deleteNotification(id);
     }
-
-
-
 
 
 }

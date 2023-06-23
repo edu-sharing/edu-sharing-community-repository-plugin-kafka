@@ -1,11 +1,11 @@
 package org.edu_sharing;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.edu_sharing.notification.NotificationHandler;
+import org.edu_sharing.notification.mapper.NotificationMapper;
 import org.edu_sharing.notification.model.NotificationEvent;
 import org.edu_sharing.userData.UserDataService;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,15 +35,12 @@ public class KafkaListeners {
     void notificationListener(List<NotificationEventDTO> messages) {
         log.info("received {} messages on topic {}", messages.size(), notificationTopic);
         List<NotificationEvent> notifications = messages.stream()
-                .map(KafkaListeners::mapNotification)
+                .map(NotificationMapper::map)
                 .collect(Collectors.toList());
 
         notificationHandler.handleIncomingNotifications(notifications);
     }
 
-    private static NotificationEvent mapNotification(NotificationEventDTO message) {
-        return new ObjectMapper().convertValue(message, NotificationEvent.class);
-    }
 
     @KafkaListener(topics="${kafka.topics.userdata}")
     void userDataListener(@Header(KafkaHeaders.RECEIVED_KEY) List<String> keys,

@@ -1,14 +1,16 @@
 package org.edu_sharing.kafka.notification.events;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
+@Data
 @Jacksonized
-@Getter
 @SuperBuilder
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class NodeIssueEventDTO extends NodeBaseEventDTO {
     private String email;
     private String reason;

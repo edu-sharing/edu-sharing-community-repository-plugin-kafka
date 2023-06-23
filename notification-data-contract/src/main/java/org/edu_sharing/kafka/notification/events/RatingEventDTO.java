@@ -1,14 +1,18 @@
 package org.edu_sharing.kafka.notification.events;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
-@Getter
+@Data
 @Jacksonized
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class RatingEventDTO extends NodeBaseEventDTO {
     /**
      * the new rating that was given

@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeAlias("AddToCollectionMessage")
-@Document(collation = "notification")
+@Document(collection = "notification")
 public class AddToCollectionEvent extends NodeBaseEvent {
     /**
      * the collection the node has been added to

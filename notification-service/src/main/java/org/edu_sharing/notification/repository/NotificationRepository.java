@@ -10,9 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 // TODO BaseMessage -> NotificationEvent
-public interface NotificationRepository extends MongoRepository<NotificationEvent, String>, CustomNotificationRepository {
-    Page<NotificationEvent> findAllByCreatorId(String id, Pageable pageable);
-
-   List<NotificationEvent> findAllByTimestampAfterAndStatus(Date newerThan, Status status);
+public interface NotificationRepository extends MongoRepository<NotificationEvent, String> {
+    List<NotificationEvent> findAllByTimestampAfterAndStatus(Date newerThan, Status status);
 
 }

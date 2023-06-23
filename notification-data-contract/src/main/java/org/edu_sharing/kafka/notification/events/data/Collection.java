@@ -1,11 +1,13 @@
 package org.edu_sharing.kafka.notification.events.data;
 
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
-@Getter
+@Data
 @Jacksonized
 @SuperBuilder
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Collection extends NodeData {
 }
