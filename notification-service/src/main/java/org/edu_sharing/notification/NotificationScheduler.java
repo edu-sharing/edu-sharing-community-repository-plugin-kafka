@@ -2,14 +2,11 @@ package org.edu_sharing.notification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.edu_sharing.kafka.notification.events.data.Status;
-import org.edu_sharing.notification.model.NotificationEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 @Slf4j
 @Component

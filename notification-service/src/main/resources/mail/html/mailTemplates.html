@@ -147,7 +147,7 @@
 
 <div th:fragment="NodeIssueEvent_Multiple">
     <h1 th:text="#{greetings('','')}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{issuer}"/>
@@ -156,13 +156,13 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.node.properties.cm_name}"/>
-            <th th:text="${event.email}"/>
-            <th th:text="#{nodeIssue_Reason(${event.reason})}"/>
-            <th th:text="${event.userComment}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
+            <td th:text="${event.node.properties.cm_name}"/>
+            <td th:text="${event.email}"/>
+            <td th:text="#{nodeIssue_Reason(${event.reason})}"/>
+            <td th:text="${event.userComment}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
         </tr>
     </table>
 </div>
@@ -170,7 +170,7 @@
 
 <div th:fragment="WorkflowEvent_Multiple">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{user}"/>
@@ -179,20 +179,20 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.node.properties.cm_name}"/>
-            <th th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <th th:text="${event.workflowStatus}"/>
-            <th th:text="${event.userComment}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
+            <td th:text="${event.node.properties.cm_name}"/>
+            <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
+            <td th:text="${event.workflowStatus}"/>
+            <td th:text="${event.userComment}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
         </tr>
     </table>
 </div>
 
 <div th:fragment="MetadataSuggestionEvent_Multiple">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{user}"/>
@@ -202,25 +202,25 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.node.properties.cm_name}"/>
-            <th th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <th th:text="${event.widget.caption + ' (' + event.widget.id + ')'}"/>
-            <th>
+            <td th:text="${event.node.properties.cm_name}"/>
+            <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
+            <td th:text="${event.widget.caption + ' (' + event.widget.id + ')'}"/>
+            <td>
                 <div th:if="${!#strings.isEmpty(event.parentId)}">
                     <span th:text="${event.parentCaption + ' (' + event.parentId + ')'}"></span>
                 </div>
-            </th>
-            <th th:text="${event.caption + ' (' + event.captionId + ')'}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
+            </td>
+            <td th:text="${event.caption + ' (' + event.captionId + ')'}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
         </tr>
     </table>
 </div>
 
 <div th:fragment="InviteEvent_Multiple">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{user}"/>
@@ -228,19 +228,19 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.name}"/>
-            <th th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <th th:text="${event.userComment}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
+            <td th:text="${event.name}"/>
+            <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
+            <td th:text="${event.userComment}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
         </tr>
     </table>
 </div>
 
 <div th:fragment="InviteEventSafer_Multiple">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{user}"/>
@@ -248,12 +248,12 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.name}"/>
-            <th th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <th th:text="${event.userComment}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
+            <td th:text="${event.name}"/>
+            <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
+            <td th:text="${event.userComment}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
         </tr>
     </table>
     <br>
@@ -262,7 +262,7 @@
 
 <div th:fragment="CommentEvent_Multiple">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{user}"/>
@@ -270,19 +270,19 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.node.properties.cm_name}"/>
-            <th th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <th th:text="${event.commentContent}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
+            <td th:text="${event.node.properties.cm_name}"/>
+            <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
+            <td th:text="${event.commentContent}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
         </tr>
     </table>
 </div>
 
 <div th:fragment="AddToCollectionEvent_Multiple">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{user}"/>
@@ -290,14 +290,14 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.node.properties.cm_name}"/>
-            <th th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
-            <th>
-                <a class="btn" th:text="#{collectionLink}" th:href="${event.collection.properties.link}"></a>
-            </th>
+            <td th:text="${event.node.properties.cm_name}"/>
+            <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
+            <td>
+                <a class="btn-flat" th:text="#{collectionLink}" th:href="${event.collection.properties.link}"></a>
+            </td>
         </tr>
     </table>
 </div>
@@ -306,7 +306,7 @@
 
 <div th:fragment="RatingEvent_Multiple">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <table>
+    <table class="notification-table">
         <tr>
             <th th:text="#{material}"/>
             <th th:text="#{user}"/>
@@ -314,12 +314,12 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <th th:text="${event.node.properties.cm_name}"/>
-            <th th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <th th:text="*{event.ratingSum / event.ratingCount}"/>
-            <th>
-                <a class="btn" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
-            </th>
+            <td th:text="${event.node.properties.cm_name}"/>
+            <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
+            <td th:text="*{event.ratingSum / event.ratingCount}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
         </tr>
     </table>
 </div>

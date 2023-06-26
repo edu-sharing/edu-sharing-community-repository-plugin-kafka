@@ -112,6 +112,12 @@
 
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>edu_sharing-community-repository-backend-services-common</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>edu_sharing-community-repository-backend-alfresco-module</artifactId>
       <scope>provided</scope>
     </dependency>
@@ -121,6 +127,7 @@
       <artifactId>edu_sharing-community-repository-backend-services-core</artifactId>
       <scope>provided</scope>
     </dependency>
+
 
     <dependency>
       <groupId>${project.groupId}</groupId>

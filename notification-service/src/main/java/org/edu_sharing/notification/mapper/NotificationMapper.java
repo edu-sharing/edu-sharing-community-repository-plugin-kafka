@@ -2,10 +2,10 @@ package org.edu_sharing.notification.mapper;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.edu_sharing.kafka.notification.events.*;
-import org.edu_sharing.kafka.notification.events.data.Collection;
-import org.edu_sharing.kafka.notification.events.data.NodeData;
-import org.edu_sharing.kafka.notification.events.data.WidgetData;
+import org.edu_sharing.service.notification.events.*;
+import org.edu_sharing.service.notification.events.data.Collection;
+import org.edu_sharing.service.notification.events.data.NodeData;
+import org.edu_sharing.service.notification.events.data.WidgetData;
 import org.edu_sharing.notification.model.*;
 
 import java.util.ArrayList;

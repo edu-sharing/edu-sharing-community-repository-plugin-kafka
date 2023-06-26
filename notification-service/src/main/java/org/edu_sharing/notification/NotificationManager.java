@@ -2,8 +2,8 @@ package org.edu_sharing.notification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
-import org.edu_sharing.kafka.notification.events.data.Status;
+import org.edu_sharing.service.notification.events.NotificationEventDTO;
+import org.edu_sharing.service.notification.events.data.Status;
 import org.edu_sharing.notification.model.NotificationEvent;
 import org.edu_sharing.notification.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -39,14 +40,8 @@ public class NotificationManager {
     }
 
 
-    public Page<NotificationEvent> getAllNotifications(String receiverId, Status status, Pageable paging) {
-
-        NotificationEvent event = new NotificationEvent();
-        event.setReceiverId(receiverId);
-        event.setStatus(status);
-        Example<NotificationEvent> example = Example.of(event, ExampleMatcher.matchingAll().withIgnoreCase().withIgnoreNullValues().withIgnorePaths("type"));
-
-        return notificationRepository.findAll(example, paging);
+    public Page<NotificationEvent> getAllNotifications(String receiverId, List<Status> statusList, Pageable paging) {
+        return notificationRepository.findAll(receiverId, statusList, paging);
     }
 
     public List<NotificationEvent> getAllNotifications(Date newerThan, Status status) {

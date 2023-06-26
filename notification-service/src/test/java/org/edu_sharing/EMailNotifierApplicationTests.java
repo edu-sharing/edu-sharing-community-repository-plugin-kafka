@@ -7,21 +7,17 @@ import com.icegreen.greenmail.util.ServerSetupTest;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.edu_sharing.kafka.notification.events.data.Collection;
-import org.edu_sharing.kafka.notification.events.data.NodeData;
-import org.edu_sharing.kafka.notification.events.data.WidgetData;
 import org.edu_sharing.notification.model.*;
 import org.edu_sharing.service.EmailService;
-import org.edu_sharing.userData.NotificationInterval;
+import org.edu_sharing.service.notification.events.data.Collection;
+import org.edu_sharing.service.notification.events.data.NodeData;
+import org.edu_sharing.service.notification.events.data.WidgetData;
 import org.edu_sharing.userData.UserData;
 import org.edu_sharing.userData.UserDataRepository;
-import org.junit.Before;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,7 +27,6 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

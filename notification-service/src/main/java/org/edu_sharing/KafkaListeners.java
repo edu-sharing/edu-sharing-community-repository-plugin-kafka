@@ -2,7 +2,7 @@ package org.edu_sharing;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
+import org.edu_sharing.service.notification.events.NotificationEventDTO;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.edu_sharing.notification.NotificationHandler;
 import org.edu_sharing.notification.mapper.NotificationMapper;

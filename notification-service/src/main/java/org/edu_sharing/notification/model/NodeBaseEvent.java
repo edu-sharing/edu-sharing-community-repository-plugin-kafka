@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.edu_sharing.kafka.notification.events.data.NodeData;
+import org.edu_sharing.service.notification.events.data.NodeData;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 

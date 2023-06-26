@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
+import org.edu_sharing.service.notification.events.NotificationEventDTO;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.edu_sharing.plugin_kafka.kafka.KafkaAdmin;
 import org.edu_sharing.plugin_kafka.kafka.KafkaProducerFactory;

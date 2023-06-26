@@ -10,16 +10,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.edu_sharing.kafka.notification.events.NotificationEventDTO;
-import org.edu_sharing.kafka.notification.events.data.Status;
 import org.edu_sharing.notification.mapper.NotificationMapper;
 import org.edu_sharing.notification.model.NotificationEvent;
+import org.edu_sharing.service.notification.events.NotificationEventDTO;
+import org.edu_sharing.service.notification.events.data.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,22 +42,23 @@ public class NotificationController {
     @Parameters({
             @Parameter(name = "receiverId", description = "receiver identifier",
                     in = ParameterIn.QUERY, schema = @Schema(type = "string")),
-            @Parameter(name = "status", description = "status",
-                    in = ParameterIn.QUERY, schema = @Schema(implementation = Status.class)),
+            @Parameter(name = "status", description = "status (or conjunction)",
+                    in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema =@Schema(implementation = Status.class)))),
             @Parameter(name = "page", description = "page number",
                     in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
             @Parameter(name = "size", description = "page size",
                     in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "25")),
-            @Parameter(name = "sort", description = "sort specification",
-                    in = ParameterIn.QUERY, schema = @Schema(type = "string"))
+            @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc). "
+                    + "Default sort order is ascending. " + "Multiple sort criteria are supported."
+                    ,in = ParameterIn.QUERY , content = @Content(array = @ArraySchema(schema = @Schema(type = "string"))))
     })
     @Operation(summary = "Retrieve stored notification, filtered by receiver and status",
             responses = @ApiResponse(responseCode = "200",
-                    description = "received notifications",
+                    description = "get the received notifications",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotificationResponsePage.class))))
     public Page<NotificationEventDTO> getNotifications(
             @RequestParam(required = false) String receiverId,
-            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) List<Status> status,
             @Parameter(hidden = true)
             @PageableDefault(size = 25)
             Pageable pageable) {
@@ -68,11 +71,6 @@ public class NotificationController {
                         pageable.getSort()
                 )
         );
-//        if(StringUtils.isNotBlank(creatorId)){
-//            notifications = notificationManager.getNotificationsByCreatorId(creatorId, PageRequest.of(page, size));
-//        }else{
-//            notifications = notificationManager.getAllNotifications(PageRequest.of(page, size));
-//        }
         return new NotificationResponsePage(notifications.map(NotificationMapper::map));
     }
 
@@ -84,7 +82,7 @@ public class NotificationController {
     }
 
 
-    @PatchMapping("/updateStatus")
+    @PatchMapping("/status")
     @Operation(summary = "Endpoint to update the notification status",
             responses = @ApiResponse(responseCode = "200",
                     description = "set notification status",

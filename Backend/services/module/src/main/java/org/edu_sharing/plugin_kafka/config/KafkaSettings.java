@@ -15,4 +15,5 @@ public class KafkaSettings {
     String userDataTopic = "userdata";
     List<String> servers = Collections.singletonList("kafka:9093");
     Duration closeTimeout = Duration.ofSeconds(5);
+    String notificationServiceHost;
 }

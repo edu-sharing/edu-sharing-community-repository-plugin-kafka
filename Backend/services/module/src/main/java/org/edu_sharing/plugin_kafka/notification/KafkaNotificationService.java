@@ -6,12 +6,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.edu_sharing.alfresco.workspace_administration.NodeServiceInterceptor;
-import org.edu_sharing.kafka.notification.events.*;
-import org.edu_sharing.kafka.notification.events.data.Collection;
-import org.edu_sharing.kafka.notification.events.data.NodeData;
-import org.edu_sharing.kafka.notification.events.data.WidgetData;
 import org.edu_sharing.metadataset.v2.MetadataWidget;
+import org.edu_sharing.plugin_kafka.config.KafkaSettings;
 import org.edu_sharing.plugin_kafka.config.MailSettings;
 import org.edu_sharing.plugin_kafka.config.Report;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
@@ -26,12 +32,20 @@ import org.edu_sharing.restservices.mds.v1.model.MdsValue;
 import org.edu_sharing.service.authority.AuthorityService;
 import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.service.notification.Status;
+import org.edu_sharing.service.notification.events.*;
+import org.edu_sharing.service.notification.events.data.Collection;
+import org.edu_sharing.service.notification.events.data.NodeData;
+import org.edu_sharing.service.notification.events.data.WidgetData;
 import org.edu_sharing.service.rating.RatingDetails;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -52,6 +66,10 @@ public class KafkaNotificationService implements NotificationService {
     @Setter
     @Autowired
     private MailSettings mailSettings;
+
+    @Setter
+    @Autowired
+    private KafkaSettings kafkaSettings;
 
     public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO.NotificationEventDTOBuilder<?, ?> notificationMessageBuilder) {
         notificationMessageBuilder.id(generateMessageId()).timestamp(DateTime.now().toDate());
@@ -249,6 +267,91 @@ public class KafkaNotificationService implements NotificationService {
                 .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
     }
 
+    @Override
+    public NotificationEventDTO setNotificationStatus(String id, org.edu_sharing.service.notification.events.data.Status status) throws IOException {
+
+        try {
+            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceHost());
+            builder.setParameter("id", id);
+            builder.setParameter("status", status.toString());
+
+            HttpGet request = new HttpGet(builder.build());
+            request.setHeader("Accept", "application/json");
+            request.setHeader("Content-Type", "application/json");
+
+            try(CloseableHttpClient client = HttpClients.createDefault()){
+                CloseableHttpResponse response = client.execute(request);
+                HttpEntity entity = response.getEntity();
+                if(entity == null){
+                    return null;
+                }
+                return new ObjectMapper().readValue(EntityUtils.toString(entity, "UTF-8"), NotificationEventDTO.class);
+            }
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteNotification(String id) throws IOException {
+        try {
+            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceHost());
+            builder.setParameter("id", id);
+
+            HttpDelete request = new HttpDelete(builder.build());
+            request.setHeader("Accept", "application/json");
+            request.setHeader("Content-Type", "application/json");
+
+            try(CloseableHttpClient client = HttpClients.createDefault()){
+                client.execute(request);
+            }
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.service.notification.events.data.Status> status, org.springframework.data.domain.Pageable pageable) throws IOException {
+        try {
+            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceHost());
+
+            if("-me-".equals(receiverId)){
+                receiverId = new AuthenticationToolAPI().getCurrentUser();
+            }
+            builder.setParameter("receiverId", receiverId);
+            builder.setParameter("status", StringUtils.join(status, ","));
+            builder.setParameter("page",  String.valueOf(pageable.getPageNumber()));
+            builder.setParameter("size",  String.valueOf(pageable.getPageSize()));
+
+            if(!pageable.getSort().isEmpty()) {
+                builder.setParameter("sort", pageable.getSort().toString());
+            }
+
+            HttpGet request = new HttpGet(builder.build());
+            request.setHeader("Accept", "application/json");
+            request.setHeader("Content-Type", "application/json");
+
+            try(CloseableHttpClient client = HttpClients.createDefault()){
+                CloseableHttpResponse response = client.execute(request);
+                HttpEntity entity = response.getEntity();
+                if(entity == null){
+                    return null;
+                }
+                return new ObjectMapper().readValue(EntityUtils.toString(entity, "UTF-8"),  NotificationResponsePage.class);
+            }
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    static class NotificationResponsePage extends PageImpl<NotificationEventDTO> {
+        public NotificationResponsePage(Page<NotificationEventDTO> page) {
+            super(page.getContent(), page.getPageable(), page.getTotalElements());
+        }
+    }
 
     private static NodeData createNodeData(String nodeId, Map<String, Object> nodeProperties) {
         return NodeData.builder()
