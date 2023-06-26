@@ -48,8 +48,8 @@ public class NotificationController {
                     in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
             @Parameter(name = "size", description = "page size",
                     in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "25")),
-            @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc). "
-                    + "Default sort order is ascending. " + "Multiple sort criteria are supported."
+            @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc)(,ignoreCase). "
+                    + "Default sort order is ascending. Multiple sort criteria are supported."
                     ,in = ParameterIn.QUERY , content = @Content(array = @ArraySchema(schema = @Schema(type = "string"))))
     })
     @Operation(summary = "Retrieve stored notification, filtered by receiver and status",
@@ -86,8 +86,7 @@ public class NotificationController {
     @Operation(summary = "Endpoint to update the notification status",
             responses = @ApiResponse(responseCode = "200",
                     description = "set notification status",
-                    content = @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = NotificationEventDTO.class)))))
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotificationEventDTO.class))))
     public NotificationEventDTO updateStatus(
             @RequestParam String id,
             @RequestParam Status status) {

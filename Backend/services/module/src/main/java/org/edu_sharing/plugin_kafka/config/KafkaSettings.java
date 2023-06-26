@@ -1,6 +1,5 @@
 package org.edu_sharing.plugin_kafka.config;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
 import lombok.Data;
 import org.edu_sharing.lightbend.ConfigurationProperties;
 
@@ -15,5 +14,5 @@ public class KafkaSettings {
     String userDataTopic = "userdata";
     List<String> servers = Collections.singletonList("kafka:9093");
     Duration closeTimeout = Duration.ofSeconds(5);
-    String notificationServiceHost;
+    String notificationServiceUrl;
 }

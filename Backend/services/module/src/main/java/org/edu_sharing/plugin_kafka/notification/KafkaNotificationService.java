@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -271,7 +272,7 @@ public class KafkaNotificationService implements NotificationService {
     public NotificationEventDTO setNotificationStatus(String id, org.edu_sharing.service.notification.events.data.Status status) throws IOException {
 
         try {
-            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceHost());
+            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setParameter("id", id);
             builder.setParameter("status", status.toString());
 
@@ -296,7 +297,7 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void deleteNotification(String id) throws IOException {
         try {
-            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceHost());
+            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setParameter("id", id);
 
             HttpDelete request = new HttpDelete(builder.build());
@@ -315,7 +316,7 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public org.springframework.data.domain.Page<NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.service.notification.events.data.Status> status, org.springframework.data.domain.Pageable pageable) throws IOException {
         try {
-            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceHost());
+            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
 
             if("-me-".equals(receiverId)){
                 receiverId = new AuthenticationToolAPI().getCurrentUser();
@@ -346,7 +347,6 @@ public class KafkaNotificationService implements NotificationService {
             throw new RuntimeException(e);
         }
     }
-
     static class NotificationResponsePage extends PageImpl<NotificationEventDTO> {
         public NotificationResponsePage(Page<NotificationEventDTO> page) {
             super(page.getContent(), page.getPageable(), page.getTotalElements());
