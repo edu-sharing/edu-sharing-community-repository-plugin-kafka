@@ -96,7 +96,7 @@ public class KafkaNotificationService implements NotificationService {
 
         send(NodeIssueEventDTO.builder()
                 .creatorId("system")
-                .receiverId("reports")
+                .receiverId("report")
                 .email(userEmail)
                 .reason(reason)
                 .userComment(reason)
@@ -172,7 +172,7 @@ public class KafkaNotificationService implements NotificationService {
                     .name(name)
                     .userComment(mailText)
                     .permissions(permissionList)
-                    .node(createNodeData(nodeId, nodeProperties)));
+                    .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
         }else {
             send(InviteEventDTO.builder()
                     .creatorId(senderId)
@@ -181,7 +181,7 @@ public class KafkaNotificationService implements NotificationService {
                     .type(invitationType)
                     .userComment(mailText)
                     .permissions(permissionList)
-                    .node(createNodeData(nodeId, nodeProperties)));
+                    .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
         }
     }
 
@@ -210,7 +210,7 @@ public class KafkaNotificationService implements NotificationService {
             }
 
             for (int i = 0; i < nodes.size(); i++) {
-                send(builder.node(createNodeData(nodes.get(i), nodePropertiesList.get(i)))
+                send(builder.node(createNodeData(nodes.get(i), getSimplifiedNodeProperties(nodePropertiesList.get(i))))
                 );
             }
 
@@ -231,7 +231,7 @@ public class KafkaNotificationService implements NotificationService {
                 .commentContent(comment)
                 .commentReference(commentReference)
                 .event(status.toString())
-                .node(createNodeData(node, nodeProperties))
+                .node(createNodeData(node, getSimplifiedNodeProperties(nodeProperties)))
         );
     }
 
@@ -455,17 +455,17 @@ public class KafkaNotificationService implements NotificationService {
     private static NodeData createNodeData(String nodeId, Map<String, Object> nodeProperties) {
         return NodeData.builder()
                 .properties(nodeProperties.entrySet().stream()
-                        .map(x-> new ImmutablePair<>(CCConstants.getValidLocalName(x.getKey()), x.getValue()))
-                        .filter(x->!StringUtils.isBlank(x.getKey()))
-                        .collect(Collectors.toMap(Pair::getKey, Pair::getValue)))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .property("link", URLTool.getNgRenderNodeUrl(nodeId, null, true))
                 .property("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false))
                 .build();
     }
 
     private static Map<String, Object> getSimplifiedNodeProperties(Map<String, Object> nodeProperties) {
-        // Thymeleaf can't handle : in field name
-        return nodeProperties.entrySet().stream().collect(Collectors.toMap(x -> CCConstants.getValidLocalName(x.getKey()).replace(":","_"), Map.Entry::getValue));
+        return nodeProperties.entrySet().stream()
+                .map(x->new ImmutablePair<>(CCConstants.getValidLocalName(x.getKey()), x.getValue()))
+                .filter(x-> StringUtils.isNoneBlank(x.getKey()))
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
 

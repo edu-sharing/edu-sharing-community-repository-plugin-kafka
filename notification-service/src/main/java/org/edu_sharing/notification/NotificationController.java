@@ -72,7 +72,7 @@ public class NotificationController {
 
         Page<NotificationEvent> notifications = notificationManager.getAllNotifications(
                 receiverId,
-                status.stream().map(RestNotificationMapper::map).collect(Collectors.toList()),
+                status != null ? status.stream().map(RestNotificationMapper::map).collect(Collectors.toList()) : null,
                 PageRequest.of(
                         pageable.getPageNumber(),
                         pageable.getPageSize(),
