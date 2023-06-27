@@ -335,7 +335,9 @@ public class KafkaNotificationService implements NotificationService {
             builder.setParameter("page",  String.valueOf(pageable.getPageNumber()));
             builder.setParameter("size",  String.valueOf(pageable.getPageSize()));
             if(!pageable.getSort().isEmpty()) {
-                builder.setParameter("sort", pageable.getSort().toString());
+                pageable.getSort().forEach(order -> {
+                   builder.setParameter("sort", order.getProperty() + "," + order.getDirection().toString());
+                });
             }
 
             HttpGet request = new HttpGet(builder.build());
