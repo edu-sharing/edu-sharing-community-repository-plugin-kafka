@@ -220,7 +220,6 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyComment(String node, String comment, String commentReference, Map<String, Object> nodeProperties, Status status) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
-        nodeProperties = getSimplifiedNodeProperties(nodeProperties);
 
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
