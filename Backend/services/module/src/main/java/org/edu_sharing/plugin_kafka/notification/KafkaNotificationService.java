@@ -244,6 +244,10 @@ public class KafkaNotificationService implements NotificationService {
         String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
+        if(Objects.equals(senderId, receiverId)) {
+            return;
+        }
+
         send(AddToCollectionEventDTO.builder()
                 .creatorId(senderId)
                 .receiverId(receiverId)
@@ -259,16 +263,19 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyRatingChanged(String nodeId, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
-
+        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
         if (Optional.of(mailSettings).map(MailSettings::getFrom).map(StringUtils::isBlank).orElse(true)) {
             log.warn("notifyRatingChanged: No send mail receiverAuthority is set in the configuration");
             return;
         }
+        if(Objects.equals(senderId, receiverId)) {
+            return;
+        }
 
         send(RatingEventDTO.builder()
-                .creatorId("system")
+                .creatorId(senderId)
                 .receiverId(receiverId)
                 .newRating(rating)
                 .ratingCount(accumulatedRatings.getOverall().getCount())
