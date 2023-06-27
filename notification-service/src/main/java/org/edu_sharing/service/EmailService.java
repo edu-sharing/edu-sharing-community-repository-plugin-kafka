@@ -8,10 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.edu_sharing.notification.model.NotificationEvent;
-import org.edu_sharing.service.notification.events.data.Status;
+import org.edu_sharing.notification.data.Status;
+import org.edu_sharing.notification.event.NotificationEvent;
 import org.edu_sharing.userData.UserData;
 import org.edu_sharing.userData.UserDataRepository;
+import org.edu_sharing.userData.UserDataService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -35,16 +36,11 @@ public class EmailService implements NotificationService {
     private final JavaMailSender emailSender;
     private final ObjectMapper objectMapper;
     private final TemplateEngine templateEngine;
-    private final UserDataRepository userDataRepository;
+    private final UserDataService userDataService;
 
     @Value("${spring.mail.send.address}")
     private String mailSendAddress;
 
-    @Value("${spring.mail.report.address}")
-    private String mailReportAddress;
-
-    @Value("${spring.application.name}")
-    private String applicationName;
 
     @Override
     public void send(List<NotificationEvent> notificationEvents) {
@@ -60,7 +56,7 @@ public class EmailService implements NotificationService {
 
     @SuppressWarnings("unchecked assignment")
     public void sendGroupedNotifications(String receiverId, List<? extends NotificationEvent> notificationEvents, Class<? extends NotificationEvent> notificationClass) {
-        Optional<UserData> userData = getUserData(receiverId);
+        Optional<UserData> userData = userDataService.getUserData(receiverId);
         if (userData.isEmpty()) {
             log.warn("Cant send notification to unknown user id: {}", receiverId);
             return;
@@ -88,7 +84,7 @@ public class EmailService implements NotificationService {
     }
 
     public void sendSingleNotification(NotificationEvent notificationEvent) {
-        Optional<UserData> userData = getUserData(notificationEvent.getReceiverId());
+        Optional<UserData> userData = userDataService.getUserData(notificationEvent.getReceiverId());
         if (userData.isEmpty()) {
             log.warn("Cant send notification to unknown user id: {}", notificationEvent.getReceiverId());
             return;
@@ -115,26 +111,9 @@ public class EmailService implements NotificationService {
     }
 
     private void resolveUserId(Map<String, Object> data, String userId) {
-        Optional<UserData> userData = getUserData((String) data.get(userId));
+        Optional<UserData> userData = userDataService.getUserData((String) data.get(userId));
         data.remove(userId);
         userData.ifPresent(value -> data.put(userId.replace("Id", ""), objectMapper.convertValue(value, Map.class)));
-    }
-
-    private Optional<UserData> getUserData(String id) {
-        if (StringUtils.isBlank(id)) {
-            return Optional.empty();
-        }
-
-        if ("system".equals(id)) {
-            return Optional.of(new UserData("system", "", applicationName, mailSendAddress, "de-DE"));
-        }
-
-        if ("report".equals(id)) {
-            return Optional.of(new UserData("report", "", applicationName, mailReportAddress, "de-DE"));
-        }
-
-        Optional<UserData> userData = userDataRepository.findById(id);
-        return userData;
     }
 
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {

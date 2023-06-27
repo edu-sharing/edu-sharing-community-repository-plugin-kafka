@@ -2,11 +2,11 @@ package org.edu_sharing;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.edu_sharing.service.notification.events.NotificationEventDTO;
+import org.edu_sharing.kafka.notification.event.NotificationEventDTO;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.edu_sharing.notification.NotificationHandler;
-import org.edu_sharing.notification.mapper.NotificationMapper;
-import org.edu_sharing.notification.model.NotificationEvent;
+import org.edu_sharing.notification.mapper.KafkaNotificationMapper;
+import org.edu_sharing.notification.event.NotificationEvent;
 import org.edu_sharing.userData.UserDataService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -35,7 +35,7 @@ public class KafkaListeners {
     void notificationListener(List<NotificationEventDTO> messages) {
         log.info("received {} messages on topic {}", messages.size(), notificationTopic);
         List<NotificationEvent> notifications = messages.stream()
-                .map(NotificationMapper::map)
+                .map(KafkaNotificationMapper::map)
                 .collect(Collectors.toList());
 
         notificationHandler.handleIncomingNotifications(notifications);

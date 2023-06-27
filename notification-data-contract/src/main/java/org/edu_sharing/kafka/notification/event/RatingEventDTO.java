@@ -1,21 +1,19 @@
-package org.edu_sharing.notification.model;
+package org.edu_sharing.kafka.notification.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.extern.jackson.Jacksonized;
 
-@Getter
-@Setter
+@Data
+@Jacksonized
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("RatingEvent")
-@Document(collection = "notification")
-public class RatingEvent extends NodeBaseEvent {
+@EqualsAndHashCode(callSuper = true)
+public class RatingEventDTO extends NodeBaseEventDTO {
     /**
      * the new rating that was given
      */

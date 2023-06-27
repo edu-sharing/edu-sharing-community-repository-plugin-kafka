@@ -1,6 +1,6 @@
 package org.edu_sharing.service;
 
-import org.edu_sharing.notification.model.NotificationEvent;
+import org.edu_sharing.notification.event.NotificationEvent;
 
 import java.util.List;
 

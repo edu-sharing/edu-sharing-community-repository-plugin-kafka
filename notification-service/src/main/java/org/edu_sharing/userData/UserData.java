@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.edu_sharing.notification.model.NotificationEvent;
+import org.edu_sharing.notification.event.NotificationEvent;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
-import org.edu_sharing.notification.model.*;
+import org.edu_sharing.notification.event.*;
 
 @Data
 @Builder

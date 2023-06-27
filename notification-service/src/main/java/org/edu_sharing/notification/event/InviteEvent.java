@@ -1,4 +1,4 @@
-package org.edu_sharing.notification.model;
+package org.edu_sharing.notification.event;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -12,10 +12,11 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("InviteSafeEvent")
+@TypeAlias("InviteEvent")
 @Document(collection = "notification")
-public class InviteSafeEvent extends NodeBaseEvent {
+public class InviteEvent extends NodeBaseEvent {
     private String name;
+    private String type;
     private  String userComment;
     @Singular
     private List<String> permissions;

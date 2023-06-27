@@ -1,7 +1,7 @@
 package org.edu_sharing.notification.repository;
 
-import org.edu_sharing.notification.model.NotificationEvent;
-import org.edu_sharing.service.notification.events.data.Status;
+import org.edu_sharing.notification.data.Status;
+import org.edu_sharing.notification.event.NotificationEvent;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Date;

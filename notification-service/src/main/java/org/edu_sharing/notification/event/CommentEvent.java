@@ -1,11 +1,10 @@
-package org.edu_sharing.notification.model;
+package org.edu_sharing.notification.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.edu_sharing.service.notification.events.data.WidgetData;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,12 +13,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("MetadataSuggestionEvent")
+@TypeAlias("CommentEvent")
 @Document(collection = "notification")
-public class MetadataSuggestionEvent extends NodeBaseEvent {
-    private String captionId;
-    private String caption;
-    private String parentId;
-    private String parentCaption;
-    private WidgetData widget;
+public class CommentEvent extends NodeBaseEvent {
+    private  String commentContent;
+
+    /**
+     * the id this comment refers to, if any
+     */
+    private String commentReference;
+    private String event;
 }

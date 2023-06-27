@@ -2,18 +2,18 @@ package org.edu_sharing.notification.mapper;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.edu_sharing.service.notification.events.*;
-import org.edu_sharing.service.notification.events.data.Collection;
-import org.edu_sharing.service.notification.events.data.NodeData;
-import org.edu_sharing.service.notification.events.data.WidgetData;
-import org.edu_sharing.notification.model.*;
-
+import org.edu_sharing.notification.data.Collection;
+import org.edu_sharing.notification.data.NodeData;
+import org.edu_sharing.notification.data.Status;
+import org.edu_sharing.notification.data.WidgetData;
+import org.edu_sharing.notification.event.*;
+import org.edu_sharing.kafka.notification.event.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public  class NotificationMapper {
+public  class KafkaNotificationMapper {
 
     public static NotificationEvent map(NotificationEventDTO dto) {
         return switch (dto) {
@@ -48,7 +48,11 @@ public  class NotificationMapper {
         event.setTimestamp(dto.getTimestamp());
         event.setCreatorId(dto.getCreatorId());
         event.setReceiverId(dto.getReceiverId());
-        event.setStatus(dto.getStatus());
+        event.setStatus(map(dto.getStatus()));
+    }
+
+    private static Status map(org.edu_sharing.kafka.notification.data.Status status) {
+        return Status.valueOf(status.toString());
     }
 
     public static Map<String, Object> copyMapFromDTO(Map<String, Object> map){
@@ -156,13 +160,17 @@ public  class NotificationMapper {
         dto.setTimestamp(event.getTimestamp());
         dto.setCreatorId(event.getCreatorId());
         dto.setReceiverId(event.getReceiverId());
-        dto.setStatus(event.getStatus());
+        dto.setStatus(map(event.getStatus()));
+    }
+
+    private static org.edu_sharing.kafka.notification.data.Status map(Status status) {
+        return org.edu_sharing.kafka.notification.data.Status.valueOf(status.toString());
     }
 
     private static void mapNodeBaseEvent(NodeBaseEvent event, NodeBaseEventDTO dto) {
         mapNotificationEvent(event, dto);
 
-        dto.setNode(NodeData.builder().properties(new HashMap<>(event.getNode().getProperties())).build());
+        dto.setNode(org.edu_sharing.kafka.notification.data.NodeData.builder().properties(new HashMap<>(event.getNode().getProperties())).build());
     }
 
 
@@ -170,7 +178,7 @@ public  class NotificationMapper {
         AddToCollectionEventDTO dto = new AddToCollectionEventDTO();
         mapNodeBaseEvent(event, dto);
 
-        dto.setCollection(Collection.builder().properties(new HashMap<>(event.getCollection().getProperties())).build());
+        dto.setCollection(org.edu_sharing.kafka.notification.data.Collection.builder().properties(new HashMap<>(event.getCollection().getProperties())).build());
 
         return dto;
     }
@@ -238,7 +246,7 @@ public  class NotificationMapper {
         dto.setCaption(event.getCaption());
         dto.setParentId(event.getParentId());
         dto.setParentCaption(event.getParentCaption());
-        dto.setWidget(WidgetData.builder()
+        dto.setWidget(org.edu_sharing.kafka.notification.data.WidgetData.builder()
                 .id(event.getWidget().getId())
                 .caption(event.getWidget().getCaption())
                 .build());

@@ -1,11 +1,11 @@
-package org.edu_sharing.notification.model;
+package org.edu_sharing.notification.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.edu_sharing.service.notification.events.data.Collection;
+import org.edu_sharing.notification.data.Collection;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 

@@ -1,22 +1,25 @@
-package org.edu_sharing.notification.model;
+package org.edu_sharing.notification.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.edu_sharing.notification.data.WidgetData;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("WorkflowEvent")
+@TypeAlias("MetadataSuggestionEvent")
 @Document(collection = "notification")
-public class WorkflowEvent extends NodeBaseEvent {
-    private String workflowStatus;
-    private  String userComment;
+public class MetadataSuggestionEvent extends NodeBaseEvent {
+    private String captionId;
+    private String caption;
+    private String parentId;
+    private String parentCaption;
+    private WidgetData widget;
 }

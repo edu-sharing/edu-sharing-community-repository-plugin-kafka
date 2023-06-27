@@ -1,4 +1,4 @@
-package org.edu_sharing.notification.model;
+package org.edu_sharing.notification.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,14 +13,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("CommentEvent")
+@TypeAlias("RatingEvent")
 @Document(collection = "notification")
-public class CommentEvent extends NodeBaseEvent {
-    private  String commentContent;
-
+public class RatingEvent extends NodeBaseEvent {
     /**
-     * the id this comment refers to, if any
+     * the new rating that was given
      */
-    private String commentReference;
-    private String event;
+    private double newRating;
+    /**
+     * the new rating sum
+     */
+    private double ratingSum;
+    /**
+     * the count of ratings in total
+     * (To get the avg use ratingSum / ratingCount)
+     */
+    private long ratingCount;
 }

@@ -2,8 +2,8 @@ package org.edu_sharing.notification.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.edu_sharing.notification.model.NotificationEvent;
-import org.edu_sharing.service.notification.events.data.Status;
+import org.edu_sharing.notification.data.Status;
+import org.edu_sharing.notification.event.NotificationEvent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 

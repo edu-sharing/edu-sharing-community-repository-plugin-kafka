@@ -1,8 +1,14 @@
 package org.edu_sharing.plugin_kafka.notification;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.http.HttpStatusCodes;
 import com.sun.star.lang.IllegalArgumentException;
+import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -14,14 +20,17 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.edu_sharing.alfresco.workspace_administration.NodeServiceInterceptor;
+import org.edu_sharing.kafka.notification.data.Collection;
+import org.edu_sharing.kafka.notification.event.*;
+import org.edu_sharing.kafka.notification.data.*;
 import org.edu_sharing.metadataset.v2.MetadataWidget;
 import org.edu_sharing.plugin_kafka.config.KafkaSettings;
 import org.edu_sharing.plugin_kafka.config.MailSettings;
 import org.edu_sharing.plugin_kafka.config.Report;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.plugin_kafka.kafka.SendResult;
+import org.edu_sharing.plugin_kafka.kafka.support.JacksonUtils;
 import org.edu_sharing.repository.client.tools.CCConstants;
 import org.edu_sharing.repository.client.tools.I18nAngular;
 import org.edu_sharing.repository.server.AuthenticationToolAPI;
@@ -32,23 +41,22 @@ import org.edu_sharing.restservices.mds.v1.model.MdsValue;
 import org.edu_sharing.service.authority.AuthorityService;
 import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.service.notification.Status;
-import org.edu_sharing.service.notification.events.*;
-import org.edu_sharing.service.notification.events.data.Collection;
-import org.edu_sharing.service.notification.events.data.NodeData;
-import org.edu_sharing.service.notification.events.data.WidgetData;
 import org.edu_sharing.service.rating.RatingDetails;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -269,7 +277,7 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public NotificationEventDTO setNotificationStatus(String id, org.edu_sharing.service.notification.events.data.Status status) throws IOException {
+    public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatus(String id, org.edu_sharing.rest.notification.data.Status status) throws IOException {
 
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
@@ -286,7 +294,7 @@ public class KafkaNotificationService implements NotificationService {
                 if(entity == null){
                     return null;
                 }
-                return new ObjectMapper().readValue(EntityUtils.toString(entity, "UTF-8"), NotificationEventDTO.class);
+                return new ObjectMapper().readValue(EntityUtils.toString(entity, "UTF-8"), org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
             }
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
@@ -314,18 +322,18 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public org.springframework.data.domain.Page<NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.service.notification.events.data.Status> status, org.springframework.data.domain.Pageable pageable) throws IOException {
+    public org.springframework.data.domain.Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.Status> status, org.springframework.data.domain.Pageable pageable) throws IOException {
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
+            builder.setPath("/api/v1/notification");
 
             if("-me-".equals(receiverId)){
-                receiverId = new AuthenticationToolAPI().getCurrentUser();
+                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
             }
             builder.setParameter("receiverId", receiverId);
             builder.setParameter("status", StringUtils.join(status, ","));
             builder.setParameter("page",  String.valueOf(pageable.getPageNumber()));
             builder.setParameter("size",  String.valueOf(pageable.getPageSize()));
-
             if(!pageable.getSort().isEmpty()) {
                 builder.setParameter("sort", pageable.getSort().toString());
             }
@@ -337,19 +345,110 @@ public class KafkaNotificationService implements NotificationService {
             try(CloseableHttpClient client = HttpClients.createDefault()){
                 CloseableHttpResponse response = client.execute(request);
                 HttpEntity entity = response.getEntity();
+
                 if(entity == null){
                     return null;
                 }
-                return new ObjectMapper().readValue(EntityUtils.toString(entity, "UTF-8"),  NotificationResponsePage.class);
+
+                String content = EntityUtils.toString(entity, "UTF-8");
+                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                    throw new HttpException(content);
+                }
+
+
+
+                NotificationResponsePage notificationEventDTOS = JacksonUtils.enhancedObjectMapper().readValue(content, NotificationResponsePage.class);
+                notificationEventDTOS.setPageable(pageable);
+                return notificationEventDTOS;
             }
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
-    static class NotificationResponsePage extends PageImpl<NotificationEventDTO> {
-        public NotificationResponsePage(Page<NotificationEventDTO> page) {
-            super(page.getContent(), page.getPageable(), page.getTotalElements());
+
+    @Data
+//    @JsonIgnoreProperties(value = {
+//            "pageable",
+//            "last",
+//            "first",
+//            "size",
+//            "number",
+//            "sort",
+//            "empty"
+//    })
+    static class NotificationResponsePage implements Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> {
+        private List<org.edu_sharing.rest.notification.event.NotificationEventDTO> content;
+
+        private long totalElements;
+        private int totalPages;
+        private int number;
+        private boolean last;
+        private boolean first;
+        private boolean hasNext;
+        private boolean hasPrevious;
+        private int size;
+
+        @JsonIgnore
+        private Pageable pageable;
+
+
+        @JsonIgnore
+        @Override
+        public int getNumberOfElements() {
+            return content.size();
+        }
+
+        @JsonIgnore
+        @Override
+        public boolean hasContent() {
+            return !content.isEmpty();
+        }
+
+        @JsonIgnore
+        public Sort getSort(){
+            return pageable.getSort();
+        }
+
+        @JsonIgnore
+        @Override
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        @JsonIgnore
+        @Override
+        public boolean hasPrevious() {
+            return hasPrevious;
+        }
+
+        @JsonIgnore
+        @Override
+        public Pageable nextPageable() {
+            return null;
+        }
+
+        @JsonIgnore
+        @Override
+        public Pageable previousPageable() {
+            return null;
+        }
+
+        @JsonIgnore
+        @Override
+        public <U> Page<U> map(Function<? super org.edu_sharing.rest.notification.event.NotificationEventDTO, ? extends U> converter) {
+            return null;
+        }
+
+        @JsonIgnore
+        @NotNull
+        @Override
+        public Iterator<org.edu_sharing.rest.notification.event.NotificationEventDTO> iterator() {
+            return content.iterator();
+        }
+        @JsonIgnore
+        public boolean isEmpty(){
+            return content.isEmpty();
         }
     }
 
