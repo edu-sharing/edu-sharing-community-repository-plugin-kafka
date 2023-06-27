@@ -52,13 +52,19 @@ public  class KafkaNotificationMapper {
     }
 
     private static Status map(org.edu_sharing.kafka.notification.data.Status status) {
+        if(status == null){
+            return Status.NEW;
+        }
         return Status.valueOf(status.toString());
     }
 
     public static Map<String, Object> copyMapFromDTO(Map<String, Object> map){
         return map.entrySet()
                 .stream()
-                .map(x -> new ImmutablePair<>(x.getKey().replaceAll("[.:]","_"), x.getValue()))
+                .map(x -> new ImmutablePair<>(x.getKey()
+                        .replace(":","__")
+                        .replace(".","--"),
+                        x.getValue()))
                 .collect(Collectors.toMap(Pair::getKey, Map.Entry::getValue));
     }
 

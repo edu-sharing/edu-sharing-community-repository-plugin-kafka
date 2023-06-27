@@ -1,6 +1,8 @@
 package org.edu_sharing.notification.mapper;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.edu_sharing.notification.data.Status;
 import org.edu_sharing.notification.event.*;
 import org.edu_sharing.rest.notification.data.Collection;
@@ -10,11 +12,11 @@ import org.edu_sharing.rest.notification.event.*;
 import org.edu_sharing.userData.UserData;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public  class RestNotificationMapper {
+public class RestNotificationMapper {
 
 
     private final Map<String, UserData> userData;
@@ -51,10 +53,20 @@ public  class RestNotificationMapper {
                 userData.getEmail());
     }
 
+    public static Map<String, Object> copyMapToDTO(Map<String, Object> map) {
+        return map.entrySet()
+                .stream()
+                .map(x -> new ImmutablePair<>(x.getKey()
+                        .replace("__", ":")
+                        .replace("--", "."),
+                        x.getValue()))
+                .collect(Collectors.toMap(Pair::getKey, Map.Entry::getValue));
+    }
+
     private void mapNodeBaseEvent(NodeBaseEvent event, NodeBaseEventDTO dto) {
         mapNotificationEvent(event, dto);
 
-        dto.setNode(NodeData.builder().properties(new HashMap<>(event.getNode().getProperties())).build());
+        dto.setNode(new NodeData(copyMapToDTO(event.getNode().getProperties())));
     }
 
 
@@ -62,7 +74,9 @@ public  class RestNotificationMapper {
         AddToCollectionEventDTO dto = new AddToCollectionEventDTO();
         mapNodeBaseEvent(event, dto);
 
-        dto.setCollection(Collection.builder().properties(new HashMap<>(event.getCollection().getProperties())).build());
+        Collection collection = new Collection();
+        collection.setProperties(copyMapToDTO(event.getCollection().getProperties()));
+        dto.setCollection(collection);
 
         return dto;
     }
@@ -94,7 +108,7 @@ public  class RestNotificationMapper {
         NodeIssueEventDTO dto = new NodeIssueEventDTO();
         mapNodeBaseEvent(event, dto);
 
-        dto.setCreator(new org.edu_sharing.rest.notification.data.UserData(null,null, event.getEmail()));
+        dto.setCreator(new org.edu_sharing.rest.notification.data.UserData(null, null, event.getEmail()));
         dto.setReason(event.getReason());
         dto.setUserComment(event.getUserComment());
 
@@ -130,10 +144,7 @@ public  class RestNotificationMapper {
         dto.setCaption(event.getCaption());
         dto.setParentId(event.getParentId());
         dto.setParentCaption(event.getParentCaption());
-        dto.setWidget(WidgetData.builder()
-                .id(event.getWidget().getId())
-                .caption(event.getWidget().getCaption())
-                .build());
+        dto.setWidget(new WidgetData(event.getWidget().getId(), event.getWidget().getCaption()));
 
         return dto;
     }
