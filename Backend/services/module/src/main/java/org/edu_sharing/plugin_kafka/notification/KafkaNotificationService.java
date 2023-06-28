@@ -287,6 +287,7 @@ public class KafkaNotificationService implements NotificationService {
 
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
+            builder.setPath("/api/v1/notification/status");
             builder.setParameter("id", id);
             builder.setParameter("status", status.toString());
 
@@ -312,6 +313,7 @@ public class KafkaNotificationService implements NotificationService {
     public void deleteNotification(String id) throws IOException {
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
+            builder.setPath("/api/v1/notification");
             builder.setParameter("id", id);
 
             HttpDelete request = new HttpDelete(builder.build());
