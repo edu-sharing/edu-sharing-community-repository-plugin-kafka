@@ -1,5 +1,6 @@
 package org.edu_sharing.notification;
 
+import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.notification.data.Status;
@@ -20,7 +21,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class NotificationManager {
 
-    private final KafkaTemplate<String,  org.edu_sharing.kafka.notification.event.NotificationEventDTO> kafkaTemplate;
+    private final KafkaTemplate<String, org.edu_sharing.kafka.notification.event.NotificationEventDTO> kafkaTemplate;
     private final NotificationRepository notificationRepository;
 
 
@@ -44,16 +45,23 @@ public class NotificationManager {
         return notificationRepository.findAllByTimestampAfterAndStatus(newerThan, status);
     }
 
-    public NotificationEvent setStatus(String id, Status status) {
+    public NotificationEvent setStatusByNotificationId(String id, Status status) {
         NotificationEvent notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No Message for " + id + "found!"));
+        log.info("Status \"{}\" for notifications \"{}\" was updated", status, id);
 
         notification.setStatus(status);
         notificationRepository.save(notification);
         return notification;
     }
 
+    public void setStatusByReceiverId(String receiverId, List<Status> oldStatusList, Status newStatus) {
+        UpdateResult updateResult = notificationRepository.updateStatusByReceiverId(receiverId, oldStatusList,  newStatus);
+        log.info("Updated all notification of receiver \"{}\" with status {} to status {}. Result: {}", receiverId, oldStatusList, newStatus, updateResult);
+    }
+
     public void deleteNotification(String id) {
+        log.info("Delete notification \"{}\"", id);
         notificationRepository.deleteById(id);
     }
 

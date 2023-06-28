@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.edu_sharing.notification.data.Status;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -20,9 +21,12 @@ import java.util.Date;
 public class NotificationEvent {
     @Id
     private String id;
+    @Indexed
     private Date timestamp;
     private String creatorId;
+    @Indexed
     private String receiverId;
+    @Indexed
     private Status status = Status.NEW;
 }
 

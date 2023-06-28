@@ -283,7 +283,7 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatus(String id, org.edu_sharing.rest.notification.data.Status status) throws IOException {
+    public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatusByNotificationId(String id, org.edu_sharing.rest.notification.data.Status status) throws IOException {
 
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
@@ -298,10 +298,50 @@ public class KafkaNotificationService implements NotificationService {
             try(CloseableHttpClient client = HttpClients.createDefault()){
                 CloseableHttpResponse response = client.execute(request);
                 HttpEntity entity = response.getEntity();
+
                 if(entity == null){
                     return null;
                 }
+
+                String content = EntityUtils.toString(entity, "UTF-8");
+                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                    throw new HttpException(content);
+                }
+
                 return new ObjectMapper().readValue(EntityUtils.toString(entity, "UTF-8"), org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
+            }
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setNotificationStatusByReceiverId(String receiverId,List< org.edu_sharing.rest.notification.data.Status> oldStatuslist, org.edu_sharing.rest.notification.data.Status newStatus) throws IOException {
+        try {
+            URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
+            builder.setPath("/api/v1/notification/receiver/status");
+            builder.setParameter("id", receiverId);
+            oldStatuslist.forEach(x->builder.setParameter("oldStatus", x.toString()));
+            builder.setParameter("oldStatus", newStatus.toString());
+
+            HttpGet request = new HttpGet(builder.build());
+            request.setHeader("Accept", "application/json");
+            request.setHeader("Content-Type", "application/json");
+
+            try(CloseableHttpClient client = HttpClients.createDefault()){
+                CloseableHttpResponse response = client.execute(request);
+                HttpEntity entity = response.getEntity();
+
+                if(entity == null){
+                    return;
+                }
+
+                String content = EntityUtils.toString(entity, "UTF-8");
+                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                    throw new HttpException(content);
+                }
+
             }
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
@@ -321,7 +361,18 @@ public class KafkaNotificationService implements NotificationService {
             request.setHeader("Content-Type", "application/json");
 
             try(CloseableHttpClient client = HttpClients.createDefault()){
-                client.execute(request);
+                CloseableHttpResponse response = client.execute(request);
+                HttpEntity entity = response.getEntity();
+
+                if(entity == null){
+                    return;
+                }
+
+                String content = EntityUtils.toString(entity, "UTF-8");
+                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                    throw new HttpException(content);
+                }
+
             }
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
@@ -364,8 +415,6 @@ public class KafkaNotificationService implements NotificationService {
                 if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
                     throw new HttpException(content);
                 }
-
-
 
                 NotificationResponsePage notificationEventDTOS = JacksonUtils.enhancedObjectMapper().readValue(content, NotificationResponsePage.class);
                 notificationEventDTOS.setPageable(pageable);

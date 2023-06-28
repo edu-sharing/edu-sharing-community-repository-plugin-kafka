@@ -1,5 +1,6 @@
 package org.edu_sharing.notification.repository;
 
+import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.edu_sharing.notification.data.Status;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
@@ -38,4 +40,14 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
         return PageableExecutionUtils.getPage(results, Pageable.unpaged(),
                 () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), NotificationEvent.class));
     }
+
+    @Override
+    public UpdateResult updateStatusByReceiverId(String receiverId, Status status) {
+        return mongoTemplate.update(NotificationEvent.class)
+                .matching(Query.query(Criteria.where("receiverId").is(receiverId)))
+                .apply(Update.update("receiverId", status))
+                .all();
+    }
+
+
 }

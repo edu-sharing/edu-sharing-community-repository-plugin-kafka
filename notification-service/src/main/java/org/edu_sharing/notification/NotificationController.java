@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import org.edu_sharing.rest.notification.event.NotificationEventDTO;
 import org.edu_sharing.rest.notification.data.Status;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,14 +49,14 @@ public class NotificationController {
             @Parameter(name = "receiverId", description = "receiver identifier",
                     in = ParameterIn.QUERY, schema = @Schema(type = "string")),
             @Parameter(name = "status", description = "status (or conjunction)",
-                    in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema =@Schema(implementation = Status.class)))),
+                    in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema = @Schema(implementation = Status.class)))),
             @Parameter(name = "page", description = "page number",
                     in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
             @Parameter(name = "size", description = "page size",
                     in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "25")),
             @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc)(,ignoreCase). "
                     + "Default sort order is ascending. Multiple sort criteria are supported."
-                    ,in = ParameterIn.QUERY , content = @Content(array = @ArraySchema(schema = @Schema(type = "string"))))
+                    , in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema = @Schema(type = "string"))))
     })
     @Operation(summary = "Retrieve stored notification, filtered by receiver and status",
             responses = @ApiResponse(responseCode = "200",
@@ -100,13 +99,20 @@ public class NotificationController {
             responses = @ApiResponse(responseCode = "200",
                     description = "set notification status",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotificationEventDTO.class))))
-    public NotificationEventDTO updateStatus(
+    public NotificationEventDTO updateStatusByNotificationId(
             @RequestParam String id,
             @RequestParam Status status) {
 
-        NotificationEvent notification = notificationManager.setStatus(id, RestNotificationMapper.map(status));
+        NotificationEvent notification = notificationManager.setStatusByNotificationId(id, RestNotificationMapper.map(status));
         Map<String, UserData> userDataAsMap = userDataService.getUserDataAsMap(Stream.of(notification.getCreatorId(), notification.getReceiverId()).distinct().collect(Collectors.toList()));
         return new RestNotificationMapper(userDataAsMap).map(notification);
+    }
+
+    @PatchMapping("/receiver/status")
+    @Operation(summary = "Endpoint to update all notification status of a receiver",
+            responses = @ApiResponse(responseCode = "200", description = "set notification status"))
+    public void updateStatusByReceiverId(@RequestParam String receiverId, @RequestParam Status status) {
+        notificationManager.setStatusByReceiverId(receiverId, RestNotificationMapper.map(status));
     }
 
     @DeleteMapping
