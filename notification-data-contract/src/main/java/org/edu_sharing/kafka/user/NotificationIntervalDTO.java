@@ -1,6 +1,6 @@
 package org.edu_sharing.kafka.user;
 
-public enum NotificationInterval {
+public enum NotificationIntervalDTO {
     immediately,
     disabled,
     daily,

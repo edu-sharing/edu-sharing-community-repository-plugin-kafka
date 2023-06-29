@@ -6,13 +6,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import org.edu_sharing.kafka.notification.data.Status;
+import org.edu_sharing.kafka.notification.data.StatusDTO;
 
 import java.util.Date;
 
 @Data
-@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
@@ -35,6 +33,6 @@ public abstract class NotificationEventDTO {
     private Date timestamp;
     private String creatorId;
     private String receiverId;
-    private Status status;
+    private StatusDTO status;
 }
 

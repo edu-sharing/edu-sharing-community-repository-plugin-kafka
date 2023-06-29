@@ -1,6 +1,6 @@
 package org.edu_sharing.kafka.notification.data;
 
-public enum Status {
+public enum StatusDTO {
     /**
      *  was created
      */

@@ -5,8 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.edu_sharing.notification.data.NodeData;
+import org.edu_sharing.notification.data.Status;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Date;
 
 @Getter
 @Setter
@@ -16,6 +20,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @TypeAlias("NodeIssueEvent")
 @Document(collection = "notification")
 public class NodeIssueEvent extends NodeBaseEvent {
+
+    public NodeIssueEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, String email, String reason, String userComment) {
+        super(id, timestamp, creatorId, receiverId, status, node);
+        this.email = email;
+        this.reason = reason;
+        this.userComment = userComment;
+    }
+
     private String email;
     private String reason;
     private String userComment;

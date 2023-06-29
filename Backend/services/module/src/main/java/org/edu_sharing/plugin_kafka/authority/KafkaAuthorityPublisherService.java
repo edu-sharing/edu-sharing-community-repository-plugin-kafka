@@ -11,7 +11,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.edu_sharing.kafka.user.NotificationInterval;
+import org.edu_sharing.kafka.user.NotificationIntervalDTO;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.repository.client.tools.CCConstants;
@@ -75,8 +75,8 @@ public class KafkaAuthorityPublisherService {
         kafkaUserTemplate.sendDefault(properties.get(QName.createQName(CCConstants.SYS_PROP_NODE_UID)).toString(), userDataDTO);
     }
 
-    private static NotificationInterval mapNotificationInterval(NotificationConfig.NotificationInterval notificationConfigInterval) {
-        return NotificationInterval.valueOf(notificationConfigInterval.name());
+    private static NotificationIntervalDTO mapNotificationInterval(NotificationConfig.NotificationInterval notificationConfigInterval) {
+        return NotificationIntervalDTO.valueOf(notificationConfigInterval.name());
     }
 
     public void publishAllAuthorities() {

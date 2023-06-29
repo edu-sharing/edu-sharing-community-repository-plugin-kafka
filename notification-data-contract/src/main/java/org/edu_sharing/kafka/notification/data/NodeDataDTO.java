@@ -3,18 +3,15 @@ package org.edu_sharing.kafka.notification.data;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Singular;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
-@Jacksonized
-@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NodeData {
-    @Singular
+public class NodeDataDTO {
+    private String type;
+    private List<String> aspects;
     private Map<String, Object> properties;
 }

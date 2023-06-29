@@ -3,15 +3,14 @@ package org.edu_sharing.notification.mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.edu_sharing.notification.data.Status;
+import org.edu_sharing.notification.data.*;
 import org.edu_sharing.notification.event.*;
-import org.edu_sharing.rest.notification.data.Collection;
-import org.edu_sharing.rest.notification.data.NodeData;
-import org.edu_sharing.rest.notification.data.WidgetData;
+import org.edu_sharing.rest.notification.data.*;
 import org.edu_sharing.rest.notification.event.*;
 import org.edu_sharing.userData.UserData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -34,23 +33,38 @@ public class RestNotificationMapper {
         };
     }
 
-    private void mapNotificationEvent(NotificationEvent event, NotificationEventDTO dto) {
-        dto.setId(event.getId());
-        dto.setTimestamp(event.getTimestamp());
-        dto.setCreator(map(userData.get(event.getCreatorId())));
-        dto.setReceiver(map(userData.get(event.getReceiverId())));
-        dto.setStatus(map(event.getStatus()));
+    private StatusDTO map(Status status) {
+        return StatusDTO.valueOf(status.toString());
     }
 
-    private org.edu_sharing.rest.notification.data.Status map(Status status) {
-        return org.edu_sharing.rest.notification.data.Status.valueOf(status.toString());
-    }
-
-    private org.edu_sharing.rest.notification.data.UserData map(UserData userData) {
-        return new org.edu_sharing.rest.notification.data.UserData(
+    private UserDataDTO map(UserData userData) {
+        return new UserDataDTO(
                 userData.getFirstName(),
                 userData.getLastName(),
                 userData.getEmail());
+    }
+
+    private NodeDataDTO map(NodeData node) {
+        return new NodeDataDTO(
+                node.getType(),
+                new ArrayList<>(node.getAspects()),
+                copyMapToDTO(node.getProperties()));
+    }
+
+
+    private static CollectionDTO map(Collection collection) {
+        return new CollectionDTO(
+                collection.getType(),
+                new ArrayList<>(collection.getAspects()),
+                copyMapToDTO(collection.getProperties()));
+    }
+
+    public static Status map(StatusDTO status) {
+        return Status.valueOf(status.toString());
+    }
+
+    private static WidgetDataDTO map(WidgetData widget) {
+        return new WidgetDataDTO(widget.getId(), widget.getCaption());
     }
 
     public static Map<String, Object> copyMapToDTO(Map<String, Object> map) {
@@ -63,93 +77,102 @@ public class RestNotificationMapper {
                 .collect(Collectors.toMap(Pair::getKey, Map.Entry::getValue));
     }
 
-    private void mapNodeBaseEvent(NodeBaseEvent event, NodeBaseEventDTO dto) {
-        mapNotificationEvent(event, dto);
-
-        dto.setNode(new NodeData(copyMapToDTO(event.getNode().getProperties())));
-    }
-
 
     private NotificationEventDTO mapAddCollectionEvent(AddToCollectionEvent event) {
-        AddToCollectionEventDTO dto = new AddToCollectionEventDTO();
-        mapNodeBaseEvent(event, dto);
-
-        Collection collection = new Collection();
-        collection.setProperties(copyMapToDTO(event.getCollection().getProperties()));
-        dto.setCollection(collection);
-
-        return dto;
+        return new AddToCollectionEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                map(userData.get(event.getCreatorId())),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                map(event.getCollection())
+        );
     }
 
+
     private NotificationEventDTO mapCommentEvent(CommentEvent event) {
-        CommentEventDTO dto = new CommentEventDTO();
-        mapNodeBaseEvent(event, dto);
-
-        dto.setCommentContent(event.getCommentContent());
-        dto.setCommentReference(event.getCommentReference());
-        dto.setEvent(event.getEvent());
-
-        return dto;
+        return new CommentEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                map(userData.get(event.getCreatorId())),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                event.getCommentContent(),
+                event.getCommentReference(),
+                event.getEvent()
+        );
     }
 
     private NotificationEventDTO mapInviteEvent(InviteEvent event) {
-        InviteEventDTO dto = new InviteEventDTO();
-        mapNodeBaseEvent(event, dto);
-
-        dto.setName(event.getName());
-        dto.setType(event.getType());
-        dto.setUserComment(event.getUserComment());
-        dto.setPermissions(new ArrayList<>(event.getPermissions()));
-
-        return dto;
+        return new InviteEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                map(userData.get(event.getCreatorId())),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                event.getName(),
+                event.getType(),
+                event.getUserComment(),
+                new ArrayList<>(event.getPermissions())
+        );
     }
 
     private NotificationEventDTO mapNodeIssueEvent(NodeIssueEvent event) {
-        NodeIssueEventDTO dto = new NodeIssueEventDTO();
-        mapNodeBaseEvent(event, dto);
-
-        dto.setCreator(new org.edu_sharing.rest.notification.data.UserData(null, null, event.getEmail()));
-        dto.setReason(event.getReason());
-        dto.setUserComment(event.getUserComment());
-
-        return dto;
+        return new NodeIssueEventDTO(event.getId(),
+                event.getTimestamp(),
+                new UserDataDTO(null, null, event.getEmail()),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                event.getReason(),
+                event.getUserComment()
+        );
     }
 
     private NotificationEventDTO mapRatingEvent(RatingEvent event) {
-        RatingEventDTO dto = new RatingEventDTO();
-        mapNodeBaseEvent(event, dto);
-
-        dto.setNewRating(event.getNewRating());
-        dto.setRatingSum(event.getRatingSum());
-        dto.setRatingCount(event.getRatingCount());
-
-        return dto;
+        return new RatingEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                map(userData.get(event.getCreatorId())),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                event.getNewRating(),
+                event.getRatingSum(),
+                event.getRatingCount()
+        );
     }
 
     private NotificationEventDTO mapWorkflowEvent(WorkflowEvent event) {
-        WorkflowEventDTO dto = new WorkflowEventDTO();
-        mapNodeBaseEvent(event, dto);
-
-        dto.setWorkflowStatus(event.getWorkflowStatus());
-        dto.setUserComment(event.getUserComment());
-
-        return dto;
+        return new WorkflowEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                map(userData.get(event.getCreatorId())),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                event.getWorkflowStatus(),
+                event.getUserComment()
+        );
     }
 
     private NotificationEventDTO mapMetadataSuggestionEvent(MetadataSuggestionEvent event) {
-        MetadataSuggestionEventDTO dto = new MetadataSuggestionEventDTO();
-        mapNodeBaseEvent(event, dto);
-
-        dto.setCaptionId(event.getCaptionId());
-        dto.setCaption(event.getCaption());
-        dto.setParentId(event.getParentId());
-        dto.setParentCaption(event.getParentCaption());
-        dto.setWidget(new WidgetData(event.getWidget().getId(), event.getWidget().getCaption()));
-
-        return dto;
+        return new MetadataSuggestionEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                map(userData.get(event.getCreatorId())),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                event.getCaptionId(),
+                event.getCaption(),
+                event.getParentId(),
+                event.getParentCaption(),
+                map(event.getWidget())
+        );
     }
 
-    public static Status map(org.edu_sharing.rest.notification.data.Status status) {
-        return Status.valueOf(status.toString());
-    }
 }

@@ -3,15 +3,22 @@ package org.edu_sharing.kafka.notification.event;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
+import org.edu_sharing.kafka.notification.data.NodeDataDTO;
+import org.edu_sharing.kafka.notification.data.StatusDTO;
+
+import java.util.Date;
 
 @Data
-@Jacksonized
-@SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class NodeIssueEventDTO extends NodeBaseEventDTO {
+    public NodeIssueEventDTO(String id, Date timestamp, String creatorId, String receiverId, StatusDTO status, NodeDataDTO node, String email, String reason, String userComment) {
+        super(id, timestamp, creatorId, receiverId, status, node);
+        this.email = email;
+        this.reason = reason;
+        this.userComment = userComment;
+    }
+
     private String email;
     private String reason;
     private String userComment;

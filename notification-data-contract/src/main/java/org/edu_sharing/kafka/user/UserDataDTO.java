@@ -15,13 +15,13 @@ public class UserDataDTO {
     private String email;
     private String locale;
 
-    private NotificationInterval addToCollectionEvent = NotificationInterval.immediately;
-    private NotificationInterval commentEvent = NotificationInterval.immediately;
-    private NotificationInterval inviteEvent = NotificationInterval.immediately;
-    private NotificationInterval nodeIssueEvent = NotificationInterval.immediately;
-    private NotificationInterval ratingEvent = NotificationInterval.immediately;
-    private NotificationInterval workflowEvent = NotificationInterval.immediately;
-    private NotificationInterval metadataSuggestionEvent = NotificationInterval.immediately;
+    private NotificationIntervalDTO addToCollectionEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO commentEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO inviteEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO nodeIssueEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO ratingEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO workflowEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO metadataSuggestionEvent = NotificationIntervalDTO.immediately;
 }
 
 

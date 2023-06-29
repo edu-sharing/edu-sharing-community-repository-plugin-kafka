@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import org.edu_sharing.rest.notification.event.NotificationEventDTO;
-import org.edu_sharing.rest.notification.data.Status;
+import org.edu_sharing.rest.notification.data.StatusDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class NotificationController {
             @Parameter(name = "receiverId", description = "receiver identifier",
                     in = ParameterIn.QUERY, schema = @Schema(type = "string")),
             @Parameter(name = "status", description = "status (or conjunction)",
-                    in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema = @Schema(implementation = Status.class)))),
+                    in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema = @Schema(implementation = StatusDTO.class)))),
             @Parameter(name = "page", description = "page number",
                     in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
             @Parameter(name = "size", description = "page size",
@@ -64,7 +64,7 @@ public class NotificationController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotificationResponsePage.class))))
     public Page<NotificationEventDTO> getNotifications(
             @RequestParam(required = false) String receiverId,
-            @RequestParam(required = false) List<Status> status,
+            @RequestParam(required = false) List<StatusDTO> status,
             @Parameter(hidden = true)
             @PageableDefault(size = 25)
             Pageable pageable) {
@@ -101,7 +101,7 @@ public class NotificationController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotificationEventDTO.class))))
     public NotificationEventDTO updateStatusByNotificationId(
             @RequestParam String id,
-            @RequestParam Status status) {
+            @RequestParam StatusDTO status) {
 
         NotificationEvent notification = notificationManager.setStatusByNotificationId(id, RestNotificationMapper.map(status));
         Map<String, UserData> userDataAsMap = userDataService.getUserDataAsMap(Stream.of(notification.getCreatorId(), notification.getReceiverId()).distinct().collect(Collectors.toList()));
@@ -111,8 +111,8 @@ public class NotificationController {
     @PatchMapping("/receiver/status")
     @Operation(summary = "Endpoint to update all notification status of a receiver",
             responses = @ApiResponse(responseCode = "200", description = "set notification status"))
-    public void updateStatusByReceiverId(@RequestParam String receiverId, @RequestParam Status status) {
-        notificationManager.setStatusByReceiverId(receiverId, RestNotificationMapper.map(status));
+    public void updateStatusByReceiverId(@RequestParam String receiverId, @RequestParam List<StatusDTO> oldStatus, @RequestParam StatusDTO newStatus) {
+        notificationManager.setStatusByReceiverId(receiverId, oldStatus.stream().map(RestNotificationMapper::map).collect(Collectors.toList()), RestNotificationMapper.map(newStatus));
     }
 
     @DeleteMapping

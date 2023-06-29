@@ -11,5 +11,5 @@ import java.util.List;
 public interface CustomNotificationRepository {
     Page<NotificationEvent> findAll(String receiverId, List<Status> statusList, Pageable paging);
 
-    UpdateResult updateStatusByReceiverId(String receiverId, Status status);
+    UpdateResult updateStatusByReceiverId(String receiverId, List<Status> oldStatus, Status newStatus);
 }

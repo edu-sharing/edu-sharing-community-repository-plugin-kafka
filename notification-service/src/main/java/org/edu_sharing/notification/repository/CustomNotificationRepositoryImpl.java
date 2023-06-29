@@ -42,10 +42,10 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
     }
 
     @Override
-    public UpdateResult updateStatusByReceiverId(String receiverId, Status status) {
+    public UpdateResult updateStatusByReceiverId(String receiverId, List<Status> oldStatus, Status newStatus) {
         return mongoTemplate.update(NotificationEvent.class)
-                .matching(Query.query(Criteria.where("receiverId").is(receiverId)))
-                .apply(Update.update("receiverId", status))
+                .matching(Query.query(Criteria.where("receiverId").is(receiverId).and("status").in(oldStatus)))
+                .apply(Update.update("status", newStatus))
                 .all();
     }
 

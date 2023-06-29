@@ -1,7 +1,6 @@
 package org.edu_sharing.plugin_kafka.notification;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.HttpStatusCodes;
 import com.sun.star.lang.IllegalArgumentException;
@@ -21,9 +20,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.edu_sharing.alfresco.workspace_administration.NodeServiceInterceptor;
-import org.edu_sharing.kafka.notification.data.Collection;
-import org.edu_sharing.kafka.notification.event.*;
 import org.edu_sharing.kafka.notification.data.*;
+import org.edu_sharing.kafka.notification.event.*;
 import org.edu_sharing.metadataset.v2.MetadataWidget;
 import org.edu_sharing.plugin_kafka.config.KafkaSettings;
 import org.edu_sharing.plugin_kafka.config.MailSettings;
@@ -47,7 +45,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -80,40 +77,50 @@ public class KafkaNotificationService implements NotificationService {
     @Autowired
     private KafkaSettings kafkaSettings;
 
-    public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO.NotificationEventDTOBuilder<?, ?> notificationMessageBuilder) {
-        notificationMessageBuilder.id(generateMessageId()).timestamp(DateTime.now().toDate());
-        NotificationEventDTO notificationMessage = notificationMessageBuilder.build();
+    public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO notificationMessage) {
+        notificationMessage.setId(generateMessageId());
+        notificationMessage.setStatus(StatusDTO.NEW);
+        notificationMessage.setTimestamp(DateTime.now().toDate());
         return kafkaNotificationTemplate.sendDefault(notificationMessage.getId(), notificationMessage);
     }
 
     @Override
-    public void notifyNodeIssue(String nodeId, String reason, Map<String, Object> nodeProperties, String userEmail, String userComment) throws Throwable {
+    public void notifyNodeIssue(String nodeId, String reason, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String userEmail, String userComment) throws Throwable {
 
         if (Optional.of(mailSettings).map(MailSettings::getReport).map(Report::getReceiver).map(StringUtils::isBlank).orElse(true)) {
             throw new IllegalArgumentException("No report receiverAuthority is set in the configuration");
         }
 
 
-        send(NodeIssueEventDTO.builder()
-                .creatorId("system")
-                .receiverId("report")
-                .email(userEmail)
-                .reason(reason)
-                .userComment(reason)
-                .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
+        send(new NodeIssueEventDTO(
+                null,
+                null,
+                "system",
+                "report",
+                null,
+                createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                userEmail,
+                reason,
+                reason
+        ));
     }
 
     @Override
-    public void notifyWorkflowChanged(String nodeId, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
+
+    public void notifyWorkflowChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
-        send(WorkflowEventDTO.builder()
-                .creatorId(senderId)
-                .receiverId(receiverId)
-                .userComment(comment)
-                .workflowStatus(I18nAngular.getTranslationAngular("common", "WORKFLOW." + status))
-                .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
+        send(new WorkflowEventDTO(
+                null,
+                null,
+                senderId,
+                receiverId,
+                null,
+                createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                comment,
+                I18nAngular.getTranslationAngular("common", "WORKFLOW." + status)
+        ));
     }
 
     @Override
@@ -133,7 +140,7 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public void notifyPermissionChanged(String senderAuthority, String receiverAuthority, String nodeId, Map<String, Object> nodeProperties, String[] aspects, String[] permissions, String mailText) throws Throwable {
+    public void notifyPermissionChanged(String senderAuthority, String receiverAuthority, String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String[] permissions, String mailText) throws Throwable {
 
         // if the receiverAuthority is the creator itself, skip it (because it is automatically added)
         String nodeCreator = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
@@ -145,13 +152,13 @@ public class KafkaNotificationService implements NotificationService {
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
 
-        String nodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
+        String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
         String invitationType = "invited";
-        if (nodeType.equals(CCConstants.CCM_TYPE_MAP) && Arrays.asList(aspects).contains(CCConstants.CCM_ASPECT_COLLECTION)) {
+        if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
             invitationType = "invited_collection";
         }
 
-        String name = nodeType.equals(CCConstants.CCM_TYPE_IO)
+        String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
                 ? (String) nodeProperties.get(CCConstants.LOM_PROP_GENERAL_TITLE)
                 : (String) nodeProperties.get(CCConstants.CM_PROP_C_TITLE);
 
@@ -166,76 +173,104 @@ public class KafkaNotificationService implements NotificationService {
                 .collect(Collectors.toList());
 
         if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
-            send(InviteSafeEventDTO.builder()
-                    .creatorId(senderId)
-                    .receiverId(receiverId)
-                    .name(name)
-                    .userComment(mailText)
-                    .permissions(permissionList)
-                    .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
-        }else {
-            send(InviteEventDTO.builder()
-                    .creatorId(senderId)
-                    .receiverId(receiverId)
-                    .name(name)
-                    .type(invitationType)
-                    .userComment(mailText)
-                    .permissions(permissionList)
-                    .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
+            send(new InviteSafeEventDTO(
+                    null,
+                    null,
+                    senderId,
+                    receiverId,
+                    null,
+                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                    name,
+                    mailText,
+                    permissionList
+            ));
+        } else {
+            send(new InviteEventDTO(
+                    null,
+                    null,
+                    senderId,
+                    receiverId,
+                    null,
+                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                    name,
+                    invitationType,
+                    mailText,
+                    permissionList
+            ));
         }
     }
 
 
     @Override
-    public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<Map<String, Object>> nodePropertiesList) throws Throwable {
+    public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<String> nodeTypes, List<List<String>> aspects, List<Map<String, Object>> nodePropertiesList) throws Throwable {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
 
         String[] receivers = widgetDefinition.getSuggestionReceiver().split(",");
         for (String receiverAuthority : receivers) {
             String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
-            MetadataSuggestionEventDTO.MetadataSuggestionEventDTOBuilder<?,?> builder = MetadataSuggestionEventDTO.builder()
-                    .creatorId(senderId)
-                    .receiverId(receiverId)
-                    .widget(WidgetData.builder()
-                            .id(widgetDefinition.getId())
-                            .caption(widgetDefinition.getCaption())
-                            .build())
-                    .id(mdsValue.getId())
-                    .caption(mdsValue.getCaption())
-                    .parentId(mdsValue.getParent())
-                    .parentCaption(mdsValue.getParent() == null ? null : widgetDefinition.getValuesAsMap().get(mdsValue.getParent()).getCaption());
-
-            if(nodes.size() == 0){
-                send(builder);
+            if (nodes.size() == 0) {
+                send(new MetadataSuggestionEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        null,
+                        mdsValue.getId(),
+                        mdsValue.getCaption(),
+                        mdsValue.getParent(),
+                        mdsValue.getParent() == null ? null : widgetDefinition.getValuesAsMap().get(mdsValue.getParent()).getCaption(),
+                        new WidgetDataDTO(
+                                widgetDefinition.getId(),
+                                widgetDefinition.getCaption()
+                        )
+                ));
             }
 
             for (int i = 0; i < nodes.size(); i++) {
-                send(builder.node(createNodeData(nodes.get(i), getSimplifiedNodeProperties(nodePropertiesList.get(i))))
-                );
+                send(new MetadataSuggestionEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createNodeData(nodes.get(i), nodeTypes.get(i), aspects.get(i), getSimplifiedNodeProperties(nodePropertiesList.get(i))),
+                        mdsValue.getId(),
+                        mdsValue.getCaption(),
+                        mdsValue.getParent(),
+                        mdsValue.getParent() == null ? null : widgetDefinition.getValuesAsMap().get(mdsValue.getParent()).getCaption(),
+                        new WidgetDataDTO(
+                                widgetDefinition.getId(),
+                                widgetDefinition.getCaption()
+                        )
+                ));
             }
 
         }
     }
 
     @Override
-    public void notifyComment(String node, String comment, String commentReference, Map<String, Object> nodeProperties, Status status) {
+    public void notifyComment(String node, String comment, String commentReference, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, Status status) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
 
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
-        send(CommentEventDTO.builder()
-                .creatorId(senderId)
-                .receiverId(receiverId)
-                .commentContent(comment)
-                .commentReference(commentReference)
-                .event(status.toString())
-                .node(createNodeData(node, getSimplifiedNodeProperties(nodeProperties)))
-        );
+        send(new CommentEventDTO(
+                null,
+                null,
+                senderId,
+                receiverId,
+                null,
+                createNodeData(node, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                comment,
+                commentReference,
+                status.toString()
+        ));
     }
 
     @Override
-    public void notifyCollection(String collectionId, String refNodeId, Map<String, Object> collectionProperties, Map<String, Object> nodeProperties, Status status) {
+    public void notifyCollection(String collectionId, String refNodeId, String collectionType, List<String> collectionAspects, Map<String, Object> collectionProperties, String nodeType, List<String> nodeAspects, Map<String, Object> nodeProperties, Status status) {
 
         String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
@@ -243,24 +278,24 @@ public class KafkaNotificationService implements NotificationService {
         String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
-        if(Objects.equals(senderId, receiverId)) {
+        if (Objects.equals(senderId, receiverId)) {
             return;
         }
 
-        send(AddToCollectionEventDTO.builder()
-                .creatorId(senderId)
-                .receiverId(receiverId)
-                .collection(Collection.builder()
-                        .properties(getSimplifiedNodeProperties(collectionProperties))
-                        .property("link", URLTool.getNgRenderNodeUrl(collectionId, null, true))
-                        .property("link.static", URLTool.getNgRenderNodeUrl(collectionId, null, false))
-                        .build())
-                .node(createNodeData(refNodeId, getSimplifiedNodeProperties(nodeProperties))));
+        send(new AddToCollectionEventDTO(
+                null,
+                null,
+                senderId,
+                receiverId,
+                null,
+                createNodeData(refNodeId, nodeType, nodeAspects, getSimplifiedNodeProperties(nodeProperties)),
+                createCollectionDTO(refNodeId, collectionType, nodeAspects, getSimplifiedNodeProperties(nodeProperties))
+        ));
     }
 
 
     @Override
-    public void notifyRatingChanged(String nodeId, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
+    public void notifyRatingChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
@@ -269,22 +304,26 @@ public class KafkaNotificationService implements NotificationService {
             log.warn("notifyRatingChanged: No send mail receiverAuthority is set in the configuration");
             return;
         }
-        if(Objects.equals(senderId, receiverId)) {
+
+        if (Objects.equals(senderId, receiverId)) {
             return;
         }
 
-        send(RatingEventDTO.builder()
-                .creatorId(senderId)
-                .receiverId(receiverId)
-                .newRating(rating)
-                .ratingCount(accumulatedRatings.getOverall().getCount())
-                .ratingSum(accumulatedRatings.getOverall().getSum())
-                .node(createNodeData(nodeId, getSimplifiedNodeProperties(nodeProperties))));
+        send(new RatingEventDTO(
+                null,
+                null,
+                "system",
+                receiverId,
+                null,
+                createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                rating,
+                accumulatedRatings.getOverall().getSum(),
+                accumulatedRatings.getOverall().getCount()
+        ));
     }
 
     @Override
-    public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatusByNotificationId(String id, org.edu_sharing.rest.notification.data.Status status) throws IOException {
-
+    public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatusByNotificationId(String id, org.edu_sharing.rest.notification.data.StatusDTO status) throws IOException {
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification/status");
@@ -295,16 +334,16 @@ public class KafkaNotificationService implements NotificationService {
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-Type", "application/json");
 
-            try(CloseableHttpClient client = HttpClients.createDefault()){
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
                 CloseableHttpResponse response = client.execute(request);
                 HttpEntity entity = response.getEntity();
 
-                if(entity == null){
+                if (entity == null) {
                     return null;
                 }
 
                 String content = EntityUtils.toString(entity, "UTF-8");
-                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
                     throw new HttpException(content);
                 }
 
@@ -317,28 +356,28 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public void setNotificationStatusByReceiverId(String receiverId,List< org.edu_sharing.rest.notification.data.Status> oldStatuslist, org.edu_sharing.rest.notification.data.Status newStatus) throws IOException {
+    public void setNotificationStatusByReceiverId(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> oldStatusList, org.edu_sharing.rest.notification.data.StatusDTO newStatus) throws IOException {
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification/receiver/status");
             builder.setParameter("id", receiverId);
-            oldStatuslist.forEach(x->builder.setParameter("oldStatus", x.toString()));
+            oldStatusList.forEach(x -> builder.setParameter("oldStatus", x.toString()));
             builder.setParameter("oldStatus", newStatus.toString());
 
             HttpGet request = new HttpGet(builder.build());
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-Type", "application/json");
 
-            try(CloseableHttpClient client = HttpClients.createDefault()){
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
                 CloseableHttpResponse response = client.execute(request);
                 HttpEntity entity = response.getEntity();
 
-                if(entity == null){
+                if (entity == null) {
                     return;
                 }
 
                 String content = EntityUtils.toString(entity, "UTF-8");
-                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
                     throw new HttpException(content);
                 }
 
@@ -360,16 +399,16 @@ public class KafkaNotificationService implements NotificationService {
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-Type", "application/json");
 
-            try(CloseableHttpClient client = HttpClients.createDefault()){
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
                 CloseableHttpResponse response = client.execute(request);
                 HttpEntity entity = response.getEntity();
 
-                if(entity == null){
+                if (entity == null) {
                     return;
                 }
 
                 String content = EntityUtils.toString(entity, "UTF-8");
-                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
                     throw new HttpException(content);
                 }
 
@@ -380,22 +419,23 @@ public class KafkaNotificationService implements NotificationService {
         }
     }
 
+
     @Override
-    public org.springframework.data.domain.Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.Status> status, org.springframework.data.domain.Pageable pageable) throws IOException {
+    public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws IOException {
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification");
 
-            if("-me-".equals(receiverId)){
+            if ("-me-".equals(receiverId)) {
                 receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
             }
             builder.setParameter("receiverId", receiverId);
             builder.setParameter("status", StringUtils.join(status, ","));
-            builder.setParameter("page",  String.valueOf(pageable.getPageNumber()));
-            builder.setParameter("size",  String.valueOf(pageable.getPageSize()));
-            if(!pageable.getSort().isEmpty()) {
+            builder.setParameter("page", String.valueOf(pageable.getPageNumber()));
+            builder.setParameter("size", String.valueOf(pageable.getPageSize()));
+            if (!pageable.getSort().isEmpty()) {
                 pageable.getSort().forEach(order -> {
-                   builder.setParameter("sort", order.getProperty() + "," + order.getDirection().toString());
+                    builder.setParameter("sort", order.getProperty() + "," + order.getDirection().toString());
                 });
             }
 
@@ -403,16 +443,16 @@ public class KafkaNotificationService implements NotificationService {
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-Type", "application/json");
 
-            try(CloseableHttpClient client = HttpClients.createDefault()){
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
                 CloseableHttpResponse response = client.execute(request);
                 HttpEntity entity = response.getEntity();
 
-                if(entity == null){
+                if (entity == null) {
                     return null;
                 }
 
                 String content = EntityUtils.toString(entity, "UTF-8");
-                if(response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
                     throw new HttpException(content);
                 }
 
@@ -465,7 +505,7 @@ public class KafkaNotificationService implements NotificationService {
         }
 
         @JsonIgnore
-        public Sort getSort(){
+        public Sort getSort() {
             return pageable.getSort();
         }
 
@@ -505,25 +545,40 @@ public class KafkaNotificationService implements NotificationService {
         public Iterator<org.edu_sharing.rest.notification.event.NotificationEventDTO> iterator() {
             return content.iterator();
         }
+
         @JsonIgnore
-        public boolean isEmpty(){
+        public boolean isEmpty() {
             return content.isEmpty();
         }
     }
 
-    private static NodeData createNodeData(String nodeId, Map<String, Object> nodeProperties) {
-        return NodeData.builder()
-                .properties(nodeProperties.entrySet().stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-                .property("link", URLTool.getNgRenderNodeUrl(nodeId, null, true))
-                .property("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false))
-                .build();
+    private static NodeDataDTO createNodeData(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
+        HashMap<String, Object> props = new HashMap<>(nodeProperties);
+        props.put("link", URLTool.getNgRenderNodeUrl(nodeId, null, true));
+        props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
+
+        return new NodeDataDTO(
+                type,
+                aspects,
+                props);
     }
+
+    private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
+        HashMap<String, Object> props = new HashMap<>(nodeProperties);
+        props.put("link", URLTool.getNgRenderNodeUrl(nodeId, null, true));
+        props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
+
+        return new CollectionDTO(
+                type,
+                aspects,
+                props);
+    }
+
 
     private static Map<String, Object> getSimplifiedNodeProperties(Map<String, Object> nodeProperties) {
         return nodeProperties.entrySet().stream()
-                .map(x->new ImmutablePair<>(CCConstants.getValidLocalName(x.getKey()), x.getValue()))
-                .filter(x-> StringUtils.isNoneBlank(x.getKey()))
+                .map(x -> new ImmutablePair<>(CCConstants.getValidLocalName(x.getKey()), x.getValue()))
+                .filter(x -> StringUtils.isNoneBlank(x.getKey()))
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 

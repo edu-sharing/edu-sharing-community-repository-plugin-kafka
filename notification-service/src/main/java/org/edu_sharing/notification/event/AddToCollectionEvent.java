@@ -6,8 +6,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.edu_sharing.notification.data.Collection;
+import org.edu_sharing.notification.data.NodeData;
+import org.edu_sharing.notification.data.Status;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Date;
 
 @Getter
 @Setter
@@ -17,6 +21,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @TypeAlias("AddToCollectionMessage")
 @Document(collection = "notification")
 public class AddToCollectionEvent extends NodeBaseEvent {
+
+    public AddToCollectionEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, Collection collection) {
+        super(id, timestamp, creatorId, receiverId, status, node);
+        this.collection = collection;
+    }
+
     /**
      * the collection the node has been added to
      */
