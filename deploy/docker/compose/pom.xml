@@ -22,6 +22,10 @@
         <directory>src/main/compose</directory>
         <filtering>true</filtering>
       </resource>
+      <resource>
+        <directory>src/main/scripts</directory>
+        <filtering>true</filtering>
+      </resource>
     </resources>
 
     <plugins>

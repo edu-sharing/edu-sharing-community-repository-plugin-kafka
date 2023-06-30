@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   notification-service:
-    entrypoint: "/bin/sh -c \"java --enable-preview  $${JAVA_OPTS:-} -jar /application/app.jar\""
+    entrypoint: "/bin/sh -c \"java --enable-preview -Dspring.profiles.active=docker $${JAVA_OPTS:-} -jar /application/app.jar\""
     volumes:
       - "${GIT_ROOT}/repository-kafka/notification-service/target/edu_sharing-community-repository-plugin-kafka-notification-service-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-notification-service:jar.version}.jar:/application/app.jar"
 
