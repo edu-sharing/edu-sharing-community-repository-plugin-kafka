@@ -70,7 +70,7 @@ public class EmailService implements NotificationService {
                 .peek(x -> this.resolveUserId(x, "receiverId"))
                 .collect(Collectors.toList()));
         ctx.setVariable("receiver", userData.get());
-        ctx.setVariable("template", messageType + "_Multiple");
+        ctx.setVariable("template", "html/multiple/" + messageType);
 
         try {
             String content = templateEngine.process("html/baseLayout.html", ctx);
@@ -97,7 +97,7 @@ public class EmailService implements NotificationService {
         this.resolveUserId(data, "receiverId");
 
         ctx.setVariables(data);
-        ctx.setVariable("template", messageType + "_Single");
+        ctx.setVariable("template", "html/single/" + messageType);
 
         try {
             String content = templateEngine.process("html/baseLayout.html", ctx);
@@ -131,13 +131,5 @@ public class EmailService implements NotificationService {
 
     private String getMessageType(Class<? extends NotificationEvent> event) {
         return event.getSimpleName();
-//        SerializationConfig config = objectMapper.getSerializationConfig();
-//        AnnotatedClass annotatedClass = AnnotatedClassResolver.resolve(config, config.constructType(event), new SimpleMixInResolver(null));
-//        Collection<NamedType> namedTypes = objectMapper.getSubtypeResolver().collectAndResolveSubtypesByClass(config, annotatedClass);
-//
-//        return namedTypes.stream().filter(x -> x.getType() == event)
-//                .map(NamedType::getName)
-//                .findFirst()
-//                .orElse(event.getSimpleName());
     }
 }

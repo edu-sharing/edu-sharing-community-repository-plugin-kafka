@@ -1,0 +1,21 @@
+<div th:fragment="content">
+    <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
+
+    <div th:switch="${type}">
+        <h2 th:case="invited_collection" th:text="#{inviteEvent_H2Collection(${creator.firstName}, ${creator.lastName}, ${name})}"></h2>
+        <h2 th:case="*" th:text="#{inviteEvent_H2Material(${creator.firstName}, ${creator.lastName}, ${name})}"></h2>
+    </div>
+    <span th:text="#{inviteEvent_Rights}"></span><br>
+    <div class="rights" th:text="${#strings.listJoin(permissions, '\n')}"></div>
+    <br>
+    <div th:if="${!#strings.isEmpty(userComment)}">
+        <span th:text="#{userCommentInfo}"></span>
+        <br>
+        <span th:text="${userComment}"></span>
+        <br><br><br>
+    </div>
+
+    <div class="center">
+        <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
+    </div>
+</div>

@@ -1,0 +1,18 @@
+<div th:fragment="content">
+    <h1 th:text="#{greetings('','')}"></h1>
+    <h2 th:text="#{nodeIssue_H2(${email}, ${node.properties.cm__name})}"></h2>
+    <span th:text="#{nodeIssue_Reason(${reason})}"></span>
+    <br>
+    <br>
+    <br>
+    <div th:if="${!#strings.isEmpty(userComment)}">
+        <span th:text="#{userCommentInfo}"></span>
+        <br>
+        <span th:text="${userComment}"></span>
+        <br><br><br>
+    </div>
+    <div class="center">
+        <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
+    </div>
+    <br><br>
+</div>
