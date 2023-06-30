@@ -38,6 +38,7 @@ import org.edu_sharing.repository.server.tools.mailtemplates.MailTemplate;
 import org.edu_sharing.restservices.mds.v1.model.MdsValue;
 import org.edu_sharing.service.InsufficientPermissionException;
 import org.edu_sharing.service.authority.AuthorityService;
+import org.edu_sharing.service.authority.AuthorityServiceHelper;
 import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.service.notification.Status;
 import org.edu_sharing.service.rating.RatingDetails;
@@ -325,7 +326,7 @@ public class KafkaNotificationService implements NotificationService {
 
 
     @Override
-    public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws IOException {
+    public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws IOException, InsufficientPermissionException {
         try {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification");
@@ -333,6 +334,14 @@ public class KafkaNotificationService implements NotificationService {
             if ("-me-".equals(receiverId)) {
                 receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
             }
+
+            if(!AuthorityServiceHelper.isAdmin()){
+                String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+                if(!currentUser.equals(receiverId)){
+                    throw new InsufficientPermissionException("You haven't enough permission to se notifications");
+                }
+            }
+
 
             builder.setParameter("receiverId", receiverId);
             builder.setParameter("status", StringUtils.join(status, ","));
