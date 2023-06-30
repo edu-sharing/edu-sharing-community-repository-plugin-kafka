@@ -3,14 +3,16 @@ package org.edu_sharing.notification.mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.edu_sharing.notification.data.*;
+import org.edu_sharing.notification.data.Collection;
+import org.edu_sharing.notification.data.NodeData;
+import org.edu_sharing.notification.data.Status;
+import org.edu_sharing.notification.data.WidgetData;
 import org.edu_sharing.notification.event.*;
 import org.edu_sharing.rest.notification.data.*;
 import org.edu_sharing.rest.notification.event.*;
 import org.edu_sharing.userData.UserData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -39,6 +41,7 @@ public class RestNotificationMapper {
 
     private UserDataDTO map(UserData userData) {
         return new UserDataDTO(
+                userData.getId(),
                 userData.getFirstName(),
                 userData.getLastName(),
                 userData.getEmail());
@@ -123,7 +126,7 @@ public class RestNotificationMapper {
     private NotificationEventDTO mapNodeIssueEvent(NodeIssueEvent event) {
         return new NodeIssueEventDTO(event.getId(),
                 event.getTimestamp(),
-                new UserDataDTO(null, null, event.getEmail()),
+                new UserDataDTO(null, null, null, event.getEmail()),
                 map(userData.get(event.getReceiverId())),
                 map(event.getStatus()),
                 map(event.getNode()),
