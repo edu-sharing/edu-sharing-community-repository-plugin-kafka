@@ -23,8 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.edu_sharing.rest.notification.event.NotificationEventDTO;
 import org.edu_sharing.rest.notification.data.StatusDTO;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -84,6 +83,37 @@ public class NotificationController {
         Map<String, UserData> userDataAsMap = userDataService.getUserDataAsMap(userIds);
         RestNotificationMapper restNotificationMapper = new RestNotificationMapper(userDataAsMap);
         return new NotificationResponsePage(notifications.map(restNotificationMapper::map));
+    }
+
+    @GetMapping("/{id}")
+    @Parameters({
+            @Parameter(name = "receiverId", description = "receiver identifier",
+                    in = ParameterIn.QUERY, schema = @Schema(type = "string")),
+            @Parameter(name = "status", description = "status (or conjunction)",
+                    in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema = @Schema(implementation = StatusDTO.class)))),
+            @Parameter(name = "page", description = "page number",
+                    in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "0")),
+            @Parameter(name = "size", description = "page size",
+                    in = ParameterIn.QUERY, schema = @Schema(type = "integer", defaultValue = "25")),
+            @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc)(,ignoreCase). "
+                    + "Default sort order is ascending. Multiple sort criteria are supported."
+                    , in = ParameterIn.QUERY, content = @Content(array = @ArraySchema(schema = @Schema(type = "string"))))
+    })
+    @Operation(summary = "Retrieve stored notification, filtered by receiver and status",
+            responses = @ApiResponse(responseCode = "200",
+                    description = "get the received notifications",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotificationResponsePage.class))))
+    public NotificationEventDTO getNotification(@PathVariable String id) {
+
+        NotificationEvent notification = notificationManager.getNotification(id);
+
+        List<String> userIds = Arrays.asList(notification.getCreatorId(), notification.getReceiverId());
+        Map<String, UserData> userDataAsMap = userDataService.getUserDataAsMap(userIds);
+
+        RestNotificationMapper restNotificationMapper = new RestNotificationMapper(userDataAsMap);
+        return restNotificationMapper.map(notification);
+
+
     }
 
     //Wrapper class

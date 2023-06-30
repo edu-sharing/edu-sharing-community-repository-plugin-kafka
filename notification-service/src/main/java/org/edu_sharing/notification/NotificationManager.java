@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -36,6 +37,9 @@ public class NotificationManager {
         notificationRepository.save(notificationEvent);
     }
 
+    public NotificationEvent getNotification(String id) {
+        return notificationRepository.findById(id).orElseThrow(() -> new NoSuchElementException("No notification for " + id + "found!"));
+    }
 
     public Page<NotificationEvent> getAllNotifications(String receiverId, List<Status> statusList, Pageable paging) {
         return notificationRepository.findAll(receiverId, statusList, paging);
@@ -47,11 +51,10 @@ public class NotificationManager {
 
     public NotificationEvent setStatusByNotificationId(String id, Status status) {
         NotificationEvent notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("No Message for " + id + "found!"));
-        log.info("Status \"{}\" for notifications \"{}\" was updated", status, id);
-
+                .orElseThrow(() -> new NoSuchElementException("No notification for " + id + "found!"));
         notification.setStatus(status);
         notificationRepository.save(notification);
+        log.info("Status \"{}\" of notification \"{}\" was updated", status, id);
         return notification;
     }
 
