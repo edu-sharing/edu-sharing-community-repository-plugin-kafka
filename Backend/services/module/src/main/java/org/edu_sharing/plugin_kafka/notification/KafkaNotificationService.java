@@ -15,6 +15,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -426,7 +427,7 @@ public class KafkaNotificationService implements NotificationService {
             builder.setParameter("id", id);
             builder.setParameter("status", status.toString());
 
-            HttpGet request = new HttpGet(builder.build());
+            HttpPatch request = new HttpPatch(builder.build());
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-Type", "application/json");
 
@@ -443,7 +444,7 @@ public class KafkaNotificationService implements NotificationService {
                     throw new HttpException(content);
                 }
 
-                return new ObjectMapper().readValue(EntityUtils.toString(entity, "UTF-8"), org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
+                return JacksonUtils.enhancedObjectMapper().readValue(content, org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
             }
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
@@ -465,7 +466,7 @@ public class KafkaNotificationService implements NotificationService {
             oldStatusList.forEach(x -> builder.setParameter("oldStatus", x.toString()));
             builder.setParameter("oldStatus", newStatus.toString());
 
-            HttpGet request = new HttpGet(builder.build());
+            HttpPatch request = new HttpPatch(builder.build());
             request.setHeader("Accept", "application/json");
             request.setHeader("Content-Type", "application/json");
 
