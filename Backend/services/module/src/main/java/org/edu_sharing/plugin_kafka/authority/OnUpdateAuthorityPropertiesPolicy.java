@@ -29,7 +29,7 @@ public class OnUpdateAuthorityPropertiesPolicy implements NodeServicePolicies.On
     @PostConstruct
     public void init() {
         policyComponent.bindClassBehaviour(NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, ContentModel.TYPE_AUTHORITY, new JavaBehaviour(this, "onUpdateProperties"));
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnDeleteNodePolicy.QNAME, ContentModel.TYPE_AUTHORITY, new JavaBehaviour(this, "onDeleteNodePolicy"));
+        policyComponent.bindClassBehaviour(NodeServicePolicies.OnDeleteNodePolicy.QNAME, ContentModel.TYPE_AUTHORITY, new JavaBehaviour(this, "onDeleteNode"));
     }
 
     @Override
