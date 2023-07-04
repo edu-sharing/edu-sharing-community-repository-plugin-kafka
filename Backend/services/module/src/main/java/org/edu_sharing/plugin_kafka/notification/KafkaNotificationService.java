@@ -339,7 +339,7 @@ public class KafkaNotificationService implements NotificationService {
             if(!AuthorityServiceHelper.isAdmin()){
                 String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
                 if(!currentUser.equals(receiverId)){
-                    throw new InsufficientPermissionException("You haven't enough permission to se notifications");
+                    throw new InsufficientPermissionException("You haven't enough permission to see notifications");
                 }
             }
 
