@@ -6,6 +6,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class OnUpdateAuthorityPropertiesPolicy implements NodeServicePolicies.OnUpdatePropertiesPolicy {
+public class OnUpdateAuthorityPropertiesPolicy implements NodeServicePolicies.OnUpdatePropertiesPolicy, NodeServicePolicies.OnDeleteNodePolicy {
 
     private final PolicyComponent policyComponent;
     private final KafkaAuthorityPublisherService kafkaAuthorityPublisherService;
@@ -28,6 +29,7 @@ public class OnUpdateAuthorityPropertiesPolicy implements NodeServicePolicies.On
     @PostConstruct
     public void init() {
         policyComponent.bindClassBehaviour(NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, ContentModel.TYPE_AUTHORITY, new JavaBehaviour(this, "onUpdateProperties"));
+        policyComponent.bindClassBehaviour(NodeServicePolicies.OnDeleteNodePolicy.QNAME, ContentModel.TYPE_AUTHORITY, new JavaBehaviour(this, "onDeleteNodePolicy"));
     }
 
     @Override
@@ -37,6 +39,14 @@ public class OnUpdateAuthorityPropertiesPolicy implements NodeServicePolicies.On
             kafkaAuthorityPublisherService.publishAuthority(after);
         } catch (IOException e) {
             log.error("Could not send notification for authority property changed!", e);
+        }
+    }
+
+    @Override
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived) {
+        if(!isNodeArchived){
+            log.info("Notify user props deleted");
+            kafkaAuthorityPublisherService.deleteAuthority(childAssocRef.getChildRef());
         }
     }
 }

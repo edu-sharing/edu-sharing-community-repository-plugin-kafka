@@ -119,4 +119,12 @@ public class KafkaAuthorityPublisherService {
             log.error("Could not publish authority: {}", authorityName, e);
         }
     }
+
+    public void deleteAuthority(NodeRef nodeRef) {
+        log.info("Handle delete authority: {}", nodeRef);
+
+        UserDataDTO userDataDTO = new UserDataDTO();
+        kafkaUserTemplate.sendDefault(nodeRef.getId(), userDataDTO);
+        log.info("Published deleted authority: {}", nodeRef);
+    }
 }
