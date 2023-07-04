@@ -10,6 +10,7 @@ import org.edu_sharing.kafka.notification.event.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class KafkaNotificationMapper {
@@ -122,7 +123,22 @@ public class KafkaNotificationMapper {
                 dto.getName(),
                 dto.getType(),
                 dto.getUserComment(),
-                new ArrayList<>(dto.getPermissions())
+                Optional.of(dto)
+                        .map(InviteEventDTO::getPermissions)
+                        .map(x->x.stream().map(KafkaNotificationMapper::map).collect(Collectors.toList()))
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new)
+        );
+    }
+
+    private static Permission map(PermissionDTO permissionDTO) {
+        if(permissionDTO == null){
+            return null;
+        }
+
+        return new Permission(
+                permissionDTO.getPermission(),
+                permissionDTO.getDe()
         );
     }
 
@@ -268,7 +284,22 @@ public class KafkaNotificationMapper {
                 event.getName(),
                 event.getType(),
                 event.getUserComment(),
-                new ArrayList<>(event.getPermissions())
+                Optional.of(event)
+                        .map(InviteEvent::getPermissions)
+                        .map(x->x.stream().map(KafkaNotificationMapper::map).collect(Collectors.toList()))
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new)
+        );
+    }
+
+    private static PermissionDTO map(Permission permission) {
+        if(permission == null){
+            return null;
+        }
+
+        return new PermissionDTO(
+                permission.getPermission(),
+                permission.getDe()
         );
     }
 

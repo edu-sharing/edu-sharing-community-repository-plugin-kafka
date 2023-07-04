@@ -82,7 +82,7 @@ class EMailNotifierApplicationTests {
                         .name("test")
                         .creatorId("william")
                         .receiverId("receiver")
-                        .permission("read")
+                        .permission(new Permission("read", "lesen"))
                         .node(nodeData)
                         .build()),
                 Collections.singletonList(InviteEvent.builder()
@@ -90,7 +90,7 @@ class EMailNotifierApplicationTests {
                         .name("test")
                         .creatorId("william")
                         .receiverId("receiver")
-                        .permission("write")
+                        .permission(new Permission("read", "schreiben"))
                         .node(nodeData)
                         .build()),
                 Collections.singletonList(InviteEvent.builder()
@@ -98,7 +98,7 @@ class EMailNotifierApplicationTests {
                         .name("test")
                         .creatorId("william")
                         .receiverId("receiver")
-                        .permission("read")
+                        .permission(new Permission("read", "lesen"))
                         .node(nodeData)
                         .build()),
                 Collections.singletonList(NodeIssueEvent.builder()
@@ -175,7 +175,7 @@ class EMailNotifierApplicationTests {
                                 .name("test")
                                 .creatorId("william")
                                 .receiverId("receiver")
-                                .permission("read")
+                                .permission(new Permission("read", "lesen"))
                                 .node(nodeData1)
                                 .build(),
                         InviteEvent.builder()
@@ -183,7 +183,7 @@ class EMailNotifierApplicationTests {
                                 .name("test")
                                 .creatorId("johansson")
                                 .receiverId("receiver")
-                                .permission("write")
+                                .permission(new Permission("write", "schreiben"))
                                 .node(nodeData2)
                                 .build()),
 
@@ -193,7 +193,7 @@ class EMailNotifierApplicationTests {
                                 .name("test")
                                 .creatorId("william")
                                 .receiverId("receiver")
-                                .permission("read")
+                                .permission(new Permission("read", "lesen"))
                                 .node(nodeData1)
                                 .build(),
                         InviteEvent.builder()
@@ -201,7 +201,7 @@ class EMailNotifierApplicationTests {
                                 .name("test")
                                 .creatorId("johansson")
                                 .receiverId("receiver")
-                                .permission("write")
+                                .permission(new Permission("write", "schreiben"))
                                 .node(nodeData2)
                                 .build()),
 

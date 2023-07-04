@@ -6,7 +6,7 @@
         <h2 th:case="*" th:text="#{inviteEvent_H2Material(${creator.firstName}, ${creator.lastName}, ${name})}"></h2>
     </div>
     <span th:text="#{inviteEvent_Rights}"></span><br>
-    <div class="rights" th:text="${#strings.listJoin(permissions, '\n')}"></div>
+    <div class="rights" th:text="${#strings.listJoin(permissions.![de], '\n')}"></div>
     <br>
     <div th:if="${!#strings.isEmpty(userComment)}">
         <span th:text="#{userCommentInfo}"></span>

@@ -3,10 +3,7 @@ package org.edu_sharing.notification.mapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.edu_sharing.notification.data.Collection;
-import org.edu_sharing.notification.data.NodeData;
-import org.edu_sharing.notification.data.Status;
-import org.edu_sharing.notification.data.WidgetData;
+import org.edu_sharing.notification.data.*;
 import org.edu_sharing.notification.event.*;
 import org.edu_sharing.rest.notification.data.*;
 import org.edu_sharing.rest.notification.event.*;
@@ -14,6 +11,7 @@ import org.edu_sharing.userData.UserData;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -147,7 +145,11 @@ public class RestNotificationMapper {
                 event.getName(),
                 event.getType(),
                 event.getUserComment(),
-                new ArrayList<>(event.getPermissions())
+                Optional.of(event)
+                        .map(InviteEvent::getPermissions)
+                        .map(x->x.stream().map(Permission::getPermission).collect(Collectors.toList()))
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new)
         );
     }
 

@@ -2,7 +2,7 @@
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
     <h2 th:case="*" th:text="#{inviteEvent_H2Material(${creator.firstName}, ${creator.lastName}, ${name})}"></h2>
     <span th:text="#{inviteEvent_Rights}"></span><br>
-    <div class="rights" th:text="${#strings.listJoin(permissions, '\n')}"></div>
+    <div class="rights" th:text="${#strings.listJoin(permissions.![de], '\n')}"></div>
     <br>
     <span th:text="#{inviteEvent_Safe}"></span>
     <br><br>

@@ -169,10 +169,10 @@ public class KafkaNotificationService implements NotificationService {
             name = (String) nodeProperties.get(CCConstants.CM_NAME);
         }
 
-        List<String> permissionList = Arrays.stream(permissions)
+        List<PermissionDTO> permissionList = Arrays.stream(permissions)
                 .filter(perm -> !(CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope()) && Objects.equals(CCConstants.PERMISSION_CC_PUBLISH, perm)))
-                .map(perm -> I18nServer.getTranslationDefaultResourcebundle(I18nServer.getPermissionDescription(perm), new AuthenticationToolAPI().getCurrentLocale()))
-                .filter(StringUtils::isNotBlank)
+                .map(perm -> new PermissionDTO(perm,
+                        I18nServer.getTranslationDefaultResourcebundle(I18nServer.getPermissionDescription(perm), new AuthenticationToolAPI().getCurrentLocale())))
                 .collect(Collectors.toList());
 
         if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
