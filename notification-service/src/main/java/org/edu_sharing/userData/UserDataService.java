@@ -6,6 +6,7 @@ import org.edu_sharing.kafka.user.UserDataDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,12 +30,21 @@ public class UserDataService {
     @Value("${spring.application.name}")
     private String applicationName;
 
-    public void setUserData(List<String> keys, List<UserDataDTO> message) {
-        userDataRepository.saveAll(zip(keys, message.stream().map(this::tranform).toList(),
-                (key, data) -> {
-                    data.setId(key);
-                    return data;
-                }).toList());
+    public void setUserData(List<String> keys, List<UserDataDTO> messages) {
+        List<UserData> userDatas = new ArrayList<>();
+        for (int i = 0; i < keys.size(); i++) {
+            Optional<UserDataDTO> message = Optional.ofNullable(messages.get(i));
+            UserData userData = createUserData(keys.get(i), message);
+            if (message.isEmpty()) {
+                userDataRepository.delete(userData);
+            } else {
+                userDatas.add(userData);
+            }
+        }
+
+        if (!userDatas.isEmpty()) {
+            userDataRepository.saveAll(userDatas);
+        }
     }
 
     public Optional<UserData> getUserData(String id) {
@@ -52,11 +62,11 @@ public class UserDataService {
 
     public Map<String, UserData> getUserDataAsMap(List<String> ids) {
         Map<String, UserData> userData = userDataRepository.findByIdInAsMap(ids);
-        if(ids.remove("system")){
-            userData.put("system",new UserData("system", "", applicationName, mailSendAddress, "de-DE"));
+        if (ids.remove("system")) {
+            userData.put("system", new UserData("system", "", applicationName, mailSendAddress, "de-DE"));
         }
 
-        if(ids.remove("report")){
+        if (ids.remove("report")) {
             userData.put("report", new UserData("report", "", applicationName, mailReportAddress, "de-DE"));
         }
 
@@ -72,20 +82,20 @@ public class UserDataService {
     }
 
 
-    private UserData tranform(UserDataDTO userDataDTO) {
+    private UserData createUserData(String id, Optional<UserDataDTO> userDataDTO) {
         return new UserData(
-                null,
-                userDataDTO.getFirstName(),
-                userDataDTO.getLastName(),
-                userDataDTO.getEmail(),
-                userDataDTO.getLocale(),
-                NotificationInterval.valueOf(userDataDTO.getAddToCollectionEvent().toString()),
-                 NotificationInterval.valueOf(userDataDTO.getCommentEvent().toString()),
-                 NotificationInterval.valueOf(userDataDTO.getInviteEvent().toString()),
-                 NotificationInterval.valueOf(userDataDTO.getNodeIssueEvent().toString()),
-                 NotificationInterval.valueOf(userDataDTO.getRatingEvent().toString()),
-                 NotificationInterval.valueOf(userDataDTO.getWorkflowEvent().toString()),
-                 NotificationInterval.valueOf(userDataDTO.getMetadataSuggestionEvent().toString())
+                id,
+                userDataDTO.map(UserDataDTO::getFirstName).orElse(null),
+                userDataDTO.map(UserDataDTO::getLastName).orElse(null),
+                userDataDTO.map(UserDataDTO::getEmail).orElse(null),
+                userDataDTO.map(UserDataDTO::getLocale).orElse(null),
+                userDataDTO.map(UserDataDTO::getAddToCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getCommentEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getInviteEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getNodeIssueEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getRatingEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getWorkflowEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getMetadataSuggestionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null)
         );
 
     }

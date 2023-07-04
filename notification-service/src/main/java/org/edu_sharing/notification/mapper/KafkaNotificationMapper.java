@@ -48,6 +48,10 @@ public class KafkaNotificationMapper {
     }
 
     public static Map<String, Object> copyMapFromDTO(Map<String, Object> map) {
+        if(map == null) {
+            return null;
+        }
+
         return map.entrySet()
                 .stream()
                 .map(x -> new ImmutablePair<>(x.getKey()
@@ -58,6 +62,10 @@ public class KafkaNotificationMapper {
     }
 
     private static NodeData map(NodeDataDTO node) {
+        if(node == null) {
+            return null;
+        }
+
         return new NodeData(
                 node.getType(),
                 new ArrayList<>(node.getAspects()),
@@ -66,6 +74,10 @@ public class KafkaNotificationMapper {
     }
 
     private static Collection map(CollectionDTO collection) {
+        if(collection == null) {
+            return null;
+        }
+
         return new Collection(
                 collection.getType(),
                 new ArrayList<>(collection.getAspects()),
@@ -178,10 +190,18 @@ public class KafkaNotificationMapper {
 
 
     private static StatusDTO map(Status status) {
+        if(status == null) {
+            return null;
+        }
+
         return StatusDTO.valueOf(status.toString());
     }
 
     private static NodeDataDTO map(NodeData node) {
+        if(node == null) {
+            return null;
+        }
+
         return new NodeDataDTO(
                 node.getType(),
                 new ArrayList<>(node.getAspects()),
@@ -189,6 +209,10 @@ public class KafkaNotificationMapper {
     }
 
     private static CollectionDTO map(Collection collection) {
+        if(collection == null) {
+            return null;
+        }
+
         return new CollectionDTO(
                 collection.getType(),
                 new ArrayList<>(collection.getAspects()),
@@ -196,6 +220,10 @@ public class KafkaNotificationMapper {
     }
 
     private static WidgetDataDTO map(WidgetData widget) {
+        if(widget == null) {
+            return null;
+        }
+
         return new WidgetDataDTO(
                 widget.getId(),
                 widget.getCaption());

@@ -36,10 +36,18 @@ public class RestNotificationMapper {
     }
 
     private StatusDTO map(Status status) {
+        if(status == null) {
+            return null;
+        }
+
         return StatusDTO.valueOf(status.toString());
     }
 
     private UserDataDTO map(UserData userData) {
+        if(userData == null) {
+            return null;
+        }
+
         return new UserDataDTO(
                 userData.getId(),
                 userData.getFirstName(),
@@ -48,6 +56,10 @@ public class RestNotificationMapper {
     }
 
     private NodeDataDTO map(NodeData node) {
+        if(node == null) {
+            return null;
+        }
+
         return new NodeDataDTO(
                 node.getType(),
                 new ArrayList<>(node.getAspects()),
@@ -56,6 +68,10 @@ public class RestNotificationMapper {
 
 
     private static CollectionDTO map(Collection collection) {
+        if(collection == null) {
+            return null;
+        }
+
         return new CollectionDTO(
                 collection.getType(),
                 new ArrayList<>(collection.getAspects()),
@@ -63,14 +79,26 @@ public class RestNotificationMapper {
     }
 
     public static Status map(StatusDTO status) {
+        if(status == null) {
+            return null;
+        }
+
         return Status.valueOf(status.toString());
     }
 
     private static WidgetDataDTO map(WidgetData widget) {
+        if(widget == null) {
+            return null;
+        }
+
         return new WidgetDataDTO(widget.getId(), widget.getCaption());
     }
 
     public static Map<String, Object> copyMapToDTO(Map<String, Object> map) {
+        if(map == null) {
+            return null;
+        }
+
         return map.entrySet()
                 .stream()
                 .map(x -> new ImmutablePair<>(x.getKey()
