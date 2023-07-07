@@ -72,7 +72,7 @@ class EMailNotifierApplicationTests {
 
     public static List<List<NotificationEvent>> provideSingleEventMessages() {
         NodeData nodeData = NodeData.builder()
-                .property("cm_name", "Some Material")
+                .property("cm:name", "Some Material")
                 .property("link", "www.example.de/some_material")
                 .build();
 
@@ -142,7 +142,7 @@ class EMailNotifierApplicationTests {
                         .receiverId("receiver")
                         .node(nodeData)
                         .collection(Collection.builder()
-                                .property("cm_name", "Some Collection")
+                                .property("cm:name", "Some Collection")
                                 .property("link", "www.example.de/some_collection")
                                 .build())
                         .build()),
@@ -159,12 +159,12 @@ class EMailNotifierApplicationTests {
 
     public static List<List<NotificationEvent>> provideMultiEventMessages() {
         NodeData nodeData1 = NodeData.builder()
-                .property("cm_name", "Some Material")
+                .property("cm:name", "Some Material")
                 .property("link", "www.example.de/some_material")
                 .build();
 
         NodeData nodeData2 = NodeData.builder()
-                .property("cm_name", "Some other Material")
+                .property("cm:name", "Some other Material")
                 .property("link", "www.example.de/some_other_material")
                 .build();
 
@@ -286,7 +286,7 @@ class EMailNotifierApplicationTests {
                                 .receiverId("receiver")
                                 .node(nodeData1)
                                 .collection(Collection.builder()
-                                        .property("cm_name", "Some collection")
+                                        .property("cm:name", "Some collection")
                                         .property("link", "www.example.de/some_collection")
                                         .build())
                                 .build(),
@@ -296,7 +296,7 @@ class EMailNotifierApplicationTests {
                                 .receiverId("receiver")
                                 .node(nodeData2)
                                 .collection(Collection.builder()
-                                        .property("cm_name", "Some other collection")
+                                        .property("cm:name", "Some other collection")
                                         .property("link", "www.example.de/some_other_collection")
                                         .build())
                                 .build()),

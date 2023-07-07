@@ -1,6 +1,6 @@
 <div th:fragment="content">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <h2 th:text="#{workflowEvent_H2(${creator.firstName}, ${creator.lastName}, ${node.properties.cm__name}, ${workflowStatus})}"></h2>
+    <h2 th:text="#{workflowEvent_H2(${creator.firstName}, ${creator.lastName}, ${node.properties.cm_name}, ${workflowStatus})}"></h2>
     <br>
     <div th:if="${!#strings.isEmpty(userComment)}">
         <span th:text="#{userCommentInfo}"></span>

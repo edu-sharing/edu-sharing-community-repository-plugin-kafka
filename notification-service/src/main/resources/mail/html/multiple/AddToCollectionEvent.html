@@ -8,7 +8,7 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <td th:text="${event.node.properties.cm__name}"/>
+            <td th:text="${event.node.properties.cm_name}"/>
             <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
             <td>
                 <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>

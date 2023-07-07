@@ -53,13 +53,7 @@ public class KafkaNotificationMapper {
             return null;
         }
 
-        return map.entrySet()
-                .stream()
-                .map(x -> new ImmutablePair<>(x.getKey()
-                        .replace(":", "__")
-                        .replace(".", "--"),
-                        x.getValue()))
-                .collect(Collectors.toMap(Pair::getKey, Map.Entry::getValue));
+        return new HashMap<>(map);
     }
 
     private static NodeData map(NodeDataDTO node) {

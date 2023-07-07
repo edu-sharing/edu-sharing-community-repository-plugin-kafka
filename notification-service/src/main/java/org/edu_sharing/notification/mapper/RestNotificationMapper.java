@@ -10,6 +10,7 @@ import org.edu_sharing.rest.notification.event.*;
 import org.edu_sharing.userData.UserData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class RestNotificationMapper {
     }
 
     private StatusDTO map(Status status) {
-        if(status == null) {
+        if (status == null) {
             return null;
         }
 
@@ -42,7 +43,7 @@ public class RestNotificationMapper {
     }
 
     private UserDataDTO map(UserData userData) {
-        if(userData == null) {
+        if (userData == null) {
             return null;
         }
 
@@ -54,7 +55,7 @@ public class RestNotificationMapper {
     }
 
     private NodeDataDTO map(NodeData node) {
-        if(node == null) {
+        if (node == null) {
             return null;
         }
 
@@ -66,7 +67,7 @@ public class RestNotificationMapper {
 
 
     private static CollectionDTO map(Collection collection) {
-        if(collection == null) {
+        if (collection == null) {
             return null;
         }
 
@@ -77,7 +78,7 @@ public class RestNotificationMapper {
     }
 
     public static Status map(StatusDTO status) {
-        if(status == null) {
+        if (status == null) {
             return null;
         }
 
@@ -85,7 +86,7 @@ public class RestNotificationMapper {
     }
 
     private static WidgetDataDTO map(WidgetData widget) {
-        if(widget == null) {
+        if (widget == null) {
             return null;
         }
 
@@ -93,17 +94,11 @@ public class RestNotificationMapper {
     }
 
     public static Map<String, Object> copyMapToDTO(Map<String, Object> map) {
-        if(map == null) {
+        if (map == null) {
             return null;
         }
 
-        return map.entrySet()
-                .stream()
-                .map(x -> new ImmutablePair<>(x.getKey()
-                        .replace("__", ":")
-                        .replace("--", "."),
-                        x.getValue()))
-                .collect(Collectors.toMap(Pair::getKey, Map.Entry::getValue));
+        return new HashMap<>(map);
     }
 
 
@@ -147,7 +142,7 @@ public class RestNotificationMapper {
                 event.getUserComment(),
                 Optional.of(event)
                         .map(InviteEvent::getPermissions)
-                        .map(x->x.stream().map(Permission::getPermission).collect(Collectors.toList()))
+                        .map(x -> x.stream().map(Permission::getPermission).collect(Collectors.toList()))
                         .map(ArrayList::new)
                         .orElseGet(ArrayList::new)
         );

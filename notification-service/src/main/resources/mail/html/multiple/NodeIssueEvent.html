@@ -9,7 +9,7 @@
             <th></th>
         </tr>
         <tr th:each="event: ${events}">
-            <td th:text="${event.node.properties.cm__name}"/>
+            <td th:text="${event.node.properties.cm_name}"/>
             <td th:text="${event.email}"/>
             <td th:text="#{nodeIssue_Reason(${event.reason})}"/>
             <td th:text="${event.userComment}"/>

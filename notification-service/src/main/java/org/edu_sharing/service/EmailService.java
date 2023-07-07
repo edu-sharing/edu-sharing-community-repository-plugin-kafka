@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -68,6 +65,7 @@ public class EmailService implements NotificationService {
                 .map(x -> objectMapper.convertValue(x, Map.class))
                 .peek(x -> this.resolveUserId(x, "creatorId"))
                 .peek(x -> this.resolveUserId(x, "receiverId"))
+                .map(this::replaceInvalidSymbols)
                 .collect(Collectors.toList()));
         ctx.setVariable("receiver", userData.get());
         ctx.setVariable("template", "html/multiple/" + messageType);
@@ -83,6 +81,23 @@ public class EmailService implements NotificationService {
         }
     }
 
+    private Object replaceInvalidSymbols(Object data) {
+        if (data instanceof Map) {
+            HashMap<String, Object> map = (HashMap<String, Object>) data;
+            return map.entrySet().stream()
+                    .map(x -> new ImmutablePair<>(x.getKey().replaceAll("[:.]", "_"), replaceInvalidSymbols(x.getValue())))
+                    .collect(HashMap::new, (m,v)-> m.put(v.getKey(), v.getValue()), HashMap::putAll); // Collectors.toMap() produces a NullPointerException for values
+
+        } else if (data instanceof List) {
+            List<Object> list = (List<Object>) data;
+            return list.stream()
+                    .map(this::replaceInvalidSymbols)
+                    .collect(Collectors.toList());
+        } else {
+            return data;
+        }
+    }
+
     public void sendSingleNotification(NotificationEvent notificationEvent) {
         Optional<UserData> userData = userDataService.getUserData(notificationEvent.getReceiverId());
         if (userData.isEmpty()) {
@@ -95,6 +110,7 @@ public class EmailService implements NotificationService {
         Map<String, Object> data = objectMapper.convertValue(notificationEvent, Map.class);
         this.resolveUserId(data, "creatorId");
         this.resolveUserId(data, "receiverId");
+        data = (Map<String, Object>)replaceInvalidSymbols(data);
 
         ctx.setVariables(data);
         ctx.setVariable("template", "html/single/" + messageType);
