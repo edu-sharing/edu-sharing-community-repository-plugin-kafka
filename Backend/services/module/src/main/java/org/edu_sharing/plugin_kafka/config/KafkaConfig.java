@@ -45,6 +45,7 @@ public class KafkaConfig implements ApplicationContextAware {
     public KafkaAdmin admin() {
         KafkaAdmin kafkaAdmin = new KafkaAdmin(kafkaProperties());
         kafkaAdmin.setApplicationContext(applicationContext);
+        kafkaAdmin.setAutoCreate(false);
         kafkaAdmin.initialize();
         return kafkaAdmin;
     }
