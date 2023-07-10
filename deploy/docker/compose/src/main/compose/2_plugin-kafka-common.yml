@@ -3,7 +3,7 @@ version: '3.7'
 services:
 
   kafka:
-    image: "${docker.repository}/${docker.prefix}/edu_sharing-enterprise-repository-plugin-kafka-deploy-docker-build-kafka:${docker.tag}"
+    image: "${docker.repository}/${docker.prefix}-deploy-docker-build-kafka:${docker.tag}"
     expose:
       - '9092'
       - '9093'
@@ -26,7 +26,7 @@ services:
       - "${COMMON_BIND_HOST:-127.0.0.1}:${KAFKA_EXTERNAL_PORT:-9093}:9093"
 
   notification-service-db:
-    image: "${docker.repository}/${docker.prefix}/edu_sharing-enterprise-repository-plugin-kafka-deploy-docker-build-mongo:${docker.tag}"
+    image: "${docker.repository}/${docker.prefix}-deploy-docker-build-mongo:${docker.tag}"
     environment:
       ALLOW_EMPTY_PASSWORD: "false"
       MONGODB_ADVERTISED_HOSTNAME: "notification-service-db"
@@ -43,7 +43,7 @@ services:
       - "notification-service-db-volume-data:/bitnami/mongodb"
 
   notification-service:
-    image: "${docker.repository}/${docker.prefix}/edu_sharing-enterprise-repository-plugin-kafka-deploy-docker-build-notification-service:${docker.tag}"
+    image: "${docker.repository}/${docker.prefix}-deploy-docker-build-notification-service:${docker.tag}"
     command:
       - -Xms${REPOSITORY_SEARCH_ELASTIC_TRACKER_JAVA_XMS:-512m}
       - -Xmx${REPOSITORY_SEARCH_ELASTIC_TRACKER_JAVA_XMX:-512m}
