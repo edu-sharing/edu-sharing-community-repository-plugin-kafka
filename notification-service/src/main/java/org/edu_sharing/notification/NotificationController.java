@@ -107,7 +107,7 @@ public class NotificationController {
 
         NotificationEvent notification = notificationManager.getNotification(id);
 
-        List<String> userIds = Arrays.asList(notification.getCreatorId(), notification.getReceiverId());
+        List<String> userIds = new ArrayList<>(Arrays.asList(notification.getCreatorId(), notification.getReceiverId()));
         Map<String, UserData> userDataAsMap = userDataService.getUserDataAsMap(userIds);
 
         RestNotificationMapper restNotificationMapper = new RestNotificationMapper(userDataAsMap);
