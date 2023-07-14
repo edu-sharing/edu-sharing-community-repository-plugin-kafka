@@ -40,8 +40,7 @@ COPY --chown=worker:worker assets/profiler profiler/
 ########################################################################################################################
 
 EXPOSE 8080
-
-ENTRYPOINT ["java", "--enable-preview", "-Dspring.profiles.active=docker $${JAVA_OPTS:-}", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} --enable-preview -Dspring.profiles.active=docker org.springframework.boot.loader.JarLauncher"]
 
 ########################################################################################################################
 
