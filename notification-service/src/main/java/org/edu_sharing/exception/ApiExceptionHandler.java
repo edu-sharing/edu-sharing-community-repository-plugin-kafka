@@ -40,7 +40,7 @@ public class ApiExceptionHandler {
                     description = "Bad Request",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseEntity.class))))
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
-        log.error(String.valueOf(ex));
+        log.error(String.valueOf(ex), ex);
         HttpStatus status = HttpStatus.BAD_REQUEST;
         ApiException apiException = new ApiException(ex.getMessage(), status, ZonedDateTime.now(ZoneId.of("Z")));
         return new ResponseEntity<>(apiException, status);
@@ -53,7 +53,7 @@ public class ApiExceptionHandler {
                     description = "Internal Server Error",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseEntity.class))))
     public ResponseEntity<Object> handleException(Exception ex) {
-        log.error(String.valueOf(ex));
+        log.error(String.valueOf(ex), ex);
 
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         ApiException apiException = new ApiException(ex.getMessage(), status, ZonedDateTime.now(ZoneId.of("Z")));
