@@ -114,6 +114,8 @@ public class KafkaNotificationService implements NotificationService {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
+        // TODO group handling
+
         send(new WorkflowEventDTO(
                 null,
                 null,
@@ -154,6 +156,7 @@ public class KafkaNotificationService implements NotificationService {
         String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
+        // TODO group handling
 
         String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
         String invitationType = "invited";
@@ -209,6 +212,8 @@ public class KafkaNotificationService implements NotificationService {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
 
         String[] receivers = widgetDefinition.getSuggestionReceiver().split(",");
+
+        // TODO group handling
         for (String receiverAuthority : receivers) {
             String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
             if (nodes.size() == 0) {
