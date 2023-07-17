@@ -17,4 +17,9 @@ public enum Status {
      * was read
      */
     READ,
+
+    /**
+     * notification was disabled
+     */
+    IGNORED,
 }

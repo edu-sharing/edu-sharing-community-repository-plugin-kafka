@@ -42,6 +42,9 @@ public class NotificationHandler {
 
         List<NotificationEvent> filteredEvents = notificationEvents.stream().filter(x -> {
             UserData userData = userDataRepository.findById(x.getReceiverId()).orElse(new UserData());
+            if(userData.getNotificationInterval(x) == NotificationInterval.disabled){
+                x.setStatus(Status.IGNORED);
+            }
             return userData.getNotificationInterval(x) == NotificationInterval.immediately;
         }).collect(Collectors.toList());
 
