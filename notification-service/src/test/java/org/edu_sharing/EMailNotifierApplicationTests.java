@@ -54,9 +54,9 @@ class EMailNotifierApplicationTests {
 //    }
 
     Map<String, UserData> userDataDB = Map.of(
-            "receiver", new UserData("receiver", "Lenny", "Linux", "lenny.linux@example.com", "de-DE"),
-            "william", new UserData("william", "William", "Windows", "william.windows@example.com", "de-DE"),
-            "johansson", new UserData("johansson", "Scala", "Johansson", "scala.johansson@example.com", "de-DE")
+            "receiver", new UserData("receiver", "Lenny", "Linux", "lenny.linux@example.com", "de_DE"),
+            "william", new UserData("william", "William", "Windows", "william.windows@example.com", "de_DE"),
+            "johansson", new UserData("johansson", "Scala", "Johansson", "scala.johansson@example.com", "de_DE")
             );
 
     @BeforeEach
