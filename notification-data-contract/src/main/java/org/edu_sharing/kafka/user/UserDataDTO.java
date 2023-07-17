@@ -16,6 +16,7 @@ public class UserDataDTO {
     private String locale;
 
     private NotificationIntervalDTO addToCollectionEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO proposeForCollectionEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO commentEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO inviteEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO nodeIssueEvent = NotificationIntervalDTO.immediately;

@@ -32,6 +32,7 @@ public class UserData {
     }
 
     private NotificationInterval addToCollectionEventNotificationInterval = NotificationInterval.immediately;
+    private NotificationInterval proposaForCollectionEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval commentEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval inviteEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval nodeIssueEventNotificationInterval = NotificationInterval.immediately;
@@ -42,6 +43,7 @@ public class UserData {
     public NotificationInterval getNotificationInterval(NotificationEvent notificationEvent){
         return switch (notificationEvent){
             case AddToCollectionEvent ignored -> addToCollectionEventNotificationInterval;
+            case ProposeForCollectionEvent ignored -> proposaForCollectionEventNotificationInterval;
             case CommentEvent ignored -> commentEventNotificationInterval;
             case InviteEvent ignored -> inviteEventNotificationInterval;
             case NodeIssueEvent ignored -> nodeIssueEventNotificationInterval;

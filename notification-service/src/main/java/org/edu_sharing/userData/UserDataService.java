@@ -90,6 +90,7 @@ public class UserDataService {
                 userDataDTO.map(UserDataDTO::getEmail).orElse(null),
                 userDataDTO.map(UserDataDTO::getLocale).orElse(null),
                 userDataDTO.map(UserDataDTO::getAddToCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getProposeForCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getCommentEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getInviteEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getNodeIssueEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
@@ -97,6 +98,5 @@ public class UserDataService {
                 userDataDTO.map(UserDataDTO::getWorkflowEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getMetadataSuggestionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null)
         );
-
     }
 }

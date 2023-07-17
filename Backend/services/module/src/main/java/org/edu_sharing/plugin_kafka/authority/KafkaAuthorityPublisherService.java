@@ -52,6 +52,7 @@ public class KafkaAuthorityPublisherService {
         if (!StringUtils.isBlank(notificationPrefs)) {
             NotificationConfig notificationConfig = mapper.readValue(notificationPrefs, NotificationConfig.class);
             userDataDTO.setAddToCollectionEvent(mapNotificationInterval(notificationConfig.getAddToCollectionEvent()));
+            userDataDTO.setProposeForCollectionEvent(mapNotificationInterval(notificationConfig.getProposeForCollectionEvent()));
             userDataDTO.setCommentEvent(mapNotificationInterval(notificationConfig.getCommentEvent()));
             userDataDTO.setInviteEvent(mapNotificationInterval(notificationConfig.getInviteEvent()));
             userDataDTO.setNodeIssueEvent(mapNotificationInterval(notificationConfig.getNodeIssueEvent()));
