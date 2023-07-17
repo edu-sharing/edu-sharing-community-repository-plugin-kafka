@@ -5,6 +5,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -60,7 +61,7 @@ public class EmailService implements NotificationService {
         }
 
         String messageType = getMessageType(notificationClass);
-        final Context ctx = new Context(new Locale(userData.get().getLocale()));
+        final Context ctx = new Context(LocaleUtils.toLocale(userData.get().getLocale()));
         ctx.setVariable("events", notificationEvents.stream()
                 .map(x -> objectMapper.convertValue(x, Map.class))
                 .peek(x -> this.resolveUserId(x, "creatorId"))
@@ -106,7 +107,7 @@ public class EmailService implements NotificationService {
         }
 
         String messageType = getMessageType(notificationEvent.getClass());
-        final Context ctx = new Context(new Locale(userData.get().getLocale()));
+        final Context ctx = new Context(LocaleUtils.toLocale(userData.get().getLocale()));
         Map<String, Object> data = objectMapper.convertValue(notificationEvent, Map.class);
         this.resolveUserId(data, "creatorId");
         this.resolveUserId(data, "receiverId");
