@@ -18,11 +18,11 @@ import java.util.Date;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeAlias("AddToCollectionMessage")
+@TypeAlias("ProposeForCollectionMessage")
 @Document(collection = "notification")
-public class AddToCollectionEvent extends NodeBaseEvent {
+public class ProposeForCollectionEvent extends NodeBaseEvent {
 
-    public AddToCollectionEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, Collection collection) {
+    public ProposeForCollectionEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, Collection collection) {
         super(id, timestamp, creatorId, receiverId, status, node);
         this.collection = collection;
     }
@@ -32,4 +32,3 @@ public class AddToCollectionEvent extends NodeBaseEvent {
      */
     private Collection collection;
 }
-

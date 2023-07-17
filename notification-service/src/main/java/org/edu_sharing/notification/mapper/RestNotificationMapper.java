@@ -24,6 +24,7 @@ public class RestNotificationMapper {
     public org.edu_sharing.rest.notification.event.NotificationEventDTO map(NotificationEvent event) {
         return switch (event) {
             case AddToCollectionEvent addToCollectionEvent -> mapAddCollectionEvent(addToCollectionEvent);
+            case ProposeForCollectionEvent proposeForCollectionEvent -> mapProposeForCollectionEvent(proposeForCollectionEvent);
             case CommentEvent commentEvent -> mapCommentEvent(commentEvent);
             case InviteEvent inviteEvent -> mapInviteEvent(inviteEvent);
             case NodeIssueEvent nodeIssueEvent -> mapNodeIssueEvent(nodeIssueEvent);
@@ -114,6 +115,17 @@ public class RestNotificationMapper {
         );
     }
 
+    private NotificationEventDTO mapProposeForCollectionEvent(ProposeForCollectionEvent event) {
+        return new ProposeForCollectionEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                map(userData.get(event.getCreatorId())),
+                map(userData.get(event.getReceiverId())),
+                map(event.getStatus()),
+                map(event.getNode()),
+                map(event.getCollection())
+        );
+    }
 
     private NotificationEventDTO mapCommentEvent(CommentEvent event) {
         return new CommentEventDTO(

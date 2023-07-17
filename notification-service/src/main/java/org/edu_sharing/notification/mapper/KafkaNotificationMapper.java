@@ -18,6 +18,7 @@ public class KafkaNotificationMapper {
     public static NotificationEvent map(NotificationEventDTO dto) {
         return switch (dto) {
             case AddToCollectionEventDTO addToCollectionEventDTO -> mapAddCollectionEventDTO(addToCollectionEventDTO);
+            case ProposeForCollectionEventDTO proposeForCollectionEventDTO -> mapProposeForCollectionEventDTO(proposeForCollectionEventDTO);
             case CommentEventDTO commentEventDTO -> mapCommentEventDTO(commentEventDTO);
             case InviteEventDTO inviteEventDTO -> mapInviteEventDTO(inviteEventDTO);
             case NodeIssueEventDTO nodeIssueEventDTO -> mapNodeIssueEventDTO(nodeIssueEventDTO);
@@ -32,6 +33,7 @@ public class KafkaNotificationMapper {
     public static NotificationEventDTO map(NotificationEvent event) {
         return switch (event) {
             case AddToCollectionEvent addToCollectionEvent -> mapAddCollectionEvent(addToCollectionEvent);
+            case ProposeForCollectionEvent proposeForCollectionEvent -> mapProposeForCollectionEvent(proposeForCollectionEvent);
             case CommentEvent commentEvent -> mapCommentEvent(commentEvent);
             case InviteEvent inviteEvent -> mapInviteEvent(inviteEvent);
             case NodeIssueEvent nodeIssueEvent -> mapNodeIssueEvent(nodeIssueEvent);
@@ -91,6 +93,19 @@ public class KafkaNotificationMapper {
                 map(dto.getCollection())
         );
     }
+
+    private static NotificationEvent mapProposeForCollectionEventDTO(ProposeForCollectionEventDTO dto) {
+        return new ProposeForCollectionEvent(
+                dto.getId(),
+                dto.getTimestamp(),
+                dto.getCreatorId(),
+                dto.getReceiverId(),
+                map(dto.getStatus()),
+                map(dto.getNode()),
+                map(dto.getCollection())
+        );
+    }
+
 
     private static NotificationEvent mapCommentEventDTO(CommentEventDTO dto) {
         return new CommentEvent(
@@ -252,6 +267,18 @@ public class KafkaNotificationMapper {
         );
     }
 
+
+    private static NotificationEventDTO mapProposeForCollectionEvent(ProposeForCollectionEvent event) {
+        return new ProposeForCollectionEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                event.getCreatorId(),
+                event.getReceiverId(),
+                map(event.getStatus()),
+                map(event.getNode()),
+                map(event.getCollection())
+        );
+    }
 
     private static NotificationEventDTO mapCommentEvent(CommentEvent event) {
         return new CommentEventDTO(

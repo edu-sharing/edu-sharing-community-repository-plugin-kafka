@@ -146,6 +146,15 @@ class EMailNotifierApplicationTests {
                                 .property("link", "www.example.de/some_collection")
                                 .build())
                         .build()),
+                Collections.singletonList(ProposeForCollectionEvent.builder()
+                        .creatorId("william")
+                        .receiverId("receiver")
+                        .node(nodeData)
+                        .collection(Collection.builder()
+                                .property("cm:name", "Some Collection")
+                                .property("link", "www.example.de/some_collection")
+                                .build())
+                        .build()),
                 Collections.singletonList(RatingEvent.builder()
                         .creatorId("william")
                         .receiverId("receiver")
@@ -292,6 +301,26 @@ class EMailNotifierApplicationTests {
                                 .build(),
 
                         AddToCollectionEvent.builder()
+                                .creatorId("johansson")
+                                .receiverId("receiver")
+                                .node(nodeData2)
+                                .collection(Collection.builder()
+                                        .property("cm:name", "Some other collection")
+                                        .property("link", "www.example.de/some_other_collection")
+                                        .build())
+                                .build()),
+                Arrays.asList(
+                        ProposeForCollectionEvent.builder()
+                                .creatorId("william")
+                                .receiverId("receiver")
+                                .node(nodeData1)
+                                .collection(Collection.builder()
+                                        .property("cm:name", "Some collection")
+                                        .property("link", "www.example.de/some_collection")
+                                        .build())
+                                .build(),
+
+                        ProposeForCollectionEvent.builder()
                                 .creatorId("johansson")
                                 .receiverId("receiver")
                                 .node(nodeData2)

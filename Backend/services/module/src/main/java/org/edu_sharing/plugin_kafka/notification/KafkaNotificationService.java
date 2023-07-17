@@ -1,7 +1,6 @@
 package org.edu_sharing.plugin_kafka.notification;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.HttpStatusCodes;
 import com.sun.star.lang.IllegalArgumentException;
 import lombok.Data;
@@ -288,7 +287,31 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public void notifyCollection(String collectionId, String refNodeId, String collectionType, List<String> collectionAspects, Map<String, Object> collectionProperties, String nodeType, List<String> nodeAspects, Map<String, Object> nodeProperties, Status status) {
+    public void notifyProposeForCollection(String collectionId, String refNodeId, String collectionType, List<String> collectionAspects, Map<String, Object> collectionProperties, String nodeType, List<String> nodeAspects, Map<String, Object> nodeProperties, Status status) {
+
+        String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
+        String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
+
+        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
+        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+
+        if (Objects.equals(senderId, receiverId)) {
+            return;
+        }
+
+        send(new ProposeForCollectionEventDTO(
+                null,
+                null,
+                senderId,
+                receiverId,
+                null,
+                createNodeData(refNodeId, nodeType, nodeAspects, getSimplifiedNodeProperties(nodeProperties)),
+                createCollectionDTO(refNodeId, collectionType, nodeAspects, getSimplifiedNodeProperties(nodeProperties))
+        ));
+    }
+
+    @Override
+    public void notifyAddCollection(String collectionId, String refNodeId, String collectionType, List<String> collectionAspects, Map<String, Object> collectionProperties, String nodeType, List<String> nodeAspects, Map<String, Object> nodeProperties, Status status) {
 
         String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
@@ -310,7 +333,6 @@ public class KafkaNotificationService implements NotificationService {
                 createCollectionDTO(refNodeId, collectionType, nodeAspects, getSimplifiedNodeProperties(nodeProperties))
         ));
     }
-
 
     @Override
     public void notifyRatingChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
