@@ -32,7 +32,6 @@ import org.edu_sharing.plugin_kafka.kafka.support.JacksonUtils;
 import org.edu_sharing.repository.client.tools.CCConstants;
 import org.edu_sharing.repository.client.tools.I18nAngular;
 import org.edu_sharing.repository.server.AuthenticationToolAPI;
-import org.edu_sharing.repository.server.tools.I18nServer;
 import org.edu_sharing.repository.server.tools.URLTool;
 import org.edu_sharing.repository.server.tools.mailtemplates.MailTemplate;
 import org.edu_sharing.restservices.mds.v1.model.MdsValue;
@@ -179,7 +178,7 @@ public class KafkaNotificationService implements NotificationService {
         List<PermissionDTO> permissionList = Arrays.stream(permissions)
                 .filter(perm -> !(CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope()) && Objects.equals(CCConstants.PERMISSION_CC_PUBLISH, perm)))
                 .map(perm -> new PermissionDTO(perm,
-                        I18nServer.getTranslationDefaultResourcebundle(I18nServer.getPermissionDescription(perm), new AuthenticationToolAPI().getCurrentLocale())))
+                        I18nAngular.getPermissionDescription(perm)))
                 .collect(Collectors.toList());
 
         if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
