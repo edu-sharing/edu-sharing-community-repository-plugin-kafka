@@ -24,10 +24,16 @@ public class NotificationHandler {
     private final UserDataRepository userDataRepository;
     private final List<NotificationService> notificationServices;
 
-    public void handlePendingNotification(Date newerThan) {
-        List<NotificationEvent> allNotifications = notificationManager.getAllNotifications(newerThan, Status.PENDING);
-        notificationServices.forEach(x->x.send(allNotifications));
-        allNotifications.forEach(notificationManager::saveNotification);
+    public void handlePendingNotification(Date newerThan, NotificationInterval notificationInterval) {
+        List<NotificationEvent> notificationEvents = notificationManager.getAllNotifications(newerThan, Status.PENDING);
+
+        List<NotificationEvent> filteredEvents = notificationEvents.stream().filter(x -> {
+            UserData userData = userDataRepository.findById(x.getReceiverId()).orElse(new UserData());
+            return userData.getNotificationInterval(x) == notificationInterval;
+        }).collect(Collectors.toList());
+
+        notificationServices.forEach(x->x.send(filteredEvents));
+        filteredEvents.forEach(notificationManager::saveNotification);
     }
 
     public void handleIncomingNotifications(List<NotificationEvent> notificationEvents) {

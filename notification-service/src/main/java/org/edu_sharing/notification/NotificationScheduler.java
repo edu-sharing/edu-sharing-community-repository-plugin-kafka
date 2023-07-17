@@ -2,6 +2,7 @@ package org.edu_sharing.notification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.edu_sharing.userData.NotificationInterval;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ public class NotificationScheduler {
         Calendar cal = new GregorianCalendar();
         cal.add(Calendar.DAY_OF_WEEK, -1);
         log.info("send daily notifications");
-        notificationHandler.handlePendingNotification(cal.getTime());
+        notificationHandler.handlePendingNotification(cal.getTime(), NotificationInterval.daily);
     }
 
     @Scheduled(cron = "0 0 8 * * MON")
@@ -29,6 +30,6 @@ public class NotificationScheduler {
         Calendar cal = new GregorianCalendar();
         cal.add(Calendar.DAY_OF_WEEK, -7);
         log.info("send weekly notifications");
-        notificationHandler.handlePendingNotification(cal.getTime());
+        notificationHandler.handlePendingNotification(cal.getTime(), NotificationInterval.weekly);
     }
 }
