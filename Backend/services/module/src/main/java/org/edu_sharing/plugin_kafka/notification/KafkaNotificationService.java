@@ -261,8 +261,13 @@ public class KafkaNotificationService implements NotificationService {
     public void notifyComment(String node, String comment, String commentReference, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, Status status) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
 
+
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+
+        if(Objects.equals(receiverId, senderId)){
+            return;
+        }
 
         send(new CommentEventDTO(
                 null,
