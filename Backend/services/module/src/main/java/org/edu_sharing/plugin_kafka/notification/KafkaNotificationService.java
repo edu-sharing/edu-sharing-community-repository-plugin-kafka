@@ -81,10 +81,15 @@ public class KafkaNotificationService implements NotificationService {
     private KafkaSettings kafkaSettings;
 
     public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO notificationMessage) {
-        notificationMessage.setId(generateMessageId());
-        notificationMessage.setStatus(StatusDTO.NEW);
-        notificationMessage.setTimestamp(DateTime.now().toDate());
-        return kafkaNotificationTemplate.sendDefault(notificationMessage.getId(), notificationMessage);
+        try {
+            notificationMessage.setId(generateMessageId());
+            notificationMessage.setStatus(StatusDTO.NEW);
+            notificationMessage.setTimestamp(DateTime.now().toDate());
+            return kafkaNotificationTemplate.sendDefault(notificationMessage.getId(), notificationMessage);
+        }catch (Exception ex){
+            log.error("Error on sending notification: {} ", notificationMessage, ex);
+            return null;
+        }
     }
 
     @Override

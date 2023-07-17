@@ -73,7 +73,11 @@ public class KafkaAuthorityPublisherService {
 
 //        userDataDTO.setLocale(new AuthenticationToolAPI().getCurrentLocale());
         userDataDTO.setLocale("de_DE"); // TODO we need the local of the users but this isn't stored in the db
-        kafkaUserTemplate.sendDefault(properties.get(QName.createQName(CCConstants.SYS_PROP_NODE_UID)).toString(), userDataDTO);
+        try {
+            kafkaUserTemplate.sendDefault(properties.get(QName.createQName(CCConstants.SYS_PROP_NODE_UID)).toString(), userDataDTO);
+        } catch (Exception ex){
+            log.error("Publish authority {}", properties.get(QName.createQName(CCConstants.SYS_PROP_NODE_UID)).toString(), ex);
+        }
     }
 
     private static NotificationIntervalDTO mapNotificationInterval(NotificationConfig.NotificationInterval notificationConfigInterval) {
