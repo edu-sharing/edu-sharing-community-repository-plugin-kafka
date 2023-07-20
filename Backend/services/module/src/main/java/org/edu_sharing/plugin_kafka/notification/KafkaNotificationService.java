@@ -453,6 +453,7 @@ public class KafkaNotificationService implements NotificationService {
     public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatusByNotificationId(String id, org.edu_sharing.rest.notification.data.StatusDTO status) throws IOException, InsufficientPermissionException {
         try {
             org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
+
             String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
             if(!currentUser.equals(notification.getReceiver().getId())){
                 throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
@@ -492,15 +493,20 @@ public class KafkaNotificationService implements NotificationService {
     public void setNotificationStatusByReceiverId(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> oldStatusList, org.edu_sharing.rest.notification.data.StatusDTO newStatus) throws IOException, InsufficientPermissionException {
         try {
             String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+            if ("-me-".equals(receiverId)) {
+                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+            }
+
+
             if(!currentUser.equals(receiverId)){
                 throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
             }
 
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification/receiver/status");
-            builder.setParameter("id", receiverId);
+            builder.setParameter("receiverId", receiverId);
             oldStatusList.forEach(x -> builder.setParameter("oldStatus", x.toString()));
-            builder.setParameter("oldStatus", newStatus.toString());
+            builder.setParameter("newStatus", newStatus.toString());
 
             HttpPatch request = new HttpPatch(builder.build());
             request.setHeader("Accept", "application/json");

@@ -141,8 +141,12 @@ public class NotificationController {
     @PatchMapping("/receiver/status")
     @Operation(summary = "Endpoint to update all notification status of a receiver",
             responses = @ApiResponse(responseCode = "200", description = "set notification status"))
-    public void updateStatusByReceiverId(@RequestParam String receiverId, @RequestParam List<StatusDTO> oldStatus, @RequestParam StatusDTO newStatus) {
-        notificationManager.setStatusByReceiverId(receiverId, oldStatus.stream().map(RestNotificationMapper::map).collect(Collectors.toList()), RestNotificationMapper.map(newStatus));
+    public void updateStatusByReceiverId(@RequestParam String receiverId, @RequestParam(required = false) List<StatusDTO> oldStatus, @RequestParam StatusDTO newStatus) {
+
+
+        notificationManager.setStatusByReceiverId(receiverId,
+                Optional.ofNullable(oldStatus).orElse(new ArrayList<>()).stream().map(RestNotificationMapper::map).collect(Collectors.toList()),
+                RestNotificationMapper.map(newStatus));
     }
 
     @DeleteMapping

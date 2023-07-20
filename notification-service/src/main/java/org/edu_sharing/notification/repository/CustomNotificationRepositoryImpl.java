@@ -7,6 +7,7 @@ import org.edu_sharing.notification.data.Status;
 import org.edu_sharing.notification.event.NotificationEvent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.ExecutableUpdateOperation;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -27,7 +28,7 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
             query.addCriteria(Criteria.where("receiverId").is(receiverId));
         }
 
-        if(statusList != null) {
+        if (statusList != null) {
             Criteria statusCriteria = new Criteria();
             statusCriteria.orOperator(statusList.stream()
                     .distinct()
@@ -43,8 +44,15 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
 
     @Override
     public UpdateResult updateStatusByReceiverId(String receiverId, List<Status> oldStatus, Status newStatus) {
-        return mongoTemplate.update(NotificationEvent.class)
-                .matching(Query.query(Criteria.where("receiverId").is(receiverId).and("status").in(oldStatus)))
+
+        ExecutableUpdateOperation.UpdateWithQuery<NotificationEvent> updateWithQuery = mongoTemplate.update(NotificationEvent.class);
+        ExecutableUpdateOperation.UpdateWithUpdate<NotificationEvent> updateWithUpdate = updateWithQuery;
+
+        if (oldStatus != null && !oldStatus.isEmpty()) {
+            updateWithUpdate = updateWithQuery.matching(Query.query(Criteria.where("receiverId").is(receiverId).and("status").in(oldStatus)));
+        }
+
+        return updateWithUpdate
                 .apply(Update.update("status", newStatus))
                 .all();
     }
