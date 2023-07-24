@@ -305,7 +305,7 @@ public class KafkaNotificationService implements NotificationService {
                 receiverId,
                 null,
                 createNodeData(refNodeId, nodeType, nodeAspects, getSimplifiedNodeProperties(nodeProperties)),
-                createCollectionDTO(refNodeId, collectionType, nodeAspects, getSimplifiedNodeProperties(nodeProperties))
+                createCollectionDTO(collectionId, collectionType, collectionAspects, getSimplifiedNodeProperties(collectionProperties))
         ));
     }
 
@@ -329,7 +329,7 @@ public class KafkaNotificationService implements NotificationService {
                 receiverId,
                 null,
                 createNodeData(refNodeId, nodeType, nodeAspects, getSimplifiedNodeProperties(nodeProperties)),
-                createCollectionDTO(refNodeId, collectionType, nodeAspects, getSimplifiedNodeProperties(nodeProperties))
+                createCollectionDTO(collectionId, collectionType, collectionAspects, getSimplifiedNodeProperties(collectionProperties))
         ));
     }
 
@@ -653,10 +653,9 @@ public class KafkaNotificationService implements NotificationService {
         HashMap<String, Object> props = new HashMap<>(nodeProperties);
         props.put("link", URLTool.getNgRenderNodeUrl(nodeId, null, true));
         props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
-
         return new NodeDataDTO(
-                type,
-                aspects,
+                CCConstants.getValidLocalName(type),
+                aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
                 props);
     }
 
@@ -666,8 +665,8 @@ public class KafkaNotificationService implements NotificationService {
         props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
 
         return new CollectionDTO(
-                type,
-                aspects,
+                CCConstants.getValidLocalName(type),
+                aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
                 props);
     }
 
