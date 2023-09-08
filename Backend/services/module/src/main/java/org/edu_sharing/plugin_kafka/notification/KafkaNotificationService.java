@@ -2,7 +2,6 @@ package org.edu_sharing.plugin_kafka.notification;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.api.client.http.HttpStatusCodes;
-import com.sun.star.lang.IllegalArgumentException;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
