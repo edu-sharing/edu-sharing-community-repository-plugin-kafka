@@ -39,10 +39,7 @@
   </build>
 
   <modules>
-    <module>mongo</module>
-    <module>mongo_exporter</module>
     <module>notification-service</module>
-    <module>kafka</module>
     <module>service</module>
   </modules>
 

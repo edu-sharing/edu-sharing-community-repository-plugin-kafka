@@ -18,18 +18,26 @@
 
   <properties>
 
-    <docker.from.zookeeper>
-      dockerio.mirror.docker.edu-sharing.com/bitnami/zookeeper:3.8.1
-    </docker.from.zookeeper>
-    <docker.from.kafka>
-      dockerio.mirror.docker.edu-sharing.com/bitnami/kafka:${kafka.version}
-    </docker.from.kafka>
-    <docker.from.mongo.db>
-      dockerio.mirror.docker.edu-sharing.com/bitnami/mongodb:${mongodb.version}
-    </docker.from.mongo.db>
-    <docker.from.mongo.exporter>
-      dockerio.mirror.docker.edu-sharing.com/bitnami/mongodb-exporter:0.30.0
-    </docker.from.mongo.exporter>
+    <docker.edu_sharing.communty.common.repository>
+      ${docker.registry}/community/common
+    </docker.edu_sharing.communty.common.repository>
+
+    <docker.edu_sharing.community.common.kafka>
+      ${docker.edu_sharing.communty.common.repository}/edu_sharing-community-common-kafka:3.4.0
+    </docker.edu_sharing.community.common.kafka>
+
+    <docker.edu_sharing.community.common.mongodb>
+      ${docker.edu_sharing.communty.common.repository}/edu_sharing-community-common-mongodb:4.4.13
+    </docker.edu_sharing.community.common.mongodb>
+
+    <docker.edu_sharing.community.common.mongodb.exporter>
+      ${docker.edu_sharing.communty.common.repository}/edu_sharing-community-common-mongodb-exporter:0.30.0
+    </docker.edu_sharing.community.common.mongodb.exporter>
+
+    <docker.edu_sharing.community.common.minideb>
+      ${docker.edu_sharing.communty.common.repository}/edu_sharing-community-common-minideb:11
+    </docker.edu_sharing.community.common.minideb>
+
     <helm.kube.version>&gt;= 1.20.0</helm.kube.version>
     <helm.version>3.10.0</helm.version>
 

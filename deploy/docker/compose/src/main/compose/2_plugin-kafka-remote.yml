@@ -1,11 +1,6 @@
 version: '3.7'
 
 services:
-  kafka:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-kafka:${docker.tag}"
 
   notification-service:
     image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-notification-service:${docker.tag}"
-
-  notification-service-db:
-    image: "${docker.registry}/${docker.repository}/${docker.prefix}-deploy-docker-build-mongo:${docker.tag}"
