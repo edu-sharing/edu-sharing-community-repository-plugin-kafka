@@ -16,33 +16,49 @@ import java.util.stream.Collectors;
 public class KafkaNotificationMapper {
 
     public static NotificationEvent map(NotificationEventDTO dto) {
-        return switch (dto) {
-            case AddToCollectionEventDTO addToCollectionEventDTO -> mapAddCollectionEventDTO(addToCollectionEventDTO);
-            case ProposeForCollectionEventDTO proposeForCollectionEventDTO -> mapProposeForCollectionEventDTO(proposeForCollectionEventDTO);
-            case CommentEventDTO commentEventDTO -> mapCommentEventDTO(commentEventDTO);
-            case InviteEventDTO inviteEventDTO -> mapInviteEventDTO(inviteEventDTO);
-            case NodeIssueEventDTO nodeIssueEventDTO -> mapNodeIssueEventDTO(nodeIssueEventDTO);
-            case RatingEventDTO ratingEventDTO -> mapRatingEventDTO(ratingEventDTO);
-            case WorkflowEventDTO workflowEventDTO -> mapWorkflowEventDTO(workflowEventDTO);
-            case MetadataSuggestionEventDTO metadataSuggestionEventDTO ->
-                    mapMetadataSuggestionEventDTO(metadataSuggestionEventDTO);
-            default -> throw new IllegalStateException("Unexpected value: " + dto);
-        };
+        if (dto instanceof AddToCollectionEventDTO) {
+            return mapAddCollectionEventDTO((AddToCollectionEventDTO) dto);
+        } else if (dto instanceof ProposeForCollectionEventDTO) {
+            return mapProposeForCollectionEventDTO((ProposeForCollectionEventDTO) dto);
+        } else if (dto instanceof CommentEventDTO) {
+            return mapCommentEventDTO((CommentEventDTO) dto);
+        } else if (dto instanceof InviteEventDTO) {
+            return mapInviteEventDTO((InviteEventDTO) dto);
+        } else if (dto instanceof NodeIssueEventDTO) {
+            return mapNodeIssueEventDTO((NodeIssueEventDTO) dto);
+        } else if (dto instanceof RatingEventDTO) {
+            return mapRatingEventDTO((RatingEventDTO) dto);
+        } else if (dto instanceof WorkflowEventDTO) {
+            return mapWorkflowEventDTO((WorkflowEventDTO) dto);
+        } else if (dto instanceof MetadataSuggestionEventDTO) {
+            return mapMetadataSuggestionEventDTO((MetadataSuggestionEventDTO) dto);
+        } else {
+            throw new IllegalStateException("Unexpected value: " + dto);
+        }
     }
 
     public static NotificationEventDTO map(NotificationEvent event) {
-        return switch (event) {
-            case AddToCollectionEvent addToCollectionEvent -> mapAddCollectionEvent(addToCollectionEvent);
-            case ProposeForCollectionEvent proposeForCollectionEvent -> mapProposeForCollectionEvent(proposeForCollectionEvent);
-            case CommentEvent commentEvent -> mapCommentEvent(commentEvent);
-            case InviteEvent inviteEvent -> mapInviteEvent(inviteEvent);
-            case NodeIssueEvent nodeIssueEvent -> mapNodeIssueEvent(nodeIssueEvent);
-            case RatingEvent ratingEvent -> mapRatingEvent(ratingEvent);
-            case WorkflowEvent workflowEvent -> mapWorkflowEvent(workflowEvent);
-            case MetadataSuggestionEvent metadataSuggestionEvent -> mapMetadataSuggestionEvent(metadataSuggestionEvent);
-            default -> throw new IllegalStateException("Unexpected value: " + event);
-        };
+        if (event instanceof AddToCollectionEvent) {
+            return mapAddCollectionEvent((AddToCollectionEvent) event);
+        } else if (event instanceof ProposeForCollectionEvent) {
+            return mapProposeForCollectionEvent((ProposeForCollectionEvent) event);
+        } else if (event instanceof CommentEvent) {
+            return mapCommentEvent((CommentEvent) event);
+        } else if (event instanceof InviteEvent) {
+            return mapInviteEvent((InviteEvent) event);
+        } else if (event instanceof NodeIssueEvent) {
+            return mapNodeIssueEvent((NodeIssueEvent) event);
+        } else if (event instanceof RatingEvent) {
+            return mapRatingEvent((RatingEvent) event);
+        } else if (event instanceof WorkflowEvent) {
+            return mapWorkflowEvent((WorkflowEvent) event);
+        } else if (event instanceof MetadataSuggestionEvent) {
+            return mapMetadataSuggestionEvent((MetadataSuggestionEvent) event);
+        } else {
+            throw new IllegalStateException("Unexpected value: " + event);
+        }
     }
+
     private static Status map(org.edu_sharing.kafka.notification.data.StatusDTO status) {
         if (status == null) {
             return Status.NEW;
@@ -51,7 +67,7 @@ public class KafkaNotificationMapper {
     }
 
     public static Map<String, Object> copyMapFromDTO(Map<String, Object> map) {
-        if(map == null) {
+        if (map == null) {
             return null;
         }
 
@@ -59,7 +75,7 @@ public class KafkaNotificationMapper {
     }
 
     private static NodeData map(NodeDataDTO node) {
-        if(node == null) {
+        if (node == null) {
             return null;
         }
 
@@ -71,7 +87,7 @@ public class KafkaNotificationMapper {
     }
 
     private static Collection map(CollectionDTO collection) {
-        if(collection == null) {
+        if (collection == null) {
             return null;
         }
 
@@ -134,14 +150,14 @@ public class KafkaNotificationMapper {
                 dto.getUserComment(),
                 Optional.of(dto)
                         .map(InviteEventDTO::getPermissions)
-                        .map(x->x.stream().map(KafkaNotificationMapper::map).collect(Collectors.toList()))
+                        .map(x -> x.stream().map(KafkaNotificationMapper::map).collect(Collectors.toList()))
                         .map(ArrayList::new)
                         .orElseGet(ArrayList::new)
         );
     }
 
     private static Permission map(PermissionDTO permissionDTO) {
-        if(permissionDTO == null){
+        if (permissionDTO == null) {
             return null;
         }
 
@@ -215,7 +231,7 @@ public class KafkaNotificationMapper {
 
 
     private static StatusDTO map(Status status) {
-        if(status == null) {
+        if (status == null) {
             return null;
         }
 
@@ -223,7 +239,7 @@ public class KafkaNotificationMapper {
     }
 
     private static NodeDataDTO map(NodeData node) {
-        if(node == null) {
+        if (node == null) {
             return null;
         }
 
@@ -234,7 +250,7 @@ public class KafkaNotificationMapper {
     }
 
     private static CollectionDTO map(Collection collection) {
-        if(collection == null) {
+        if (collection == null) {
             return null;
         }
 
@@ -245,7 +261,7 @@ public class KafkaNotificationMapper {
     }
 
     private static WidgetDataDTO map(WidgetData widget) {
-        if(widget == null) {
+        if (widget == null) {
             return null;
         }
 
@@ -307,14 +323,14 @@ public class KafkaNotificationMapper {
                 event.getUserComment(),
                 Optional.of(event)
                         .map(InviteEvent::getPermissions)
-                        .map(x->x.stream().map(KafkaNotificationMapper::map).collect(Collectors.toList()))
+                        .map(x -> x.stream().map(KafkaNotificationMapper::map).collect(Collectors.toList()))
                         .map(ArrayList::new)
                         .orElseGet(ArrayList::new)
         );
     }
 
     private static PermissionDTO map(Permission permission) {
-        if(permission == null){
+        if (permission == null) {
             return null;
         }
 

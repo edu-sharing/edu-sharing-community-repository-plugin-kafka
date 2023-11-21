@@ -178,7 +178,6 @@
         <configuration>
           <source>17</source>
           <target>17</target>
-          <compilerArgs>--enable-preview</compilerArgs>
         </configuration>
       </plugin>
 
@@ -186,7 +185,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <runOrder>alphabetical</runOrder>
-          <argLine>--enable-preview</argLine>
         </configuration>
       </plugin>
     </plugins>
