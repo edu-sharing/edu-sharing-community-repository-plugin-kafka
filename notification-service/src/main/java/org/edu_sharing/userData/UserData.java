@@ -40,18 +40,26 @@ public class UserData {
     private NotificationInterval workflowEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval metadataSuggestionEventNotificationInterval = NotificationInterval.immediately;
 
-    public NotificationInterval getNotificationInterval(NotificationEvent notificationEvent){
-        return switch (notificationEvent){
-            case AddToCollectionEvent ignored -> addToCollectionEventNotificationInterval;
-            case ProposeForCollectionEvent ignored -> proposaForCollectionEventNotificationInterval;
-            case CommentEvent ignored -> commentEventNotificationInterval;
-            case InviteEvent ignored -> inviteEventNotificationInterval;
-            case NodeIssueEvent ignored -> nodeIssueEventNotificationInterval;
-            case RatingEvent ignored -> ratingEventNotificationInterval;
-            case WorkflowEvent ignored -> workflowEventNotificationInterval;
-            case MetadataSuggestionEvent ignored -> workflowEventNotificationInterval;
-            default -> throw new IllegalStateException("Unexpected value: " + notificationEvent);
-        };
+    public NotificationInterval getNotificationInterval(NotificationEvent notificationEvent) {
+        if (notificationEvent instanceof AddToCollectionEvent) {
+            return addToCollectionEventNotificationInterval;
+        } else if (notificationEvent instanceof ProposeForCollectionEvent) {
+            return proposaForCollectionEventNotificationInterval;
+        } else if (notificationEvent instanceof CommentEvent) {
+            return commentEventNotificationInterval;
+        } else if (notificationEvent instanceof InviteEvent) {
+            return inviteEventNotificationInterval;
+        } else if (notificationEvent instanceof NodeIssueEvent) {
+            return nodeIssueEventNotificationInterval;
+        } else if (notificationEvent instanceof RatingEvent) {
+            return ratingEventNotificationInterval;
+        } else if (notificationEvent instanceof WorkflowEvent) {
+            return workflowEventNotificationInterval;
+        } else if (notificationEvent instanceof MetadataSuggestionEvent) {
+            return workflowEventNotificationInterval;
+        } else {
+            throw new IllegalStateException("Unexpected value: " + notificationEvent);
+        }
     }
 }
 

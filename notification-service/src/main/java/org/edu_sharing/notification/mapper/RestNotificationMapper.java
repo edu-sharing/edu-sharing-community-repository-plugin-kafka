@@ -22,17 +22,25 @@ public class RestNotificationMapper {
     private final Map<String, UserData> userData;
 
     public org.edu_sharing.rest.notification.event.NotificationEventDTO map(NotificationEvent event) {
-        return switch (event) {
-            case AddToCollectionEvent addToCollectionEvent -> mapAddCollectionEvent(addToCollectionEvent);
-            case ProposeForCollectionEvent proposeForCollectionEvent -> mapProposeForCollectionEvent(proposeForCollectionEvent);
-            case CommentEvent commentEvent -> mapCommentEvent(commentEvent);
-            case InviteEvent inviteEvent -> mapInviteEvent(inviteEvent);
-            case NodeIssueEvent nodeIssueEvent -> mapNodeIssueEvent(nodeIssueEvent);
-            case RatingEvent ratingEvent -> mapRatingEvent(ratingEvent);
-            case WorkflowEvent workflowEvent -> mapWorkflowEvent(workflowEvent);
-            case MetadataSuggestionEvent metadataSuggestionEvent -> mapMetadataSuggestionEvent(metadataSuggestionEvent);
-            default -> throw new IllegalStateException("Unexpected value: " + event);
-        };
+        if (event instanceof AddToCollectionEvent) {
+            return mapAddCollectionEvent((AddToCollectionEvent) event);
+        } else if (event instanceof ProposeForCollectionEvent) {
+            return mapProposeForCollectionEvent((ProposeForCollectionEvent) event);
+        } else if (event instanceof CommentEvent) {
+            return mapCommentEvent((CommentEvent) event);
+        } else if (event instanceof InviteEvent) {
+            return mapInviteEvent((InviteEvent) event);
+        } else if (event instanceof NodeIssueEvent) {
+            return mapNodeIssueEvent((NodeIssueEvent) event);
+        } else if (event instanceof RatingEvent) {
+            return mapRatingEvent((RatingEvent) event);
+        } else if (event instanceof WorkflowEvent) {
+            return mapWorkflowEvent((WorkflowEvent) event);
+        } else if (event instanceof MetadataSuggestionEvent) {
+            return mapMetadataSuggestionEvent((MetadataSuggestionEvent) event);
+        } else {
+            throw new IllegalStateException("Unexpected value: " + event);
+        }
     }
 
     private StatusDTO map(Status status) {
