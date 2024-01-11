@@ -27,7 +27,7 @@
     </docker.edu_sharing.community.common.kafka>
 
     <docker.edu_sharing.community.common.mongodb>
-      ${docker.edu_sharing.communty.common.repository}/edu_sharing-community-common-docker-mongodb:4.4.13
+      ${docker.edu_sharing.communty.common.repository}/edu_sharing-community-common-docker-mongodb:7.0.5
     </docker.edu_sharing.community.common.mongodb>
 
     <docker.edu_sharing.community.common.mongodb.exporter>
