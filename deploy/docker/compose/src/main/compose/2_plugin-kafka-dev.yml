@@ -9,6 +9,6 @@ services:
 
   repository-service:
     volumes:
-      - "${GIT_ROOT}/repository-kafka/Backend/alfresco/module/target/edu_sharing-community-repository-plugin-kafka-backend-alfresco-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-alfresco-module:amp.version}.amp:/opt/alfresco/amps/alfresco/1/edu_sharing-community-repository-plugin-kafka-backend-alfresco-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-alfresco-module:amp.version}.amp"
+      - "${GIT_ROOT}/repository-kafka/Backend/alfresco/module/target/edu_sharing-community-repository-plugin-kafka-backend-alfresco-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-alfresco-module:amp.version}.amp:/opt/alfresco/amps/alfresco/2/edu_sharing-community-repository-plugin-kafka-backend-alfresco-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-alfresco-module:amp.version}.amp"
       - "${GIT_ROOT}/repository-kafka/Backend/services/module/target/edu_sharing-community-repository-plugin-kafka-backend-services-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-services-module:amp.version}.amp:/opt/alfresco/amps/edu-sharing/1/edu_sharing-community-repository-plugin-kafka-backend-services-module-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-backend-services-module:amp.version}.amp"
       - "${GIT_ROOT}/repository-kafka/config/defaults/target/classes/plugin-kafka:/opt/alfresco/tomcat/shared/classes/config/plugins/plugin-kafka"
