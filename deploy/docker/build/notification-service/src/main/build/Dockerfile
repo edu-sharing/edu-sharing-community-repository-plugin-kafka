@@ -44,10 +44,10 @@ ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} --enable-preview -Dspring.profil
 
 ########################################################################################################################
 
-LABEL git.branch=${git.branch}
-LABEL git.closest.tag.name=${git.closest.tag.fixed}
-LABEL git.commit.id=${git.commit.id}
-LABEL git.dirty=${git.dirty}
-LABEL mvn.project.artifactId=${project.artifactId}
-LABEL mvn.project.groupId=${project.groupId}
-LABEL mvn.project.version=${project.version}
+LABEL git.branch=${git.branch} \
+git.closest.tag.name=${git.closest.tag.fixed} \
+git.commit.id=${git.commit.id} \
+git.dirty=${git.dirty} \
+mvn.project.artifactId=${project.artifactId} \
+mvn.project.groupId=${project.groupId} \
+mvn.project.version=${project.version}
