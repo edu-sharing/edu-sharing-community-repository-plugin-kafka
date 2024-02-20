@@ -67,6 +67,8 @@ services:
       SPRING_DATA_MONGODB_URI: "mongodb://${NOTIFICATION_SERVICES_DATABASES_USER:-notification}:${NOTIFICATION_SERVICES_DATABASES_PASS:-notification}@notification-service-db:27017/${NOTIFICATION_SERVICES_DATABASES_NAME:-notification}"
     expose:
       - "8080"
+    ports:
+      - "${COMMON_BIND_HOST:-127.0.0.1}:${NOTIFICATION_SERVICES_PORT:-8700}:8080"
     depends_on:
       - kafka
       - notification-service-db
