@@ -3,7 +3,7 @@ version: '3.7'
 services:
 
   kafka:
-    image: "${docker.edu_sharing.community.common.kafka}"
+    image: "${docker.registry}/${docker.common}/${docker.edu_sharing.community.common.kafka.name}:${docker.edu_sharing.community.common.kafka.tag}"
     expose:
       - '9092'
       - '9093'
@@ -26,7 +26,7 @@ services:
       - "${COMMON_BIND_HOST:-127.0.0.1}:${KAFKA_EXTERNAL_PORT:-9093}:9093"
 
   notification-service-db:
-    image: "${docker.edu_sharing.community.common.mongodb}"
+    image: "${docker.registry}/${docker.common}/${docker.edu_sharing.community.common.mongodb.name}:${docker.edu_sharing.community.common.mongodb.tag}"
     environment:
       ALLOW_EMPTY_PASSWORD: "false"
       MONGODB_ADVERTISED_HOSTNAME: "notification-service-db"

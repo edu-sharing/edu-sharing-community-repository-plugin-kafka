@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>edu_sharing-community-repository-plugin-kafka-deploy-docker-helm</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
 
   <name>edu_sharing-community-repository-plugin-kafka-deploy-docker-helm</name>
 
@@ -66,9 +66,5 @@
     </pluginManagement>
 
   </build>
-
-  <modules>
-
-  </modules>
 
 </project>
