@@ -115,5 +115,12 @@
 
     <!-- runtime -->
 
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-joda</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+
   </dependencies>
 </project>

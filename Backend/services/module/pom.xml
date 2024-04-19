@@ -111,6 +111,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-joda</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>edu_sharing-community-repository-backend-alfresco-common</artifactId>
       <scope>provided</scope>
