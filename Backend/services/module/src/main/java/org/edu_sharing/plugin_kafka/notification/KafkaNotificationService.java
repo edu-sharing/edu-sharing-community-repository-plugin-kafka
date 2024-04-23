@@ -649,7 +649,7 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     private static NodeDataDTO createNodeData(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
-        HashMap<String, Object> props = new HashMap<>(nodeProperties);
+        Map<String, Object> props = new HashMap<>(nodeProperties);
         props.put("link", URLTool.getNgRenderNodeUrl(nodeId, null, true));
         props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
         return new NodeDataDTO(
@@ -659,7 +659,7 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
-        HashMap<String, Object> props = new HashMap<>(nodeProperties);
+        Map<String, Object> props = new HashMap<>(nodeProperties);
         props.put("link", URLTool.getNgRenderNodeUrl(nodeId, null, true));
         props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
 
