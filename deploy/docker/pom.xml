@@ -23,7 +23,7 @@
     </docker.edu_sharing.community.common.kafka.name>
 
     <docker.edu_sharing.community.common.kafka.tag>
-      3.4.0
+      3.7.0
     </docker.edu_sharing.community.common.kafka.tag>
 
     <docker.edu_sharing.community.common.mongodb.name>
@@ -31,7 +31,7 @@
     </docker.edu_sharing.community.common.mongodb.name>
 
     <docker.edu_sharing.community.common.mongodb.tag>
-      7.0.5
+      7.0.9
     </docker.edu_sharing.community.common.mongodb.tag>
 
     <docker.edu_sharing.community.common.mongodb.exporter.name>
@@ -86,7 +86,7 @@
   <modules>
     <module>build</module>
     <module>compose</module>
-<!--<module>helm</module>-->
+    <!--<module>helm</module>-->
   </modules>
 
 </project>
