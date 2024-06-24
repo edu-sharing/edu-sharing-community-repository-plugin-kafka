@@ -17,7 +17,7 @@
 
   <properties>
 
-    <docker.repository>enterprise</docker.repository>
+    <docker.repository>community</docker.repository>
     <docker.prefix>edu_sharing-enterprise-repository-plugin-kafka</docker.prefix>
     <helm.prefix>edu_sharing-enterprise-repository-plugin-kafka</helm.prefix>
 
