@@ -28,13 +28,13 @@
     <bom.repository.version>${project.version}</bom.repository.version>
 
     <kafka.version.major>3</kafka.version.major>
-    <kafka.version.minor>4</kafka.version.minor>
+    <kafka.version.minor>7</kafka.version.minor>
     <kafka.version.patch>0</kafka.version.patch>
     <kafka.version>${kafka.version.major}.${kafka.version.minor}.${kafka.version.patch}</kafka.version>
 
     <mongodb.version.major>4</mongodb.version.major>
-    <mongodb.version.minor>4</mongodb.version.minor>
-    <mongodb.version.patch>13</mongodb.version.patch>
+    <mongodb.version.minor>11</mongodb.version.minor>
+    <mongodb.version.patch>2</mongodb.version.patch>
     <mongodb.version>${mongodb.version.major}.${mongodb.version.minor}.${mongodb.version.patch}</mongodb.version>
 
   </properties>
@@ -106,7 +106,7 @@
 
     <pluginManagement>
       <plugins>
-        
+
         <plugin>
           <groupId>org.alfresco.maven.plugin</groupId>
           <artifactId>alfresco-maven-plugin</artifactId>

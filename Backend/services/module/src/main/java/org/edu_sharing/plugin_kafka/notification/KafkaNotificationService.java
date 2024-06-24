@@ -31,8 +31,8 @@ import org.edu_sharing.plugin_kafka.kafka.support.JacksonUtils;
 import org.edu_sharing.repository.client.tools.CCConstants;
 import org.edu_sharing.repository.client.tools.I18nAngular;
 import org.edu_sharing.repository.server.AuthenticationToolAPI;
-import org.edu_sharing.repository.server.tools.URLTool;
 import org.edu_sharing.repository.server.tools.mailtemplates.MailTemplate;
+import org.edu_sharing.repository.tools.URLHelper;
 import org.edu_sharing.restservices.mds.v1.model.MdsValue;
 import org.edu_sharing.service.InsufficientPermissionException;
 import org.edu_sharing.service.authority.AuthorityService;
@@ -650,8 +650,8 @@ public class KafkaNotificationService implements NotificationService {
 
     private static NodeDataDTO createNodeData(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
         Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLTool.getNgRenderNodeUrl(nodeId, null, true));
-        props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
+        props.put("link", URLHelper.getNgRenderNodeUrl(nodeId, null, true));
+        props.put("link.static", URLHelper.getNgRenderNodeUrl(nodeId, null, false));
         return new NodeDataDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
@@ -660,8 +660,8 @@ public class KafkaNotificationService implements NotificationService {
 
     private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
         Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLTool.getNgRenderNodeUrl(nodeId, null, true));
-        props.put("link.static", URLTool.getNgRenderNodeUrl(nodeId, null, false));
+        props.put("link", URLHelper.getNgRenderNodeUrl(nodeId, null, true));
+        props.put("link.static", URLHelper.getNgRenderNodeUrl(nodeId, null, false));
 
         return new CollectionDTO(
                 CCConstants.getValidLocalName(type),
