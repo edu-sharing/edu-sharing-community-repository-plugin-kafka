@@ -5,7 +5,7 @@ services:
     environment:
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
     ports:
-      - "${COMMON_BIND_HOST:-127.0.0.1}:8402:8000"
+      - "${COMMON_BIND_HOST:-127.0.0.1}:8403:8000"
 
   notification-service-db:
     ports:
