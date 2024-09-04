@@ -18,7 +18,7 @@ WORKDIR application
 #    && chown -RL worker:worker /tmp
 
 RUN set -eux \
-    && adduser -D -u 1000 -h /application -s bin/bash worker \
+    && adduser --uid=1000 --home=/application --disabled-password --gecos "" --shell=/bin/bash worker \
     && chown -RL worker:worker . \
     && chown -RL worker:worker /tmp
 
@@ -40,7 +40,7 @@ COPY --chown=worker:worker assets/profiler profiler/
 ########################################################################################################################
 
 EXPOSE 8080
-ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} --enable-preview -Dspring.profiles.active=docker org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} --enable-preview -Dspring.profiles.active=docker org.springframework.boot.loader.launch.JarLauncher"]
 
 ########################################################################################################################
 
