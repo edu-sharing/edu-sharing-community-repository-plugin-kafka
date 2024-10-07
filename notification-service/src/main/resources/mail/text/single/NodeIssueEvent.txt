@@ -1,1 +1,1 @@
-[(#{nodeIssue_Single_Subject(${creator.email})})]
+[(#{nodeIssue_Single_Subject(${email})})]
