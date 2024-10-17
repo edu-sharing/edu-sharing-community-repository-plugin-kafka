@@ -19,12 +19,14 @@ import java.util.Date;
 @AllArgsConstructor
 @TypeAlias("NodeIssueEvent")
 @Document(collection = "notification")
-public class NodeIssueEvent extends NodeIssueBaseEvent {
+public class NodeIssueBaseEvent extends NodeBaseEvent {
 
-    public NodeIssueEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, String email, String reason, String userComment) {
-        super(id, timestamp, creatorId, receiverId, status, node, email, userComment);
-        this.reason = reason;
+    public NodeIssueBaseEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, String email, String userComment) {
+        super(id, timestamp, creatorId, receiverId, status, node);
+        this.email = email;
+        this.userComment = userComment;
     }
 
-    private String reason;
+    private String email;
+    private String userComment;
 }

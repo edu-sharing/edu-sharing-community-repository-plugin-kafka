@@ -1,0 +1,19 @@
+<div th:fragment="content">
+    <h1 th:text="#{greetings('','')}"></h1>
+    <table class="notification-table">
+        <tr>
+            <th th:text="#{material}"/>
+            <th th:text="#{issuer}"/>
+            <th th:text="#{comment}"/>
+            <th></th>
+        </tr>
+        <tr th:each="event: ${events}">
+            <td th:text="${event.node.properties.cm_name}"/>
+            <td th:text="${event.email}"/>
+            <td th:text="${event.userComment}"/>
+            <td>
+                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+            </td>
+        </tr>
+    </table>
+</div>
