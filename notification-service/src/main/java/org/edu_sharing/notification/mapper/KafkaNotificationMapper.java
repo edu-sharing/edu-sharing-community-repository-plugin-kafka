@@ -26,6 +26,8 @@ public class KafkaNotificationMapper {
             return mapInviteEventDTO((InviteEventDTO) dto);
         } else if (dto instanceof NodeIssueEventDTO) {
             return mapNodeIssueEventDTO((NodeIssueEventDTO) dto);
+        } else if (dto instanceof NodeIssueFeedbackEventDTO) {
+            return mapNodeIssueFeedbackEventDTO((NodeIssueFeedbackEventDTO) dto);
         } else if (dto instanceof RatingEventDTO) {
             return mapRatingEventDTO((RatingEventDTO) dto);
         } else if (dto instanceof WorkflowEventDTO) {
@@ -177,6 +179,18 @@ public class KafkaNotificationMapper {
                 map(dto.getNode()),
                 dto.getEmail(),
                 dto.getReason(),
+                dto.getUserComment()
+        );
+    }
+    private static NotificationEvent mapNodeIssueFeedbackEventDTO(NodeIssueFeedbackEventDTO dto) {
+        return new NodeIssueFeedbackEvent(
+                dto.getId(),
+                dto.getTimestamp(),
+                dto.getCreatorId(),
+                dto.getReceiverId(),
+                map(dto.getStatus()),
+                map(dto.getNode()),
+                dto.getEmail(),
                 dto.getUserComment()
         );
     }

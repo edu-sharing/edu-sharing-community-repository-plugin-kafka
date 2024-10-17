@@ -36,6 +36,7 @@ public class UserData {
     private NotificationInterval commentEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval inviteEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval nodeIssueEventNotificationInterval = NotificationInterval.immediately;
+    private NotificationInterval nodeIssueFeedbackEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval ratingEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval workflowEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval metadataSuggestionEventNotificationInterval = NotificationInterval.immediately;
@@ -51,6 +52,8 @@ public class UserData {
             return inviteEventNotificationInterval;
         } else if (notificationEvent instanceof NodeIssueEvent) {
             return nodeIssueEventNotificationInterval;
+        } else if (notificationEvent instanceof NodeIssueFeedbackEvent) {
+            return nodeIssueFeedbackEventNotificationInterval;
         } else if (notificationEvent instanceof RatingEvent) {
             return ratingEventNotificationInterval;
         } else if (notificationEvent instanceof WorkflowEvent) {

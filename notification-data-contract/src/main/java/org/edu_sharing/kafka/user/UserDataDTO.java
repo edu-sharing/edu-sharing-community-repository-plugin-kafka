@@ -20,6 +20,7 @@ public class UserDataDTO {
     private NotificationIntervalDTO commentEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO inviteEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO nodeIssueEvent = NotificationIntervalDTO.immediately;
+    private NotificationIntervalDTO nodeIssueFeedbackEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO ratingEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO workflowEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO metadataSuggestionEvent = NotificationIntervalDTO.immediately;

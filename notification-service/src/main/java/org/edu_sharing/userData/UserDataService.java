@@ -49,11 +49,11 @@ public class UserDataService {
 
     public Optional<UserData> getUserData(String id) {
         if ("system".equals(id)) {
-            return Optional.of(new UserData("system", "", applicationName, mailSendAddress, "de-DE"));
+            return Optional.of(new UserData("system", "", applicationName, mailSendAddress, "de_DE"));
         }
 
         if ("report".equals(id)) {
-            return Optional.of(new UserData("report", "", applicationName, mailReportAddress, "de-DE"));
+            return Optional.of(new UserData("report", "", applicationName, mailReportAddress, "de_DE"));
         }
 
         return userDataRepository.findById(id);
@@ -63,11 +63,11 @@ public class UserDataService {
     public Map<String, UserData> getUserDataAsMap(List<String> ids) {
         Map<String, UserData> userData = userDataRepository.findByIdInAsMap(ids);
         if (ids.remove("system")) {
-            userData.put("system", new UserData("system", "", applicationName, mailSendAddress, "de-DE"));
+            userData.put("system", new UserData("system", "", applicationName, mailSendAddress, "de_DE"));
         }
 
         if (ids.remove("report")) {
-            userData.put("report", new UserData("report", "", applicationName, mailReportAddress, "de-DE"));
+            userData.put("report", new UserData("report", "", applicationName, mailReportAddress, "de_DE"));
         }
 
         return userData;
@@ -94,6 +94,7 @@ public class UserDataService {
                 userDataDTO.map(UserDataDTO::getCommentEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getInviteEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getNodeIssueEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
+                userDataDTO.map(UserDataDTO::getNodeIssueFeedbackEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getRatingEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getWorkflowEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getMetadataSuggestionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null)
