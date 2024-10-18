@@ -1,0 +1,1 @@
+[(#{nodeIssueFeedback_Single_Subject(${email})})]

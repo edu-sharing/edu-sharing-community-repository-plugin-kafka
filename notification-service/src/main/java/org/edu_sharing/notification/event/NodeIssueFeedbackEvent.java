@@ -16,15 +16,10 @@ import java.util.Date;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 @TypeAlias("NodeIssueEvent")
 @Document(collection = "notification")
-public class NodeIssueEvent extends NodeIssueBaseEvent {
-
-    public NodeIssueEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, String email, String reason, String userComment) {
+public class NodeIssueFeedbackEvent extends NodeIssueBaseEvent {
+    public NodeIssueFeedbackEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, String email, String userComment) {
         super(id, timestamp, creatorId, receiverId, status, node, email, userComment);
-        this.reason = reason;
     }
-
-    private String reason;
 }
