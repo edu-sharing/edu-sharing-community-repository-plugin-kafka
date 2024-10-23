@@ -15,7 +15,6 @@ import org.edu_sharing.kafka.user.NotificationIntervalDTO;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.repository.client.tools.CCConstants;
-import org.edu_sharing.repository.server.AuthenticationToolAPI;
 import org.edu_sharing.service.notification.NotificationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +22,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -72,7 +74,7 @@ public class KafkaAuthorityPublisherService {
             userDataDTO.setEmail((String) properties.get(QName.createQName(CCConstants.PROP_USER_EMAIL)));
         }
 
-//        userDataDTO.setLocale(new AuthenticationToolAPI().getCurrentLocale());
+//        userDataDTO.setLocale(AuthenticationToolAPI.getInstance().getCurrentLocale());
         userDataDTO.setLocale("de_DE"); // TODO we need the local of the users but this isn't stored in the db
         try {
             kafkaUserTemplate.sendDefault(properties.get(QName.createQName(CCConstants.SYS_PROP_NODE_UID)).toString(), userDataDTO);

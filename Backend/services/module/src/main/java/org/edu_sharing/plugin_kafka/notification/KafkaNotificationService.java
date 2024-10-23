@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 @Service("kafkaNotificationService")
 public class KafkaNotificationService implements NotificationService {
 
+    // TODO can we use a constructor?
     @Setter
     @Autowired
     @Qualifier("kafkaNotificationTemplate")
@@ -76,6 +77,10 @@ public class KafkaNotificationService implements NotificationService {
     @Setter
     @Autowired
     private KafkaSettings kafkaSettings;
+
+    @Setter
+    @Autowired
+    private AuthenticationToolAPI authenticationToolAPI;
 
     public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO notificationMessage) {
         try {
@@ -113,7 +118,7 @@ public class KafkaNotificationService implements NotificationService {
     @Override
 
     public void notifyWorkflowChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        String senderId = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
         // TODO group handling
@@ -211,7 +216,7 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<String> nodeTypes, List<List<String>> aspects, List<Map<String, Object>> nodePropertiesList) throws Throwable {
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        String senderId = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
 
         String[] receivers = widgetDefinition.getSuggestionReceiver().split(",");
 
@@ -264,7 +269,7 @@ public class KafkaNotificationService implements NotificationService {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
 
 
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        String senderId = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
         if(Objects.equals(receiverId, senderId)){
@@ -288,7 +293,7 @@ public class KafkaNotificationService implements NotificationService {
     public void notifyProposeForCollection(String collectionId, String refNodeId, String collectionType, List<String> collectionAspects, Map<String, Object> collectionProperties, String nodeType, List<String> nodeAspects, Map<String, Object> nodeProperties, Status status) {
 
         String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
-        String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
+        String senderAuthority = authenticationToolAPI.getCurrentUser();
 
         String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
@@ -312,7 +317,7 @@ public class KafkaNotificationService implements NotificationService {
     public void notifyAddCollection(String collectionId, String refNodeId, String collectionType, List<String> collectionAspects, Map<String, Object> collectionProperties, String nodeType, List<String> nodeAspects, Map<String, Object> nodeProperties, Status status) {
 
         String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
-        String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
+        String senderAuthority = authenticationToolAPI.getCurrentUser();
 
         String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
@@ -335,7 +340,7 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyRatingChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        String senderId = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
         if (Optional.of(mailSettings).map(MailSettings::getFrom).map(StringUtils::isBlank).orElse(true)) {
@@ -368,11 +373,11 @@ public class KafkaNotificationService implements NotificationService {
             builder.setPath("/api/v1/notification");
 
             if ("-me-".equals(receiverId)) {
-                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+                receiverId = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
             }
 
             if(!AuthorityServiceHelper.isAdmin()){
-                String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+                String currentUser = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
                 if(!currentUser.equals(receiverId)){
                     throw new InsufficientPermissionException("You haven't enough permission to see notifications");
                 }
@@ -453,7 +458,7 @@ public class KafkaNotificationService implements NotificationService {
         try {
             org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
 
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+            String currentUser = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
             if(!currentUser.equals(notification.getReceiver().getId())){
                 throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
             }
@@ -491,9 +496,9 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void setNotificationStatusByReceiverId(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> oldStatusList, org.edu_sharing.rest.notification.data.StatusDTO newStatus) throws IOException, InsufficientPermissionException {
         try {
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+            String currentUser = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
             if ("-me-".equals(receiverId)) {
-                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+                receiverId = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
             }
 
 
@@ -536,7 +541,7 @@ public class KafkaNotificationService implements NotificationService {
         try {
 
             org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+            String currentUser = authorityService.getAuthorityNodeRef(authenticationToolAPI.getCurrentUser()).getId();
             if(!currentUser.equals(notification.getReceiver().getId())){
                 throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
             }
