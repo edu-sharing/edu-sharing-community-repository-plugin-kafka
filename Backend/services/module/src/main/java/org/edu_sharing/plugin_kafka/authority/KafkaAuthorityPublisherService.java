@@ -15,7 +15,6 @@ import org.edu_sharing.kafka.user.NotificationIntervalDTO;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.repository.client.tools.CCConstants;
-import org.edu_sharing.repository.server.AuthenticationToolAPI;
 import org.edu_sharing.service.notification.NotificationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +22,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -110,7 +112,7 @@ public class KafkaAuthorityPublisherService {
         return allAuthorities;
     }
 
-    private void publishAuthority(NodeRef nodeRef) {
+    public void publishAuthority(NodeRef nodeRef) {
         log.info("Handle authority: {}", nodeRef);
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 

@@ -111,7 +111,6 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-
     public void notifyWorkflowChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
@@ -125,8 +124,8 @@ public class KafkaNotificationService implements NotificationService {
                 receiverId,
                 null,
                 createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
-                comment,
-                I18nAngular.getTranslationAngular("common", "WORKFLOW." + status)
+                I18nAngular.getTranslationAngular("common", "WORKFLOW." + status),
+                comment
         ));
     }
 
