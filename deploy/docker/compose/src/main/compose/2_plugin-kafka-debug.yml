@@ -7,8 +7,3 @@ services:
     ports:
       - "${COMMON_BIND_HOST:-127.0.0.1}:8403:8000"
 
-  notification-service-db:
-    ports:
-      - "${COMMON_BIND_HOST:-127.0.0.1}:${NOTIFICATION_SERVICES_DATABASE_PORT:-8501}:27017"
-
-

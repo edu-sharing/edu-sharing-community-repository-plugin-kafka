@@ -8,6 +8,3 @@ services:
     restart: unless-stopped
     volumes:
       - ./templates/mail/:/application/templates/mail/
-
-  notification-service-db:
-    restart: unless-stopped

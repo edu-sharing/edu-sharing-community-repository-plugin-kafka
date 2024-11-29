@@ -84,6 +84,12 @@
       <artifactId>edu_sharing-community-repository-plugin-kafka-notification-service</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.edu_sharing</groupId>
+      <artifactId>edu_sharing-community-common-deployment-mongodb-compose</artifactId>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 
 </project>
