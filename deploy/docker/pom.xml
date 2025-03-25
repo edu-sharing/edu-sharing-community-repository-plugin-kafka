@@ -31,7 +31,7 @@
     </docker.edu_sharing.community.common.mongodb.name>
 
     <docker.edu_sharing.community.common.mongodb.tag>
-      7.0.9
+      7.0.15
     </docker.edu_sharing.community.common.mongodb.tag>
 
     <docker.edu_sharing.community.common.mongodb.exporter.name>
@@ -47,7 +47,7 @@
     </docker.edu_sharing.community.common.minideb.name>
 
     <docker.edu_sharing.community.common.minideb.tag>
-      11
+      12
     </docker.edu_sharing.community.common.minideb.tag>
 
     <docker.from.openjdk.17>
