@@ -107,7 +107,7 @@ public class KafkaAuthorityPublisherService {
         do {
             pagingResults = authorityService.getAuthorities(type, null, null, false, false, pagingRequest);
             allAuthorities.addAll(pagingResults.getPage());
-            pagingRequest = new PagingRequest(pageSize, pagingResults.getQueryExecutionId());
+            pagingRequest = new PagingRequest(allAuthorities.size(), pageSize, pagingResults.getQueryExecutionId());
         } while (pagingResults.hasMoreItems());
         return allAuthorities;
     }
