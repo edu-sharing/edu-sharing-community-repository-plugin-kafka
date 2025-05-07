@@ -1,9 +1,10 @@
 package org.edu_sharing.notification;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.notification.data.Status;
-import org.edu_sharing.notification.event.*;
+import org.edu_sharing.notification.event.NotificationEvent;
 import org.edu_sharing.service.NotificationService;
 import org.edu_sharing.userData.NotificationInterval;
 import org.edu_sharing.userData.UserData;
@@ -24,9 +25,22 @@ public class NotificationHandler {
     private final UserDataRepository userDataRepository;
     private final List<NotificationService> notificationServices;
 
+    @PostConstruct
+    public void resendFailedNotificationsOnStartup() {
+        handlePendingNotification(NotificationInterval.immediately);
+    }
+
+    public void handlePendingNotification(NotificationInterval notificationInterval) {
+        List<NotificationEvent> notificationEvents = notificationManager.getAllNotifications(Status.PENDING);
+        handlePendingNotification(notificationInterval, notificationEvents);
+    }
+
     public void handlePendingNotification(Date newerThan, NotificationInterval notificationInterval) {
         List<NotificationEvent> notificationEvents = notificationManager.getAllNotifications(newerThan, Status.PENDING);
+        handlePendingNotification(notificationInterval, notificationEvents);
+    }
 
+    private void handlePendingNotification(NotificationInterval notificationInterval, List<NotificationEvent> notificationEvents) {
         List<NotificationEvent> filteredEvents = notificationEvents.stream().filter(x -> {
             UserData userData = userDataRepository.findById(x.getReceiverId()).orElse(new UserData());
             return userData.getNotificationInterval(x) == notificationInterval;

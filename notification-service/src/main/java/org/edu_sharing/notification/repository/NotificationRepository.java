@@ -10,5 +10,5 @@ import java.util.List;
 // TODO BaseMessage -> NotificationEvent
 public interface NotificationRepository extends MongoRepository<NotificationEvent, String>, CustomNotificationRepository {
     List<NotificationEvent> findAllByTimestampAfterAndStatus(Date newerThan, Status status);
-
+    List<NotificationEvent> findAllByStatus(Status status);
 }
