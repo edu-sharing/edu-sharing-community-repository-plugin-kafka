@@ -45,8 +45,8 @@ services:
   notification-service:
     image: "${docker.repository}/${docker.prefix}-deploy-docker-build-notification-service:${docker.tag}"
     command:
-      - -Xms${REPOSITORY_SEARCH_ELASTIC_TRACKER_JAVA_XMS:-512m}
-      - -Xmx${REPOSITORY_SEARCH_ELASTIC_TRACKER_JAVA_XMX:-512m}
+      - -Xms${NOTIFICATION_SERVICE_JAVA_XMS:-512m}
+      - -Xmx${NOTIFICATION_SERVICE_JAVA_XMX:-512m}
       - -Dcom.sun.management.jmxremote
       - -Dcom.sun.management.jmxremote.authenticate=false
       - -Dcom.sun.management.jmxremote.port=7199
