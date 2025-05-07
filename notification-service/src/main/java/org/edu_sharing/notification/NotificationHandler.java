@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -41,35 +42,40 @@ public class NotificationHandler {
     }
 
     private void handlePendingNotification(NotificationInterval notificationInterval, List<NotificationEvent> notificationEvents) {
+
+        Map<String, UserData> userDataMap = notificationEvents.stream().map(NotificationEvent::getReceiverId)
+                .distinct()
+                .collect(Collectors.toMap(id -> id, id -> userDataRepository.findById(id).orElse(new UserData())));
+
+        List<NotificationEvent> disabledEvents = notificationEvents.stream().filter(x -> {
+            UserData userData = userDataMap.get(x.getReceiverId());
+            return userData.getNotificationInterval(x) == NotificationInterval.disabled;
+        }).collect(Collectors.toList());
+
+        disabledEvents.forEach(x -> x.setStatus(Status.IGNORED));
+        notificationManager.saveAllNotifications(disabledEvents);
+
         List<NotificationEvent> filteredEvents = notificationEvents.stream().filter(x -> {
-            UserData userData = userDataRepository.findById(x.getReceiverId()).orElse(new UserData());
+            UserData userData = userDataMap.get(x.getReceiverId());
             return userData.getNotificationInterval(x) == notificationInterval;
         }).collect(Collectors.toList());
 
-        notificationServices.forEach(x->x.send(filteredEvents));
-        filteredEvents.forEach(notificationManager::saveNotification);
+        notificationServices.forEach(x -> x.send(filteredEvents));
+        notificationManager.saveAllNotifications(filteredEvents);
     }
 
     public void handleIncomingNotifications(List<NotificationEvent> notificationEvents) {
-        notificationEvents.forEach(notificationManager::saveNotification);
+        notificationManager.saveAllNotifications(notificationEvents);
 
-
-        List<NotificationEvent> filteredEvents = notificationEvents.stream().filter(x -> {
-            UserData userData = userDataRepository.findById(x.getReceiverId()).orElse(new UserData());
-            if(userData.getNotificationInterval(x) == NotificationInterval.disabled){
-                x.setStatus(Status.IGNORED);
-            }
-            return userData.getNotificationInterval(x) == NotificationInterval.immediately;
-        }).collect(Collectors.toList());
-
-        notificationServices.forEach(x->x.send(filteredEvents));
-        notificationEvents.forEach(x->{
-            if(x.getStatus() == Status.NEW){
+        handlePendingNotification(NotificationInterval.immediately, notificationEvents);
+        notificationEvents.forEach(x -> {
+            if (x.getStatus() == Status.NEW) {
                 x.setStatus(Status.PENDING);
             }
         });
 
         notificationEvents.forEach(notificationManager::saveNotification);
+        notificationManager.saveAllNotifications(notificationEvents);
     }
 
 }

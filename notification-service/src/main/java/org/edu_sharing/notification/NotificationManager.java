@@ -36,6 +36,10 @@ public class NotificationManager {
         notificationRepository.save(notificationEvent);
     }
 
+    public void saveAllNotifications(Iterable<NotificationEvent> notificationEvents) {
+        notificationRepository.saveAll(notificationEvents);
+    }
+
     public NotificationEvent getNotification(String id) {
         return notificationRepository.findById(id).orElseThrow(() -> new NoSuchElementException("No notification for " + id + "found!"));
     }
