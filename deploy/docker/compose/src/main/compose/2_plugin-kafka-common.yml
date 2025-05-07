@@ -62,11 +62,13 @@ services:
       SPRING_MAIL_PASSWORD: "${REPOSITORY_SERVICE_MAIL_SERVER_SMTP_PASSWORD:-password}"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-      SPRING_MAIL_SEND_ADDRESS: "${NOTIFICATION_SERVICES_MAIL_SEND_ADDRESS:-noreply@notification-service.org}"
+      SPRING_MAIL_SEND_ADDRESS: "${NOTIFICATION_SERVICE_MAIL_SEND_ADDRESS:-noreply@notification-service.org}"
       SPRING_MAIL_REPORT_ADDRESS: "${REPOSITORY_SERVICE_MAIL_REPORT_RECEIVER:-noreply@notification-service.org}"
-      SPRING_DATA_MONGODB_URI: "mongodb://${NOTIFICATION_SERVICES_DATABASES_USER:-notification}:${NOTIFICATION_SERVICES_DATABASES_PASS:-notification}@notification-service-db:27017/${NOTIFICATION_SERVICES_DATABASES_NAME:-notification}"
+      SPRING_DATA_MONGODB_URI: "mongodb://${NOTIFICATION_SERVICE_DATABASE_USER:-notification}:${NOTIFICATION_SERVICES_DATABASES_PASS:-notification}@notification-service-db:27017/${NOTIFICATION_SERVICES_DATABASES_NAME:-notification}"
     expose:
       - "8080"
+    ports:
+      - "${COMMON_BIND_HOST:-127.0.0.1}:${NOTIFICATION_SERVICE_HTTP_PORT:-9400}:8080"
     depends_on:
       - kafka
       - notification-service-db
