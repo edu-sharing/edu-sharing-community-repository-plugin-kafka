@@ -61,9 +61,9 @@ class UserDataServiceTest {
                 .toList();
 
         List<UserData> existingUserData = List.of(
-                new UserData("lenny", "Lenny", "Linux", "lenny.linux@example.com", "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
-                new UserData("william", "William", "Windows", "william.windows@example.com", "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
-                new UserData("johansson", "Scala", "Johansson", "scala.johansson@example.com", "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily)
+                new UserData("lenny", "Lenny", "Linux", List.of("lenny.linux@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
+                new UserData("william", "William", "Windows", List.of("william.windows@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
+                new UserData("johansson", "Scala", "Johansson", List.of("scala.johansson@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily)
         );
 
         Arguments addAllArgs = createArgumentSet(keys, newUserDataDto, List.of(), newUserData, List.of(), newUserData.stream().map(UserDataAddedEvent::new).map(x -> (Object) x).toList());

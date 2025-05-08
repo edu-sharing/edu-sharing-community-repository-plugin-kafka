@@ -92,8 +92,8 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyNodeIssue(String nodeId, String reason, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String userEmail, String userComment) throws Throwable {
 
-        if (Optional.of(mailSettings).map(MailSettings::getReport).map(Report::getReceiver).map(StringUtils::isBlank).orElse(true)) {
-            throw new IllegalArgumentException("No report receiverAuthority is set in the configuration");
+        if (Optional.of(mailSettings).map(MailSettings::getReport).map(Report::getReceivers).map(List::isEmpty).orElse(true)) {
+            throw new IllegalStateException("No report receiverAuthority is set in the configuration");
         }
 
 

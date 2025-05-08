@@ -24,10 +24,10 @@ public class UserDataService {
 
 
     @Value("${spring.mail.send.address}")
-    private String mailSendAddress;
+    private List<String> mailSendAddress;
 
     @Value("${spring.mail.report.address}")
-    private String mailReportAddress;
+    private List<String> mailReportAddress;
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -113,7 +113,7 @@ public class UserDataService {
                 id,
                 userDataDTO.map(UserDataDTO::getFirstName).orElse(null),
                 userDataDTO.map(UserDataDTO::getLastName).orElse(null),
-                userDataDTO.map(UserDataDTO::getEmail).orElse(null),
+                userDataDTO.map(UserDataDTO::getEmail).map(List::of).orElse(null),
                 userDataDTO.map(UserDataDTO::getLocale).orElse(null),
                 userDataDTO.map(UserDataDTO::getAddToCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getProposeForCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
