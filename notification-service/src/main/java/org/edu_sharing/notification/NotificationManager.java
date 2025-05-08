@@ -44,6 +44,10 @@ public class NotificationManager {
         return notificationRepository.findById(id).orElseThrow(() -> new NoSuchElementException("No notification for " + id + "found!"));
     }
 
+    public List<NotificationEvent> getAllNotifications(String receiverId, List<Status> statusList) {
+        return notificationRepository.findAllByReceiverIdAndStatusIsIn(receiverId, statusList);
+    }
+
     public Page<NotificationEvent> getAllNotifications(String receiverId, List<Status> statusList, Pageable paging) {
         return notificationRepository.findAll(receiverId, statusList, paging);
     }

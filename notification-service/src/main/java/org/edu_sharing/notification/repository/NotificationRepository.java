@@ -4,6 +4,7 @@ import org.edu_sharing.notification.data.Status;
 import org.edu_sharing.notification.event.NotificationEvent;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -11,4 +12,6 @@ import java.util.List;
 public interface NotificationRepository extends MongoRepository<NotificationEvent, String>, CustomNotificationRepository {
     List<NotificationEvent> findAllByTimestampAfterAndStatus(Date newerThan, Status status);
     List<NotificationEvent> findAllByStatus(Status status);
+
+    List<NotificationEvent> findAllByReceiverIdAndStatusIsIn(String receiverId, Collection<Status> statuses);
 }
