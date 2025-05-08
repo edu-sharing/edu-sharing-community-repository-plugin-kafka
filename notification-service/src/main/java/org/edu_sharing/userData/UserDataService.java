@@ -84,11 +84,11 @@ public class UserDataService {
 
     public Map<String, UserData> getUserDataAsMap(List<String> ids) {
         Map<String, UserData> userData = userDataRepository.findByIdInAsMap(ids);
-        if (ids.remove("system")) {
+        if (ids.contains("system")) {
             userData.put("system", new UserData("system", "", applicationName, mailSendAddress, "de-DE"));
         }
 
-        if (ids.remove("report")) {
+        if (ids.contains("report")) {
             userData.put("report", new UserData("report", "", applicationName, mailReportAddress, "de-DE"));
         }
 
