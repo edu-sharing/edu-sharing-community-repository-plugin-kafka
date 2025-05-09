@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -24,7 +23,6 @@ import org.edu_sharing.kafka.notification.event.*;
 import org.edu_sharing.metadataset.v2.MetadataWidget;
 import org.edu_sharing.plugin_kafka.config.KafkaSettings;
 import org.edu_sharing.plugin_kafka.config.MailSettings;
-import org.edu_sharing.plugin_kafka.config.Report;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.plugin_kafka.kafka.SendResult;
 import org.edu_sharing.plugin_kafka.kafka.support.JacksonUtils;
@@ -679,10 +677,14 @@ public class KafkaNotificationService implements NotificationService {
 
 
     private static Map<String, Object> getSimplifiedNodeProperties(Map<String, Object> nodeProperties) {
+        if (nodeProperties == null) {
+            return new HashMap<>();
+        }
         return nodeProperties.entrySet().stream()
+                .filter(x -> x.getKey() != null)
                 .map(x -> new ImmutablePair<>(CCConstants.getValidLocalName(x.getKey()), x.getValue()))
                 .filter(x -> StringUtils.isNoneBlank(x.getKey()))
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+                .collect(HashMap::new, (m, p) -> m.put(p.getKey(), p.getValue()), HashMap::putAll);
     }
 
 
