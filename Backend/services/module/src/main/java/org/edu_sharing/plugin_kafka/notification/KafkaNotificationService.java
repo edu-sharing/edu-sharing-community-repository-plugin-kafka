@@ -5,6 +5,7 @@ import com.google.api.client.http.HttpStatusCodes;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -81,17 +82,29 @@ public class KafkaNotificationService implements NotificationService {
             notificationMessage.setStatus(StatusDTO.NEW);
             notificationMessage.setTimestamp(DateTime.now().toDate());
             return kafkaNotificationTemplate.sendDefault(notificationMessage.getId(), notificationMessage);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             log.error("Error on sending notification: {} ", notificationMessage, ex);
             return null;
         }
+    }
+
+    private Set<String> getReceiverListFromAuthority(String authority) {
+        AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
+        List<String> result = new ArrayList<>();
+        result.add(authority);
+        if (authorityType == AuthorityType.GROUP) {
+            result.addAll(Arrays.asList(authorityService.getMembershipsOfGroup(authority)));
+        }
+
+
+        return new HashSet<>(result);
     }
 
     @Override
     public void notifyNodeIssue(String nodeId, NotifyMode mode, String reason, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String userEmail, String userComment) throws Throwable {
 
         NodeDataDTO nodeData = createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties));
-        if(NotifyMode.Feedback.equals(mode)) {
+        if (NotifyMode.Feedback.equals(mode)) {
             send(new NodeIssueFeedbackEventDTO(
                     null,
                     null,
@@ -119,21 +132,23 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyWorkflowChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
+
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
-        // TODO group handling
-
-        send(new WorkflowEventDTO(
-                null,
-                null,
-                senderId,
-                receiverId,
-                null,
-                createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
-                I18nAngular.getTranslationAngular("common", "WORKFLOW." + status),
-                comment
-        ));
+        Set<String> receivers = getReceiverListFromAuthority(receiverAuthority);
+        for (String receiver : receivers) {
+            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            send(new WorkflowEventDTO(
+                    null,
+                    null,
+                    senderId,
+                    receiverId,
+                    null,
+                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                    I18nAngular.getTranslationAngular("common", "WORKFLOW." + status),
+                    comment
+            ));
+        }
     }
 
     @Override
@@ -162,55 +177,56 @@ public class KafkaNotificationService implements NotificationService {
         }
 
         String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        Set<String> receivers = getReceiverListFromAuthority(receiverAuthority);
+        for (String receiver : receivers) {
+            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
 
-        // TODO group handling
+            String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
+            String invitationType = "invited";
+            if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
+                invitationType = "invited_collection";
+            }
 
-        String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
-        String invitationType = "invited";
-        if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
-            invitationType = "invited_collection";
-        }
+            String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
+                    ? (String) nodeProperties.get(CCConstants.LOM_PROP_GENERAL_TITLE)
+                    : (String) nodeProperties.get(CCConstants.CM_PROP_C_TITLE);
 
-        String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
-                ? (String) nodeProperties.get(CCConstants.LOM_PROP_GENERAL_TITLE)
-                : (String) nodeProperties.get(CCConstants.CM_PROP_C_TITLE);
+            if (StringUtils.isBlank(name)) {
+                name = (String) nodeProperties.get(CCConstants.CM_NAME);
+            }
 
-        if (StringUtils.isBlank(name)) {
-            name = (String) nodeProperties.get(CCConstants.CM_NAME);
-        }
+            List<PermissionDTO> permissionList = Arrays.stream(permissions)
+                    .filter(perm -> !(CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope()) && Objects.equals(CCConstants.PERMISSION_CC_PUBLISH, perm)))
+                    .map(perm -> new PermissionDTO(perm,
+                            I18nAngular.getPermissionDescription(perm)))
+                    .collect(Collectors.toList());
 
-        List<PermissionDTO> permissionList = Arrays.stream(permissions)
-                .filter(perm -> !(CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope()) && Objects.equals(CCConstants.PERMISSION_CC_PUBLISH, perm)))
-                .map(perm -> new PermissionDTO(perm,
-                        I18nAngular.getPermissionDescription(perm)))
-                .collect(Collectors.toList());
-
-        if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
-            send(new InviteSafeEventDTO(
-                    null,
-                    null,
-                    senderId,
-                    receiverId,
-                    null,
-                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
-                    name,
-                    mailText,
-                    permissionList
-            ));
-        } else {
-            send(new InviteEventDTO(
-                    null,
-                    null,
-                    senderId,
-                    receiverId,
-                    null,
-                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
-                    name,
-                    invitationType,
-                    mailText,
-                    permissionList
-            ));
+            if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
+                send(new InviteSafeEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        name,
+                        mailText,
+                        permissionList
+                ));
+            } else {
+                send(new InviteEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        name,
+                        invitationType,
+                        mailText,
+                        permissionList
+                ));
+            }
         }
     }
 
@@ -219,12 +235,16 @@ public class KafkaNotificationService implements NotificationService {
     public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<String> nodeTypes, List<List<String>> aspects, List<Map<String, Object>> nodePropertiesList) throws Throwable {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
 
-        String[] receivers = widgetDefinition.getSuggestionReceiver().split(",");
+        String[] receiverAuthorities = widgetDefinition.getSuggestionReceiver().split(",");
+        List<String> receivers = Arrays.stream(receiverAuthorities)
+                .map(this::getReceiverListFromAuthority)
+                .flatMap(Collection::stream)
+                .distinct()
+                .collect(Collectors.toList());
 
-        // TODO group handling
-        for (String receiverAuthority : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
-            if (nodes.size() == 0) {
+        for (String receiver : receivers) {
+            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            if (nodes.isEmpty()) {
                 send(new MetadataSuggestionEventDTO(
                         null,
                         null,
@@ -273,7 +293,7 @@ public class KafkaNotificationService implements NotificationService {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
-        if(Objects.equals(receiverId, senderId)){
+        if (Objects.equals(receiverId, senderId)) {
             return;
         }
 
@@ -574,7 +594,6 @@ public class KafkaNotificationService implements NotificationService {
             throw new RuntimeException(e);
         }
     }
-
 
 
     @Data
