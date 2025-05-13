@@ -10,10 +10,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -153,17 +150,18 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyPersonStatusChanged(String receiver, String firstname, String lastName, String oldStatus, String newStatus) {
-        //TODO
-        Map<String, String> replace = new HashMap<>();
-        replace.put("firstName", firstname);
-        replace.put("lastName", lastName);
-        replace.put("oldStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + oldStatus));
-        replace.put("newStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + newStatus));
+        Map<String, String> replace = Map.of(
+                "firstName", firstname,
+                "lastName", lastName,
+                "oldStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + oldStatus),
+                "newStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + newStatus)
+        );
+
         try {
             String template = "userStatusChanged";
             MailTemplate.sendMail(receiver, template, replace);
         } catch (Exception e) {
-            log.warn("Can not send status notify mail to user: " + e.getMessage(), e);
+            log.warn("Can not send status notify mail to user: {}", e.getMessage(), e);
         }
     }
 
@@ -390,21 +388,12 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws IOException, InsufficientPermissionException {
         try {
+            receiverId = resolveReceiverId(receiverId);
+            validatePermissions(receiverId);
+
+
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification");
-
-            if ("-me-".equals(receiverId)) {
-                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            }
-
-            if(!AuthorityServiceHelper.isAdmin()){
-                String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-                if(!currentUser.equals(receiverId)){
-                    throw new InsufficientPermissionException("You haven't enough permission to see notifications");
-                }
-            }
-
-
             builder.setParameter("receiverId", receiverId);
             builder.setParameter("status", StringUtils.join(status, ","));
             builder.setParameter("page", String.valueOf(pageable.getPageNumber()));
@@ -415,30 +404,27 @@ public class KafkaNotificationService implements NotificationService {
                 });
             }
 
-            HttpGet request = new HttpGet(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
 
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return null;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-                NotificationResponsePage notificationEventDTOS = JacksonUtils.enhancedObjectMapper().readValue(content, NotificationResponsePage.class);
+            NotificationResponsePage notificationEventDTOS = fetchNotificationService(new HttpGet(builder.build()), NotificationResponsePage.class);
+            if (notificationEventDTOS != null) {
                 notificationEventDTOS.setPageable(pageable);
-                return notificationEventDTOS;
             }
+            return notificationEventDTOS;
+
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
+        }
+    }
+
+    private void validatePermissions(String receiverId) throws InsufficientPermissionException {
+        if (AuthorityServiceHelper.isAdmin()) {
+            return;
+        }
+
+        String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        if (!currentUser.equals(receiverId)) {
+            throw new InsufficientPermissionException("You are not allowed to get or modify notifications of other users!");
         }
     }
 
@@ -448,66 +434,51 @@ public class KafkaNotificationService implements NotificationService {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath(String.format("/api/v1/notification/%s", id));
 
-            HttpGet request = new HttpGet(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return null;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-                return JacksonUtils.enhancedObjectMapper().readValue(content, org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
-            }
+            return fetchNotificationService(new HttpGet(builder.build()), org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
 
+    private <T> T fetchNotificationService(HttpRequestBase request, Class<T> responseClass) throws IOException {
+        request.setHeader("Accept", "application/json");
+        request.setHeader("Content-Type", "application/json");
+
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            CloseableHttpResponse response = client.execute(request);
+            HttpEntity entity = response.getEntity();
+
+            if (entity == null) {
+                return null;
+            }
+
+            String content = EntityUtils.toString(entity, "UTF-8");
+            if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                throw new HttpException(content);
+            }
+
+            if (responseClass.equals(Void.class)) {
+                return null;
+            }
+
+            return JacksonUtils.enhancedObjectMapper().readValue(content, responseClass);
+        }
+    }
 
     @Override
     public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatusByNotificationId(String id, org.edu_sharing.rest.notification.data.StatusDTO status) throws IOException, InsufficientPermissionException {
         try {
-            org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
 
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            if(!currentUser.equals(notification.getReceiver().getId())){
-                throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
-            }
+            org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
+            validatePermissions(notification.getReceiver().getId());
 
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification/status");
             builder.setParameter("id", id);
             builder.setParameter("status", status.toString());
 
-            HttpPatch request = new HttpPatch(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return null;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-                return JacksonUtils.enhancedObjectMapper().readValue(content, org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
-            }
+            return fetchNotificationService(new HttpPatch(builder.build()), org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -517,15 +488,8 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void setNotificationStatusByReceiverId(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> oldStatusList, org.edu_sharing.rest.notification.data.StatusDTO newStatus) throws IOException, InsufficientPermissionException {
         try {
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            if ("-me-".equals(receiverId)) {
-                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            }
-
-
-            if(!currentUser.equals(receiverId)){
-                throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
-            }
+            receiverId = resolveReceiverId(receiverId);
+            validatePermissions(receiverId);
 
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification/receiver/status");
@@ -533,62 +497,31 @@ public class KafkaNotificationService implements NotificationService {
             oldStatusList.forEach(x -> builder.setParameter("oldStatus", x.toString()));
             builder.setParameter("newStatus", newStatus.toString());
 
-            HttpPatch request = new HttpPatch(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-            }
+            fetchNotificationService(new HttpPatch(builder.build()), Void.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
 
+    private String resolveReceiverId(String receiverId) {
+        if ("-me-".equals(receiverId)) {
+            receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        }
+        return receiverId;
+    }
+
     @Override
     public void deleteNotification(String id) throws IOException, InsufficientPermissionException {
         try {
-
             org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            if(!currentUser.equals(notification.getReceiver().getId())){
-                throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
-            }
+            validatePermissions(notification.getReceiver().getId());
 
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification");
             builder.setParameter("id", id);
 
-            HttpDelete request = new HttpDelete(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-            }
+            fetchNotificationService(new HttpDelete(builder.build()), Void.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
