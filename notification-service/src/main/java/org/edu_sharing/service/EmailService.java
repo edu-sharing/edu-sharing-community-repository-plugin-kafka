@@ -85,7 +85,7 @@ public class EmailService implements NotificationService {
             }
             notificationEvents.forEach(x -> x.setStatus(Status.SENT));
         } catch (Exception ex) {
-            log.error("Error fail to send {}s emails to user {}, coursed by {}", notificationClass.getSimpleName(), receiverId, ex.getMessage(), ex);
+            log.error("Error fail to send {} emails to user {}, coursed by {}", notificationClass.getSimpleName(), receiverId, ex.getMessage(), ex);
         }
     }
 
@@ -143,7 +143,7 @@ public class EmailService implements NotificationService {
     }
 
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
-        log.info("send email to {} with subject {}", to, subject);
+        log.trace("send email to {} with subject {}", to, subject);
 
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
