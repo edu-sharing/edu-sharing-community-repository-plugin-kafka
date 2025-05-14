@@ -153,7 +153,7 @@ public class EmailService implements NotificationService {
         helper.setText(htmlBody, true);
 
         var template = new File(templatePath);
-        var logo = new File(template, "logo.png");
+        var logo = new File(template, "mail/logo.png");
         if (logo.exists()) {
             helper.addInline("logo.png", logo);
         } else {
