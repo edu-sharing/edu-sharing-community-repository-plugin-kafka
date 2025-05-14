@@ -20,7 +20,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -36,6 +40,9 @@ public class EmailService implements NotificationService {
 
     @Value("${spring.mail.send.address}")
     private String mailSendAddress;
+
+    @Value("${spring.mail.template.path}")
+    private String templatePath;
 
 
     @Override
@@ -144,7 +151,14 @@ public class EmailService implements NotificationService {
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlBody, true);
-        helper.addInline("logo.png", new ClassPathResource("mail/edu-sharing-mail.png"));
+
+        var template = new File(templatePath);
+        var logo = new File(template, "logo.png");
+        if (logo.exists()) {
+            helper.addInline("logo.png", logo);
+        } else {
+            helper.addInline("logo.png", new ClassPathResource("mail/edu-sharing-mail.png"));
+        }
         emailSender.send(message);
     }
 
