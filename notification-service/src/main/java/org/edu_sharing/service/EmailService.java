@@ -6,13 +6,11 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.LocaleUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.edu_sharing.notification.data.Status;
 import org.edu_sharing.notification.event.NotificationEvent;
 import org.edu_sharing.userData.UserData;
-import org.edu_sharing.userData.UserDataRepository;
 import org.edu_sharing.userData.UserDataService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -22,7 +20,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -38,6 +40,9 @@ public class EmailService implements NotificationService {
 
     @Value("${spring.mail.send.address}")
     private String mailSendAddress;
+
+    @Value("${spring.mail.template.path}")
+    private String templatePath;
 
 
     @Override
@@ -75,10 +80,12 @@ public class EmailService implements NotificationService {
             String content = templateEngine.process("html/baseLayout.html", ctx);
             String subject = templateEngine.process(String.format("text/multiple/%s.txt", messageType), ctx);
 
-            sendHtmlMessage(userData.get().getEmail(), subject, content);
+            for(String email : userData.get().getEmail()){
+                sendHtmlMessage(email, subject, content);
+            }
             notificationEvents.forEach(x -> x.setStatus(Status.SENT));
         } catch (Exception ex) {
-            log.error("Error fail to send {}s emails to user {}, coursed by {}", notificationClass.getSimpleName(), receiverId, ex.getMessage(), ex);
+            log.error("Error fail to send {} emails to user {}, coursed by {}", notificationClass.getSimpleName(), receiverId, ex.getMessage(), ex);
         }
     }
 
@@ -120,7 +127,9 @@ public class EmailService implements NotificationService {
             String content = templateEngine.process("html/baseLayout.html", ctx);
             String subject = templateEngine.process(String.format("text/single/%s.txt", messageType), ctx);
 
-            sendHtmlMessage(userData.get().getEmail(), subject, content);
+            for(String email : userData.get().getEmail()){
+                sendHtmlMessage(email, subject, content);
+            }
             notificationEvent.setStatus(Status.SENT);
         } catch (Exception ex) {
             log.error("Error fail to send {}s emails to user {}, coursed by {}", notificationEvent.getClass().getSimpleName(), notificationEvent.getReceiverId(), ex.getMessage(), ex);
@@ -134,7 +143,7 @@ public class EmailService implements NotificationService {
     }
 
     private void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
-        log.info("send email to {} with subject {}", to, subject);
+        log.trace("send email to {} with subject {}", to, subject);
 
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -142,7 +151,14 @@ public class EmailService implements NotificationService {
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlBody, true);
-        helper.addInline("logo.png", new ClassPathResource("mail/edu-sharing-mail.png"));
+
+        var template = new File(templatePath);
+        var logo = new File(template, "mail/logo.png");
+        if (logo.exists()) {
+            helper.addInline("logo.png", logo);
+        } else {
+            helper.addInline("logo.png", new ClassPathResource("mail/edu-sharing-mail.png"));
+        }
         emailSender.send(message);
     }
 

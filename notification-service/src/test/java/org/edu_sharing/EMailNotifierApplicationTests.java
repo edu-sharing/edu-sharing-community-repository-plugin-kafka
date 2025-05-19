@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.notification.data.Collection;
 import org.edu_sharing.notification.event.*;
 import org.edu_sharing.notification.data.*;
+import org.edu_sharing.notification.repository.NotificationRepository;
 import org.edu_sharing.service.EmailService;
 import org.edu_sharing.userData.UserData;
 import org.edu_sharing.userData.UserDataRepository;
@@ -43,6 +44,9 @@ class EMailNotifierApplicationTests {
     @MockBean
     private UserDataRepository userDataRepository;
 
+    @MockBean
+    private NotificationRepository notificationRepository;
+
     @Autowired
     private EmailService underTest;
 
@@ -54,9 +58,9 @@ class EMailNotifierApplicationTests {
 //    }
 
     Map<String, UserData> userDataDB = Map.of(
-            "receiver", new UserData("receiver", "Lenny", "Linux", "lenny.linux@example.com", "de_DE"),
-            "william", new UserData("william", "William", "Windows", "william.windows@example.com", "de_DE"),
-            "johansson", new UserData("johansson", "Scala", "Johansson", "scala.johansson@example.com", "de_DE")
+            "receiver", new UserData("receiver", "Lenny", "Linux", List.of("lenny.linux@example.com"), "de_DE"),
+            "william", new UserData("william", "William", "Windows", List.of("william.windows@example.com"), "de_DE"),
+            "johansson", new UserData("johansson", "Scala", "Johansson", List.of("scala.johansson@example.com"), "de_DE")
             );
 
     @BeforeEach
@@ -358,7 +362,7 @@ class EMailNotifierApplicationTests {
         Iterator<MimeMessage> iterator = Arrays.stream(greenMail.getReceivedMessages()).iterator();
         MimeMessage receivedMessage = iterator.next();
         assertEquals(1, receivedMessage.getAllRecipients().length);
-        assertEquals(userDataDB.get(data.get(0).getReceiverId()).getEmail(), receivedMessage.getAllRecipients()[0].toString());
+        assertEquals(userDataDB.get(data.get(0).getReceiverId()).getEmail().get(0), receivedMessage.getAllRecipients()[0].toString());
         assertEquals(mailSendAddress, receivedMessage.getFrom()[0].toString());
         log.info("Subject: {}", receivedMessage.getSubject());
         log.info("Body: {}", GreenMailUtil.getBody(receivedMessage));
