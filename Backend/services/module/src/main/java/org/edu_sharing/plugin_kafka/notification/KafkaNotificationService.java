@@ -40,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -73,6 +74,9 @@ public class KafkaNotificationService implements NotificationService {
     @Autowired
     private KafkaSettings kafkaSettings;
 
+    @Value("${repository.notifications.resolveGroups:true}")
+    private boolean resolveGroups;
+
     public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO notificationMessage) {
         try {
             notificationMessage.setId(generateMessageId());
@@ -89,7 +93,7 @@ public class KafkaNotificationService implements NotificationService {
         AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
         List<String> result = new ArrayList<>();
         result.add(authority);
-        if (authorityType == AuthorityType.GROUP) {
+        if (authorityType == AuthorityType.GROUP && resolveGroups) {
             result.addAll(Arrays.asList(authorityService.getMembershipsOfGroup(authority)));
         }
 
