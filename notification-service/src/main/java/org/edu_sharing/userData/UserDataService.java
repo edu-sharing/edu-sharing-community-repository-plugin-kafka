@@ -1,9 +1,9 @@
 package org.edu_sharing.userData;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.edu_sharing.kafka.user.UserDataDTO;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -19,31 +20,52 @@ import java.util.stream.Stream;
 public class UserDataService {
 
     private final UserDataRepository userDataRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Value("${spring.mail.send.address}")
-    private String mailSendAddress;
+    private List<String> mailSendAddress;
 
     @Value("${spring.mail.report.address}")
-    private String mailReportAddress;
+    private List<String> mailReportAddress;
 
     @Value("${spring.application.name}")
     private String applicationName;
 
     public void setUserData(List<String> keys, List<UserDataDTO> messages) {
-        List<UserData> userDatas = new ArrayList<>();
+        List<UserData> newUserDataList = new ArrayList<>();
         for (int i = 0; i < keys.size(); i++) {
             Optional<UserDataDTO> message = Optional.ofNullable(messages.get(i));
             UserData userData = createUserData(keys.get(i), message);
             if (message.isEmpty()) {
-                userDataRepository.delete(userData);
+                userDataRepository.findById(keys.get(i))
+                        .ifPresent(x -> {
+                            userDataRepository.delete(x);
+                            eventPublisher.publishEvent(new UserDataDeletedEvent(x));
+                        });
             } else {
-                userDatas.add(userData);
+                newUserDataList.add(userData);
             }
         }
 
-        if (!userDatas.isEmpty()) {
-            userDataRepository.saveAll(userDatas);
+        if (newUserDataList.isEmpty()) {
+            return;
+        }
+
+        Map<String, UserData> oldUserDataMap = userDataRepository.findAllById(keys)
+                .stream()
+                .collect(Collectors.toMap(UserData::getId, x -> x));
+
+        userDataRepository.saveAll(newUserDataList);
+
+        for (UserData newUserData : newUserDataList) {
+            UserData oldUserData = oldUserDataMap.get(newUserData.getId());
+            if (oldUserData == null) {
+                eventPublisher.publishEvent(new UserDataAddedEvent(newUserData));
+            } else if (!oldUserData.equals(newUserData)) {
+                eventPublisher.publishEvent(new UserDataChangedEvent(oldUserData, newUserData));
+            }
+
         }
     }
 
@@ -62,11 +84,11 @@ public class UserDataService {
 
     public Map<String, UserData> getUserDataAsMap(List<String> ids) {
         Map<String, UserData> userData = userDataRepository.findByIdInAsMap(ids);
-        if (ids.remove("system")) {
+        if (ids.contains("system")) {
             userData.put("system", new UserData("system", "", applicationName, mailSendAddress, "de-DE"));
         }
 
-        if (ids.remove("report")) {
+        if (ids.contains("report")) {
             userData.put("report", new UserData("report", "", applicationName, mailReportAddress, "de-DE"));
         }
 
@@ -82,12 +104,16 @@ public class UserDataService {
     }
 
 
-    private UserData createUserData(String id, Optional<UserDataDTO> userDataDTO) {
+    public static UserData createUserData(String id, UserDataDTO userDataDTO) {
+        return createUserData(id, Optional.ofNullable(userDataDTO));
+    }
+
+    private static UserData createUserData(String id, Optional<UserDataDTO> userDataDTO) {
         return new UserData(
                 id,
                 userDataDTO.map(UserDataDTO::getFirstName).orElse(null),
                 userDataDTO.map(UserDataDTO::getLastName).orElse(null),
-                userDataDTO.map(UserDataDTO::getEmail).orElse(null),
+                userDataDTO.map(UserDataDTO::getEmail).map(List::of).orElse(null),
                 userDataDTO.map(UserDataDTO::getLocale).orElse(null),
                 userDataDTO.map(UserDataDTO::getAddToCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getProposeForCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),

@@ -1,8 +1,6 @@
 package org.edu_sharing.notification.mapper;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.edu_sharing.notification.data.*;
 import org.edu_sharing.notification.event.*;
 import org.edu_sharing.rest.notification.data.*;
@@ -60,7 +58,10 @@ public class RestNotificationMapper {
                 userData.getId(),
                 userData.getFirstName(),
                 userData.getLastName(),
-                userData.getEmail());
+                Optional.of(userData)
+                        .map(UserData::getEmail)
+                        .flatMap(x->x.stream().findFirst())
+                        .orElse(null));
     }
 
     private NodeDataDTO map(NodeData node) {
