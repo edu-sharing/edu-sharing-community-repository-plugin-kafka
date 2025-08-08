@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.edu_sharing.notification.event.NotificationEvent;
+import org.edu_sharing.notification.event.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
-import org.edu_sharing.notification.event.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -20,15 +21,23 @@ public class UserData {
     String id;
     String firstName;
     String lastName;
-    String email;
+    List<String> email;
     String locale;
 
-    public UserData(String id, String firstName, String lastName, String email, String locale) {
+    public UserData(String id, String firstName, String lastName, List<String> email, String locale) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.locale = locale;
+        this.locale = locale.replace("-", "_");
+    }
+
+    public String getLocale(){
+        return locale.replace("-", "_");
+    }
+
+    public void setLocale(String locale){
+        this.locale = locale.replace("_", "-");
     }
 
     private NotificationInterval addToCollectionEventNotificationInterval = NotificationInterval.immediately;
