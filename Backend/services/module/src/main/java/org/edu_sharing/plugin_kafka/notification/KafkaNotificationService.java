@@ -5,15 +5,12 @@ import com.google.api.client.http.HttpStatusCodes;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -24,7 +21,6 @@ import org.edu_sharing.kafka.notification.event.*;
 import org.edu_sharing.metadataset.v2.MetadataWidget;
 import org.edu_sharing.plugin_kafka.config.KafkaSettings;
 import org.edu_sharing.plugin_kafka.config.MailSettings;
-import org.edu_sharing.plugin_kafka.config.Report;
 import org.edu_sharing.plugin_kafka.kafka.KafkaTemplate;
 import org.edu_sharing.plugin_kafka.kafka.SendResult;
 import org.edu_sharing.plugin_kafka.kafka.support.JacksonUtils;
@@ -44,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -77,23 +74,38 @@ public class KafkaNotificationService implements NotificationService {
     @Autowired
     private KafkaSettings kafkaSettings;
 
+    @Value("${repository.notifications.resolveGroups:true}")
+    private boolean resolveGroups;
+
     public CompletableFuture<SendResult<String, NotificationEventDTO>> send(NotificationEventDTO notificationMessage) {
         try {
             notificationMessage.setId(generateMessageId());
             notificationMessage.setStatus(StatusDTO.NEW);
             notificationMessage.setTimestamp(DateTime.now().toDate());
             return kafkaNotificationTemplate.sendDefault(notificationMessage.getId(), notificationMessage);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             log.error("Error on sending notification: {} ", notificationMessage, ex);
             return null;
         }
+    }
+
+    private Set<String> getReceiverListFromAuthority(String authority) {
+        AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
+        List<String> result = new ArrayList<>();
+        result.add(authority);
+        if (authorityType == AuthorityType.GROUP && resolveGroups) {
+            result.addAll(Arrays.asList(authorityService.getMembershipsOfGroup(authority)));
+        }
+
+
+        return new HashSet<>(result);
     }
 
     @Override
     public void notifyNodeIssue(String nodeId, NotifyMode mode, String reason, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String userEmail, String userComment) throws Throwable {
 
         NodeDataDTO nodeData = createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties));
-        if(NotifyMode.Feedback.equals(mode)) {
+        if (NotifyMode.Feedback.equals(mode)) {
             send(new NodeIssueFeedbackEventDTO(
                     null,
                     null,
@@ -121,36 +133,39 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyWorkflowChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
+
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
-        // TODO group handling
-
-        send(new WorkflowEventDTO(
-                null,
-                null,
-                senderId,
-                receiverId,
-                null,
-                createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
-                I18nAngular.getTranslationAngular("common", "WORKFLOW." + status),
-                comment
-        ));
+        Set<String> receivers = getReceiverListFromAuthority(receiverAuthority);
+        for (String receiver : receivers) {
+            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            send(new WorkflowEventDTO(
+                    null,
+                    null,
+                    senderId,
+                    receiverId,
+                    null,
+                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                    I18nAngular.getTranslationAngular("common", "WORKFLOW." + status),
+                    comment
+            ));
+        }
     }
 
     @Override
     public void notifyPersonStatusChanged(String receiver, String firstname, String lastName, String oldStatus, String newStatus) {
-        //TODO
-        Map<String, String> replace = new HashMap<>();
-        replace.put("firstName", firstname);
-        replace.put("lastName", lastName);
-        replace.put("oldStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + oldStatus));
-        replace.put("newStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + newStatus));
+        Map<String, String> replace = Map.of(
+                "firstName", firstname,
+                "lastName", lastName,
+                "oldStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + oldStatus),
+                "newStatus", I18nAngular.getTranslationAngular("permissions", "PERMISSIONS.USER_STATUS." + newStatus)
+        );
+
         try {
             String template = "userStatusChanged";
             MailTemplate.sendMail(receiver, template, replace);
         } catch (Exception e) {
-            log.warn("Can not send status notify mail to user: " + e.getMessage(), e);
+            log.warn("Can not send status notify mail to user: {}", e.getMessage(), e);
         }
     }
 
@@ -164,55 +179,56 @@ public class KafkaNotificationService implements NotificationService {
         }
 
         String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        Set<String> receivers = getReceiverListFromAuthority(receiverAuthority);
+        for (String receiver : receivers) {
+            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
 
-        // TODO group handling
+            String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
+            String invitationType = "invited";
+            if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
+                invitationType = "invited_collection";
+            }
 
-        String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
-        String invitationType = "invited";
-        if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
-            invitationType = "invited_collection";
-        }
+            String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
+                    ? (String) nodeProperties.get(CCConstants.LOM_PROP_GENERAL_TITLE)
+                    : (String) nodeProperties.get(CCConstants.CM_PROP_C_TITLE);
 
-        String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
-                ? (String) nodeProperties.get(CCConstants.LOM_PROP_GENERAL_TITLE)
-                : (String) nodeProperties.get(CCConstants.CM_PROP_C_TITLE);
+            if (StringUtils.isBlank(name)) {
+                name = (String) nodeProperties.get(CCConstants.CM_NAME);
+            }
 
-        if (StringUtils.isBlank(name)) {
-            name = (String) nodeProperties.get(CCConstants.CM_NAME);
-        }
+            List<PermissionDTO> permissionList = Arrays.stream(permissions)
+                    .filter(perm -> !(CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope()) && Objects.equals(CCConstants.PERMISSION_CC_PUBLISH, perm)))
+                    .map(perm -> new PermissionDTO(perm,
+                            I18nAngular.getPermissionDescription(perm)))
+                    .collect(Collectors.toList());
 
-        List<PermissionDTO> permissionList = Arrays.stream(permissions)
-                .filter(perm -> !(CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope()) && Objects.equals(CCConstants.PERMISSION_CC_PUBLISH, perm)))
-                .map(perm -> new PermissionDTO(perm,
-                        I18nAngular.getPermissionDescription(perm)))
-                .collect(Collectors.toList());
-
-        if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
-            send(new InviteSafeEventDTO(
-                    null,
-                    null,
-                    senderId,
-                    receiverId,
-                    null,
-                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
-                    name,
-                    mailText,
-                    permissionList
-            ));
-        } else {
-            send(new InviteEventDTO(
-                    null,
-                    null,
-                    senderId,
-                    receiverId,
-                    null,
-                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
-                    name,
-                    invitationType,
-                    mailText,
-                    permissionList
-            ));
+            if (CCConstants.CCM_VALUE_SCOPE_SAFE.equals(NodeServiceInterceptor.getEduSharingScope())) {
+                send(new InviteSafeEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        name,
+                        mailText,
+                        permissionList
+                ));
+            } else {
+                send(new InviteEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        name,
+                        invitationType,
+                        mailText,
+                        permissionList
+                ));
+            }
         }
     }
 
@@ -221,12 +237,16 @@ public class KafkaNotificationService implements NotificationService {
     public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<String> nodeTypes, List<List<String>> aspects, List<Map<String, Object>> nodePropertiesList) throws Throwable {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
 
-        String[] receivers = widgetDefinition.getSuggestionReceiver().split(",");
+        String[] receiverAuthorities = widgetDefinition.getSuggestionReceiver().split(",");
+        List<String> receivers = Arrays.stream(receiverAuthorities)
+                .map(this::getReceiverListFromAuthority)
+                .flatMap(Collection::stream)
+                .distinct()
+                .collect(Collectors.toList());
 
-        // TODO group handling
-        for (String receiverAuthority : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
-            if (nodes.size() == 0) {
+        for (String receiver : receivers) {
+            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            if (nodes.isEmpty()) {
                 send(new MetadataSuggestionEventDTO(
                         null,
                         null,
@@ -275,7 +295,7 @@ public class KafkaNotificationService implements NotificationService {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
 
-        if(Objects.equals(receiverId, senderId)){
+        if (Objects.equals(receiverId, senderId)) {
             return;
         }
 
@@ -372,21 +392,12 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws IOException, InsufficientPermissionException {
         try {
+            receiverId = resolveReceiverId(receiverId);
+            validatePermissions(receiverId);
+
+
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification");
-
-            if ("-me-".equals(receiverId)) {
-                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            }
-
-            if(!AuthorityServiceHelper.isAdmin()){
-                String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-                if(!currentUser.equals(receiverId)){
-                    throw new InsufficientPermissionException("You haven't enough permission to see notifications");
-                }
-            }
-
-
             builder.setParameter("receiverId", receiverId);
             builder.setParameter("status", StringUtils.join(status, ","));
             builder.setParameter("page", String.valueOf(pageable.getPageNumber()));
@@ -397,30 +408,27 @@ public class KafkaNotificationService implements NotificationService {
                 });
             }
 
-            HttpGet request = new HttpGet(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
 
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return null;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-                NotificationResponsePage notificationEventDTOS = JacksonUtils.enhancedObjectMapper().readValue(content, NotificationResponsePage.class);
+            NotificationResponsePage notificationEventDTOS = fetchNotificationService(new HttpGet(builder.build()), NotificationResponsePage.class);
+            if (notificationEventDTOS != null) {
                 notificationEventDTOS.setPageable(pageable);
-                return notificationEventDTOS;
             }
+            return notificationEventDTOS;
+
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
+        }
+    }
+
+    private void validatePermissions(String receiverId) throws InsufficientPermissionException {
+        if (AuthorityServiceHelper.isAdmin()) {
+            return;
+        }
+
+        String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        if (!currentUser.equals(receiverId)) {
+            throw new InsufficientPermissionException("You are not allowed to get or modify notifications of other users!");
         }
     }
 
@@ -430,66 +438,51 @@ public class KafkaNotificationService implements NotificationService {
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath(String.format("/api/v1/notification/%s", id));
 
-            HttpGet request = new HttpGet(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return null;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-                return JacksonUtils.enhancedObjectMapper().readValue(content, org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
-            }
+            return fetchNotificationService(new HttpGet(builder.build()), org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
 
+    private <T> T fetchNotificationService(HttpRequestBase request, Class<T> responseClass) throws IOException {
+        request.setHeader("Accept", "application/json");
+        request.setHeader("Content-Type", "application/json");
+
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            CloseableHttpResponse response = client.execute(request);
+            HttpEntity entity = response.getEntity();
+
+            if (entity == null) {
+                return null;
+            }
+
+            String content = EntityUtils.toString(entity, "UTF-8");
+            if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                throw new HttpException(content);
+            }
+
+            if (responseClass.equals(Void.class)) {
+                return null;
+            }
+
+            return JacksonUtils.enhancedObjectMapper().readValue(content, responseClass);
+        }
+    }
 
     @Override
     public org.edu_sharing.rest.notification.event.NotificationEventDTO setNotificationStatusByNotificationId(String id, org.edu_sharing.rest.notification.data.StatusDTO status) throws IOException, InsufficientPermissionException {
         try {
-            org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
 
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            if(!currentUser.equals(notification.getReceiver().getId())){
-                throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
-            }
+            org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
+            validatePermissions(notification.getReceiver().getId());
 
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification/status");
             builder.setParameter("id", id);
             builder.setParameter("status", status.toString());
 
-            HttpPatch request = new HttpPatch(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return null;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-                return JacksonUtils.enhancedObjectMapper().readValue(content, org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
-            }
+            return fetchNotificationService(new HttpPatch(builder.build()), org.edu_sharing.rest.notification.event.NotificationEventDTO.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -499,15 +492,8 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void setNotificationStatusByReceiverId(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> oldStatusList, org.edu_sharing.rest.notification.data.StatusDTO newStatus) throws IOException, InsufficientPermissionException {
         try {
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            if ("-me-".equals(receiverId)) {
-                receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            }
-
-
-            if(!currentUser.equals(receiverId)){
-                throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
-            }
+            receiverId = resolveReceiverId(receiverId);
+            validatePermissions(receiverId);
 
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification/receiver/status");
@@ -515,68 +501,36 @@ public class KafkaNotificationService implements NotificationService {
             oldStatusList.forEach(x -> builder.setParameter("oldStatus", x.toString()));
             builder.setParameter("newStatus", newStatus.toString());
 
-            HttpPatch request = new HttpPatch(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-            }
+            fetchNotificationService(new HttpPatch(builder.build()), Void.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
+    }
+
+    private String resolveReceiverId(String receiverId) {
+        if ("-me-".equals(receiverId)) {
+            receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        }
+        return receiverId;
     }
 
     @Override
     public void deleteNotification(String id) throws IOException, InsufficientPermissionException {
         try {
-
             org.edu_sharing.rest.notification.event.NotificationEventDTO notification = getNotification(id);
-            String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-            if(!currentUser.equals(notification.getReceiver().getId())){
-                throw new InsufficientPermissionException("Notification status of can only be set by it's receiver!");
-            }
+            validatePermissions(notification.getReceiver().getId());
 
             URIBuilder builder = new URIBuilder(kafkaSettings.getNotificationServiceUrl());
             builder.setPath("/api/v1/notification");
             builder.setParameter("id", id);
 
-            HttpDelete request = new HttpDelete(builder.build());
-            request.setHeader("Accept", "application/json");
-            request.setHeader("Content-Type", "application/json");
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                CloseableHttpResponse response = client.execute(request);
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    return;
-                }
-
-                String content = EntityUtils.toString(entity, "UTF-8");
-                if (response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
-                    throw new HttpException(content);
-                }
-
-            }
+            fetchNotificationService(new HttpDelete(builder.build()), Void.class);
         } catch (URISyntaxException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
-
 
 
     @Data
@@ -679,10 +633,14 @@ public class KafkaNotificationService implements NotificationService {
 
 
     private static Map<String, Object> getSimplifiedNodeProperties(Map<String, Object> nodeProperties) {
+        if (nodeProperties == null) {
+            return new HashMap<>();
+        }
         return nodeProperties.entrySet().stream()
+                .filter(x -> x.getKey() != null)
                 .map(x -> new ImmutablePair<>(CCConstants.getValidLocalName(x.getKey()), x.getValue()))
                 .filter(x -> StringUtils.isNoneBlank(x.getKey()))
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+                .collect(HashMap::new, (m, p) -> m.put(p.getKey(), p.getValue()), HashMap::putAll);
     }
 
 
