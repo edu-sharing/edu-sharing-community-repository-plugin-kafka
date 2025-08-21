@@ -33,14 +33,10 @@ import org.edu_sharing.service.authority.AuthorityService;
 import org.edu_sharing.service.authority.AuthorityServiceHelper;
 import org.edu_sharing.service.notification.NotificationProxyService;
 import org.edu_sharing.service.notification.NotificationService;
-import org.edu_sharing.service.notification.Status;
 import org.edu_sharing.service.notification.events.*;
-import org.edu_sharing.service.rating.RatingDetails;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -164,7 +160,7 @@ public class KafkaNotificationService implements NotificationProxyService {
     }
 
     @EventListener
-    public void notifyPermissionChanged(PermissionChangedEvent event) throws Throwable {
+    public void notifyPermissionChanged(PermissionChangedEvent event) {
         // if the receiver is the creator itself, skip it (because it is automatically added)
         String nodeCreator = (String) event.nodeProperties().get(CCConstants.CM_PROP_C_CREATOR);
         if (event.receiverAuthority().equals(nodeCreator)) {
@@ -227,7 +223,7 @@ public class KafkaNotificationService implements NotificationProxyService {
 
 
     @EventListener
-    public void notifyMetadataSetSuggestion(MetadataSetSuggestionEvent event) throws Throwable {
+    public void notifyMetadataSetSuggestion(MetadataSetSuggestionEvent event) {
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
 
         String[] receiverAuthorities = event.widgetDefinition().getSuggestionReceiver().split(",");
@@ -329,7 +325,7 @@ public class KafkaNotificationService implements NotificationProxyService {
     }
 
     @EventListener
-    public void notifyAddCollection(AddCollectionEvent event) {
+    public void notifyAddCollection(AddToCollectionEvent event) {
         String receiverAuthority = (String) event.collectionProperties().get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
 
@@ -394,9 +390,7 @@ public class KafkaNotificationService implements NotificationProxyService {
             builder.setParameter("page", String.valueOf(pageable.getPageNumber()));
             builder.setParameter("size", String.valueOf(pageable.getPageSize()));
             if (!pageable.getSort().isEmpty()) {
-                pageable.getSort().forEach(order -> {
-                    builder.setParameter("sort", order.getProperty() + "," + order.getDirection().toString());
-                });
+                pageable.getSort().forEach(order -> builder.setParameter("sort", order.getProperty() + "," + order.getDirection()));
             }
 
 
