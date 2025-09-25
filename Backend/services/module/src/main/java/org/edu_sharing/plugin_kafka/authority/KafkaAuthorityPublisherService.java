@@ -74,7 +74,7 @@ public class KafkaAuthorityPublisherService {
             userDataDTO.setEmail((String) properties.get(QName.createQName(CCConstants.PROP_USER_EMAIL)));
         }
 
-//        userDataDTO.setLocale(new AuthenticationToolAPI().getCurrentLocale());
+//        userDataDTO.setLocale(authTool.getCurrentLocale());
         userDataDTO.setLocale("de_DE"); // TODO we need the local of the users but this isn't stored in the db
         try {
             kafkaUserTemplate.sendDefault(properties.get(QName.createQName(CCConstants.SYS_PROP_NODE_UID)).toString(), userDataDTO);
