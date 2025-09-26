@@ -59,10 +59,8 @@ public class KafkaNotificationService implements NotificationProxyService {
 
     private final AuthorityService authorityService;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     private final MailSettings mailSettings;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     private final KafkaSettings kafkaSettings;
 
     private final AuthenticationToolAPI authTool;
