@@ -143,6 +143,18 @@ public class KafkaNotificationService implements NotificationProxyService {
     }
 
     @EventListener
+    public void onAddedToInbox(AddedToInboxEvent event){
+        send(new AddedToInboxEventDTO(
+                null,
+                null,
+                event.senderAuthority(),
+                event.receiverAuthority(),
+                null,
+                createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.properties()))
+        ));
+    }
+
+    @EventListener
     public void notifyPersonStatusChanged(PersonStatusChangedEvent event) {
         Map<String, String> replace = Map.of(
                 "firstName", event.firstname(),

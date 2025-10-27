@@ -15,6 +15,7 @@ public class UserDataDTO {
     private String email;
     private String locale;
 
+    private NotificationIntervalDTO addedToInboxEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO addToCollectionEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO proposeForCollectionEvent = NotificationIntervalDTO.immediately;
     private NotificationIntervalDTO commentEvent = NotificationIntervalDTO.immediately;

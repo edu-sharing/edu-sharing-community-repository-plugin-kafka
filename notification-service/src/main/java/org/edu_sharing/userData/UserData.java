@@ -32,14 +32,15 @@ public class UserData {
         this.locale = locale.replace("-", "_");
     }
 
-    public String getLocale(){
+    public String getLocale() {
         return locale.replace("-", "_");
     }
 
-    public void setLocale(String locale){
+    public void setLocale(String locale) {
         this.locale = locale.replace("_", "-");
     }
 
+    private NotificationInterval addedToInboxEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval addToCollectionEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval proposaForCollectionEventNotificationInterval = NotificationInterval.immediately;
     private NotificationInterval commentEventNotificationInterval = NotificationInterval.immediately;
@@ -51,7 +52,9 @@ public class UserData {
     private NotificationInterval metadataSuggestionEventNotificationInterval = NotificationInterval.immediately;
 
     public NotificationInterval getNotificationInterval(NotificationEvent notificationEvent) {
-        if (notificationEvent instanceof AddToCollectionEvent) {
+        if (notificationEvent instanceof AddToInboxEvent) {
+            return addedToInboxEventNotificationInterval;
+        } else if (notificationEvent instanceof AddToCollectionEvent) {
             return addToCollectionEventNotificationInterval;
         } else if (notificationEvent instanceof ProposeForCollectionEvent) {
             return proposaForCollectionEventNotificationInterval;

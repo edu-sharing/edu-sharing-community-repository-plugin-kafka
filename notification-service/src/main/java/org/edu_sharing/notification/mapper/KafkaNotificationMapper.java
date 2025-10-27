@@ -16,7 +16,9 @@ import java.util.stream.Collectors;
 public class KafkaNotificationMapper {
 
     public static NotificationEvent map(NotificationEventDTO dto) {
-        if (dto instanceof AddToCollectionEventDTO) {
+        if (dto instanceof AddedToInboxEventDTO) {
+            return mapAddedToInboxEventDTO((AddedToInboxEventDTO) dto);
+        } else if (dto instanceof AddToCollectionEventDTO) {
             return mapAddCollectionEventDTO((AddToCollectionEventDTO) dto);
         } else if (dto instanceof ProposeForCollectionEventDTO) {
             return mapProposeForCollectionEventDTO((ProposeForCollectionEventDTO) dto);
@@ -40,7 +42,9 @@ public class KafkaNotificationMapper {
     }
 
     public static NotificationEventDTO map(NotificationEvent event) {
-        if (event instanceof AddToCollectionEvent) {
+        if (event instanceof AddToInboxEvent) {
+            return mapAddedToInboxEvent((AddToInboxEvent) event);
+        } else if (event instanceof AddToCollectionEvent) {
             return mapAddCollectionEvent((AddToCollectionEvent) event);
         } else if (event instanceof ProposeForCollectionEvent) {
             return mapProposeForCollectionEvent((ProposeForCollectionEvent) event);
@@ -60,6 +64,7 @@ public class KafkaNotificationMapper {
             throw new IllegalStateException("Unexpected value: " + event);
         }
     }
+
 
     private static Status map(org.edu_sharing.kafka.notification.data.StatusDTO status) {
         if (status == null) {
@@ -97,6 +102,18 @@ public class KafkaNotificationMapper {
                 collection.getType(),
                 new ArrayList<>(collection.getAspects()),
                 copyMapFromDTO(collection.getProperties())
+        );
+    }
+
+
+    private static NotificationEvent mapAddedToInboxEventDTO(AddedToInboxEventDTO dto) {
+        return new AddToInboxEvent(
+                dto.getId(),
+                dto.getTimestamp(),
+                dto.getCreatorId(),
+                dto.getReceiverId(),
+                map(dto.getStatus()),
+                map(dto.getNode())
         );
     }
 
@@ -182,6 +199,7 @@ public class KafkaNotificationMapper {
                 dto.getUserComment()
         );
     }
+
     private static NotificationEvent mapNodeIssueFeedbackEventDTO(NodeIssueFeedbackEventDTO dto) {
         return new NodeIssueFeedbackEvent(
                 dto.getId(),
@@ -282,6 +300,18 @@ public class KafkaNotificationMapper {
         return new WidgetDataDTO(
                 widget.getId(),
                 widget.getCaption());
+    }
+
+
+    private static NotificationEventDTO mapAddedToInboxEvent(AddToInboxEvent event) {
+        return new AddedToInboxEventDTO(
+                event.getId(),
+                event.getTimestamp(),
+                event.getCreatorId(),
+                event.getReceiverId(),
+                map(event.getStatus()),
+                map(event.getNode())
+        );
     }
 
 

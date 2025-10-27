@@ -115,6 +115,7 @@ public class UserDataService {
                 userDataDTO.map(UserDataDTO::getLastName).orElse(null),
                 userDataDTO.map(UserDataDTO::getEmail).map(List::of).orElse(null),
                 userDataDTO.map(UserDataDTO::getLocale).orElse(null),
+                userDataDTO.map(UserDataDTO::getAddedToInboxEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getAddToCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getProposeForCollectionEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),
                 userDataDTO.map(UserDataDTO::getCommentEvent).map(Object::toString).map(NotificationInterval::valueOf).orElse(null),

@@ -51,9 +51,9 @@ class UserDataServiceTest {
 
         List<String> keys = List.of("lenny", "william", "johansson");
         List<UserDataDTO> newUserDataDto = List.of(
-                new UserDataDTO("Lenny", "Linux", "lenny.linux@example.com", "de_DE", NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately),
-                new UserDataDTO("William", "Windows", "william.windows@example.com", "de_DE", NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately),
-                new UserDataDTO("Scala", "Johansson", "scala.johansson@example.com", "de_DE", NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately)
+                new UserDataDTO("Lenny", "Linux", "lenny.linux@example.com", "de_DE", NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately),
+                new UserDataDTO("William", "Windows", "william.windows@example.com", "de_DE", NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately),
+                new UserDataDTO("Scala", "Johansson", "scala.johansson@example.com", "de_DE", NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately, NotificationIntervalDTO.immediately)
         );
 
         List<UserData> newUserData = IntStream.range(0, keys.size())
@@ -61,14 +61,14 @@ class UserDataServiceTest {
                 .toList();
 
         List<UserData> existingUserData = List.of(
-                new UserData("lenny", "Lenny", "Linux", List.of("lenny.linux@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
-                new UserData("william", "William", "Windows", List.of("william.windows@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
-                new UserData("johansson", "Scala", "Johansson", List.of("scala.johansson@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily)
+                new UserData("lenny", "Lenny", "Linux", List.of("lenny.linux@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
+                new UserData("william", "William", "Windows", List.of("william.windows@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily),
+                new UserData("johansson", "Scala", "Johansson", List.of("scala.johansson@example.com"), "de_DE", NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily, NotificationInterval.daily)
         );
 
         Arguments addAllArgs = createArgumentSet(keys, newUserDataDto, List.of(), newUserData, List.of(), newUserData.stream().map(UserDataAddedEvent::new).map(x -> (Object) x).toList());
         Arguments changeAllArgs = createArgumentSet(keys, newUserDataDto, existingUserData, newUserData, List.of(), IntStream.range(0, newUserData.size()).mapToObj(i -> new UserDataChangedEvent(existingUserData.get(i), newUserData.get(i))).map(x -> (Object) x).toList());
-        Arguments deleteAllArgs = createArgumentSet(keys, newUserDataDto.stream().map(x->(UserDataDTO)null).toList(), existingUserData, List.of(), existingUserData, existingUserData.stream().map(UserDataDeletedEvent::new).map(x -> (Object) x).toList());
+        Arguments deleteAllArgs = createArgumentSet(keys, newUserDataDto.stream().map(x -> (UserDataDTO) null).toList(), existingUserData, List.of(), existingUserData, existingUserData.stream().map(UserDataDeletedEvent::new).map(x -> (Object) x).toList());
         return Stream.of(addAllArgs, changeAllArgs, deleteAllArgs);
     }
 
@@ -81,7 +81,7 @@ class UserDataServiceTest {
     void setUserData_test(List<String> keys, List<UserDataDTO> messages, List<UserData> existingUserData, List<UserData> expectedSaves, List<UserData> expectedDeletions, List<Object> expectedEvents) {
         // arrange
         lenient().when(userDataRepository.findAllById(keys)).thenReturn(existingUserData);
-        existingUserData.forEach(x-> lenient().when(userDataRepository.findById(x.getId())).thenReturn(Optional.of(x)));
+        existingUserData.forEach(x -> lenient().when(userDataRepository.findById(x.getId())).thenReturn(Optional.of(x)));
 
         // act
         underTest.setUserData(keys, messages);
