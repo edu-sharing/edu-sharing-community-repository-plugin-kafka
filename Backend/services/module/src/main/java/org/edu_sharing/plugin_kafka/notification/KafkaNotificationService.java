@@ -90,7 +90,7 @@ public class KafkaNotificationService implements NotificationService {
         List<String> result = new ArrayList<>();
         result.add(authority);
         if (authorityType == AuthorityType.GROUP && resolveGroups) {
-            result.addAll(Arrays.asList(authorityService.getMembershipsOfGroup(authority)));
+            result.addAll(authorityService.getMembershipsOfGroupRecursively(authority));
         }
 
 
