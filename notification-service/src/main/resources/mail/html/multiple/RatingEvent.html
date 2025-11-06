@@ -10,7 +10,9 @@
         <tr th:each="event: ${events}">
             <td th:text="${event.node.properties.cm_name}"/>
             <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
-            <td th:text="*{event.ratingSum / event.ratingCount}"/>
+            <td th:text="*{(event.ratingMode == 'likes' ? event.ratingCount : (event.ratingCount == 0 ? 0 : event.ratingSum / event.ratingCount))}
+            + ' '
+            + #{*{event.ratingCount < 2 ? 'Single_' : 'Multiple_'} + ${event.ratingMode}}"/>
             <td>
                 <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
             </td>

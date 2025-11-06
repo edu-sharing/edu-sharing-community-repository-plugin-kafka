@@ -203,6 +203,7 @@ public class KafkaNotificationMapper {
                 dto.getReceiverId(),
                 map(dto.getStatus()),
                 map(dto.getNode()),
+                dto.getRatingMode(),
                 dto.getNewRating(),
                 dto.getRatingSum(),
                 dto.getRatingCount()
@@ -376,6 +377,7 @@ public class KafkaNotificationMapper {
                 event.getReceiverId(),
                 map(event.getStatus()),
                 map(event.getNode()),
+                event.getRatingMode(),
                 event.getNewRating(),
                 event.getRatingSum(),
                 event.getRatingCount()
