@@ -4,6 +4,9 @@ version: '3.7'
 services:
   notification-service:
     entrypoint: "/bin/sh -c \"java --enable-preview -Dspring.profiles.active=docker $${JAVA_OPTS:-} -jar /application/app.jar\""
+    environment:
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "${REPOSITORY_SERVICE_MAIL_SERVER_SMTP_AUTH:-false}"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "${REPOSITORY_SERVICE_MAIL_SERVER_SMTP_STARTTLS_ENABLE:-false}"
     volumes:
       - "${GIT_ROOT}/repository-kafka/notification-service/target/edu_sharing-community-repository-plugin-kafka-notification-service-${org.edu_sharing:edu_sharing-community-repository-plugin-kafka-notification-service:jar.version}.jar:/application/app.jar"
 
