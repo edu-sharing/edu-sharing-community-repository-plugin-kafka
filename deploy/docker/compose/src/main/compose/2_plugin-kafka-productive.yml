@@ -6,6 +6,3 @@ services:
 
   notification-service:
     restart: unless-stopped
-
-  notification-service-db:
-    restart: unless-stopped
