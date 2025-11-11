@@ -15,6 +15,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.edu_sharing.alfresco.service.config.model.ConfigRating;
 import org.edu_sharing.alfresco.workspace_administration.NodeServiceInterceptor;
 import org.edu_sharing.kafka.notification.data.*;
 import org.edu_sharing.kafka.notification.event.*;
@@ -381,6 +382,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                 receiverId,
                 null,
                 createNodeData(event.nodeId(), event.nodeType(),event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                event.ratingMode().toString(),
                 event.rating(),
                 event.accumulatedRatings().getOverall().getSum(),
                 event.accumulatedRatings().getOverall().getCount()

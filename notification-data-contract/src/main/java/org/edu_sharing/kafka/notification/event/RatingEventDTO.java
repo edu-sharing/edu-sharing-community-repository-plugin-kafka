@@ -12,11 +12,12 @@ import java.util.Date;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class RatingEventDTO extends NodeBaseEventDTO {
-    public RatingEventDTO(String id, Date timestamp, String creatorId, String receiverId, StatusDTO status, NodeDataDTO node, double newRating, double ratingSum, long ratingCount) {
+    public RatingEventDTO(String id, Date timestamp, String creatorId, String receiverId, StatusDTO status, NodeDataDTO node, String ratingMode, double newRating, double ratingSum, long ratingCount) {
         super(id, timestamp, creatorId, receiverId, status, node);
         this.newRating = newRating;
         this.ratingSum = ratingSum;
         this.ratingCount = ratingCount;
+        this.ratingMode = ratingMode;
     }
 
     /**
@@ -32,4 +33,10 @@ public class RatingEventDTO extends NodeBaseEventDTO {
      * (To get the avg use ratingSum / ratingCount)
      */
     private long ratingCount;
+
+    /**
+     * Represents the mode associated with a rating event.
+     * This can be used to differentiate between various contexts or types of ratings. (stars, likes)
+     */
+    private String ratingMode;
 }
