@@ -21,11 +21,12 @@ import java.util.Date;
 @Document(collection = "notification")
 public class RatingEvent extends NodeBaseEvent {
 
-    public RatingEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, double newRating, double ratingSum, long ratingCount) {
+    public RatingEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, String ratingMode, double newRating, double ratingSum, long ratingCount) {
         super(id, timestamp, creatorId, receiverId, status, node);
         this.newRating = newRating;
         this.ratingSum = ratingSum;
         this.ratingCount = ratingCount;
+        this.ratingMode = ratingMode;
     }
 
     /**
@@ -41,4 +42,10 @@ public class RatingEvent extends NodeBaseEvent {
      * (To get the avg use ratingSum / ratingCount)
      */
     private long ratingCount;
+
+    /**
+     * Represents the mode associated with a rating event.
+     * This can be used to differentiate between various contexts or types of ratings. (stars, likes)
+     */
+    private String ratingMode;
 }

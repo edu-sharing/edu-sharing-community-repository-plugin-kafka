@@ -15,6 +15,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.edu_sharing.alfresco.service.config.model.ConfigRating;
 import org.edu_sharing.alfresco.workspace_administration.NodeServiceInterceptor;
 import org.edu_sharing.kafka.notification.data.*;
 import org.edu_sharing.kafka.notification.event.*;
@@ -57,21 +58,16 @@ import java.util.stream.Collectors;
 @Service("kafkaNotificationService")
 public class KafkaNotificationService implements NotificationService {
 
-    @Setter
-    @Autowired
-    @Qualifier("kafkaNotificationTemplate")
+    @Setter(onMethod_ = {@Autowired, @Qualifier("kafkaNotificationTemplate")})
     private KafkaTemplate<String, NotificationEventDTO> kafkaNotificationTemplate;
 
-    @Setter
-    @Autowired
+    @Setter(onMethod_ = @Autowired)
     private AuthorityService authorityService;
 
-    @Setter
-    @Autowired
+    @Setter(onMethod_ = @Autowired)
     private MailSettings mailSettings;
 
-    @Setter
-    @Autowired
+    @Setter(onMethod_ = @Autowired)
     private KafkaSettings kafkaSettings;
 
     @Value("${repository.notifications.resolveGroups:true}")
@@ -94,7 +90,7 @@ public class KafkaNotificationService implements NotificationService {
         List<String> result = new ArrayList<>();
         result.add(authority);
         if (authorityType == AuthorityType.GROUP && resolveGroups) {
-            result.addAll(Arrays.asList(authorityService.getMembershipsOfGroup(authority)));
+            result.addAll(authorityService.getMembershipsOfGroupRecursively(authority));
         }
 
 
@@ -361,7 +357,7 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public void notifyRatingChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, Double rating, RatingDetails accumulatedRatings, Status removed) {
+    public void notifyRatingChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, ConfigRating.RatingMode ratingMode, Double rating, RatingDetails accumulatedRatings, Status removed)  {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
         String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
         String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
@@ -382,6 +378,7 @@ public class KafkaNotificationService implements NotificationService {
                 receiverId,
                 null,
                 createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                ratingMode.toString(),
                 rating,
                 accumulatedRatings.getOverall().getSum(),
                 accumulatedRatings.getOverall().getCount()
