@@ -1,7 +1,12 @@
 <div th:fragment="content">
     <h1 th:text="#{greetings(${receiver.firstName}, ${receiver.lastName})}"></h1>
-    <h2 th:text="#{ratingEvent_H2(${node.properties.cm_name},*{ratingSum / ratingCount})}"></h2>
-
+    <h2 th:text="#{ratingEvent_H2(${node.properties.cm_name},
+    *{ratingMode == 'likes'
+              ? ratingCount
+              : ratingCount == 0
+              ? 0
+              : ratingSum / ratingCount},
+               #{*{ratingCount < 2 ? 'Single_' : 'Multiple_'} + ${ratingMode}})}"/>
 
     <div class="center">
         <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
