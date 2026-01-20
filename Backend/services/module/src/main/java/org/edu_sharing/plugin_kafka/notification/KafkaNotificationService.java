@@ -5,7 +5,6 @@ import com.google.api.client.http.HttpStatusCodes;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.commons.httpclient.HttpException;
@@ -46,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -143,7 +141,7 @@ public class KafkaNotificationService implements NotificationService {
         Set<String> receivers = getReceiverListFromAuthority(receiverAuthority);
         for (String receiver : receivers) {
             NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
-            if(receiverAuthorityNodeRef == null){
+            if (receiverAuthorityNodeRef == null) {
                 continue;
             }
             String receiverId = receiverAuthorityNodeRef.getId();
@@ -212,12 +210,8 @@ public class KafkaNotificationService implements NotificationService {
             }
             String receiverId = reseiverAuthorityNodeRef.getId();
 
-            String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
-            String invitationType = "invited";
-            if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
-                invitationType = "invited_collection";
-            }
 
+            String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
             String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
                     ? (String) nodeProperties.get(CCConstants.LOM_PROP_GENERAL_TITLE)
                     : (String) nodeProperties.get(CCConstants.CM_PROP_C_TITLE);
@@ -244,6 +238,19 @@ public class KafkaNotificationService implements NotificationService {
                         mailText,
                         permissionList
                 ));
+            } else if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
+                send(new InviteEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createCollectionDTO(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        name,
+                        "invited_collection",
+                        mailText,
+                        permissionList
+                ));
             } else {
                 send(new InviteEventDTO(
                         null,
@@ -253,7 +260,7 @@ public class KafkaNotificationService implements NotificationService {
                         null,
                         createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
                         name,
-                        invitationType,
+                        "invited",
                         mailText,
                         permissionList
                 ));
@@ -265,7 +272,7 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<String> nodeTypes, List<List<String>> aspects, List<Map<String, Object>> nodePropertiesList) throws Throwable {
         NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
-        if(senderAuthorityNodeRef == null){
+        if (senderAuthorityNodeRef == null) {
             return;
         }
         String senderId = senderAuthorityNodeRef.getId();
@@ -279,7 +286,7 @@ public class KafkaNotificationService implements NotificationService {
 
         for (String receiver : receivers) {
             NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
-            if(receiverAuthorityNodeRef == null){
+            if (receiverAuthorityNodeRef == null) {
                 continue;
             }
             String receiverId = receiverAuthorityNodeRef.getId();
@@ -331,7 +338,7 @@ public class KafkaNotificationService implements NotificationService {
 
         NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
         NodeRef receiverNodeRef = getAuthorityNodeRef(receiverAuthority);
-        if(senderAuthorityNodeRef == null || receiverNodeRef == null){
+        if (senderAuthorityNodeRef == null || receiverNodeRef == null) {
             return;
         }
 
@@ -363,7 +370,7 @@ public class KafkaNotificationService implements NotificationService {
 
         NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(senderAuthority);
         NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
-        if(senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null){
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
             return;
         }
 
@@ -393,7 +400,7 @@ public class KafkaNotificationService implements NotificationService {
 
         NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(senderAuthority);
         NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
-        if(senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null){
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
             return;
         }
 
@@ -421,7 +428,7 @@ public class KafkaNotificationService implements NotificationService {
 
         NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
         NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
-        if(senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null){
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
             return;
         }
 
@@ -456,7 +463,7 @@ public class KafkaNotificationService implements NotificationService {
     public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws IOException, InsufficientPermissionException {
         try {
             receiverId = resolveReceiverId(receiverId);
-            if(null == receiverId){
+            if (null == receiverId) {
                 throw new IllegalArgumentException("Invalid receiverId: " + receiverId + ".");
             }
 
@@ -494,7 +501,7 @@ public class KafkaNotificationService implements NotificationService {
         }
 
         NodeRef authorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
-        if(authorityNodeRef == null){
+        if (authorityNodeRef == null) {
             throw new IllegalArgumentException("Invalid receiverId: " + receiverId + ".");
         }
 
@@ -583,7 +590,7 @@ public class KafkaNotificationService implements NotificationService {
     private String resolveReceiverId(String receiverId) {
         if ("-me-".equals(receiverId)) {
             NodeRef authorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
-            if(authorityNodeRef == null){
+            if (authorityNodeRef == null) {
                 return null;
             }
             receiverId = authorityNodeRef.getId();
@@ -698,9 +705,8 @@ public class KafkaNotificationService implements NotificationService {
 
     private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
         Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLHelper.getNgRenderNodeUrl(nodeId, null, true));
-        props.put("link.static", URLHelper.getNgRenderNodeUrl(nodeId, null, false));
-
+        props.put("link", URLHelper.getNgCollectionUrl(nodeId, true));
+        props.put("link.static", URLHelper.getNgCollectionUrl(nodeId, false));
         return new CollectionDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
