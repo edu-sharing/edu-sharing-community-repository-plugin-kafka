@@ -219,10 +219,6 @@ public class KafkaNotificationService implements NotificationProxyService {
 
 
             String internalNodeType = (String) event.nodeProperties().get(CCConstants.NODETYPE);
-            String invitationType = "invited";
-            if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && event.aspects().contains(CCConstants.CCM_ASPECT_COLLECTION)) {
-                invitationType = "invited_collection";
-            }
 
             String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
                     ? (String) event.nodeProperties().get(CCConstants.LOM_PROP_GENERAL_TITLE)
@@ -250,17 +246,17 @@ public class KafkaNotificationService implements NotificationProxyService {
                         event.mailText(),
                         permissionList
                 ));
-            } else if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
+            } else if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && event.aspects().contains(CCConstants.CCM_ASPECT_COLLECTION)) {
                 send(new InviteEventDTO(
                         null,
                         null,
                         senderId,
                         receiverId,
                         null,
-                        createCollectionDTO(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        createCollectionDTO(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
                         name,
                         "invited_collection",
-                        mailText,
+                        event.mailText(),
                         permissionList
                 ));
             } else {
