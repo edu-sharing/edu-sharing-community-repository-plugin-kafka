@@ -5,6 +5,7 @@ import com.google.api.client.http.HttpStatusCodes;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +39,7 @@ import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.service.notification.Status;
 import org.edu_sharing.service.rating.RatingDetails;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -130,11 +132,19 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyWorkflowChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String receiverAuthority, String comment, String status) {
 
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
+        if (senderAuthorityNodeRef == null) {
+            return;
+        }
+        String senderId = senderAuthorityNodeRef.getId();
 
         Set<String> receivers = getReceiverListFromAuthority(receiverAuthority);
         for (String receiver : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
+            if (receiverAuthorityNodeRef == null) {
+                continue;
+            }
+            String receiverId = receiverAuthorityNodeRef.getId();
             send(new WorkflowEventDTO(
                     null,
                     null,
@@ -146,6 +156,18 @@ public class KafkaNotificationService implements NotificationService {
                     comment
             ));
         }
+    }
+
+    @Nullable
+    private NodeRef getAuthorityNodeRef(String authority) {
+        NodeRef senderAuthorityNodeRef = authorityService.getAuthorityNodeRef(authority);
+        if (senderAuthorityNodeRef == null) {
+            if (log.isDebugEnabled()) {
+                log.warn("notifyWorkflowChanged: current user {} not found in authority service", authority);
+            }
+            return null;
+        }
+        return senderAuthorityNodeRef;
     }
 
     @Override
@@ -174,17 +196,22 @@ public class KafkaNotificationService implements NotificationService {
             return;
         }
 
-        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(senderAuthority);
+        if (senderAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
         Set<String> receivers = getReceiverListFromAuthority(receiverAuthority);
         for (String receiver : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            NodeRef reseiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
+            if (reseiverAuthorityNodeRef == null) {
+                continue;
+            }
+            String receiverId = reseiverAuthorityNodeRef.getId();
+
 
             String internalNodeType = (String) nodeProperties.get(CCConstants.NODETYPE);
-            String invitationType = "invited";
-            if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
-                invitationType = "invited_collection";
-            }
-
             String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
                     ? (String) nodeProperties.get(CCConstants.LOM_PROP_GENERAL_TITLE)
                     : (String) nodeProperties.get(CCConstants.CM_PROP_C_TITLE);
@@ -211,6 +238,19 @@ public class KafkaNotificationService implements NotificationService {
                         mailText,
                         permissionList
                 ));
+            } else if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && aspects.contains(CCConstants.CCM_ASPECT_COLLECTION)) {
+                send(new InviteEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createCollectionDTO(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        name,
+                        "invited_collection",
+                        mailText,
+                        permissionList
+                ));
             } else {
                 send(new InviteEventDTO(
                         null,
@@ -220,7 +260,7 @@ public class KafkaNotificationService implements NotificationService {
                         null,
                         createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
                         name,
-                        invitationType,
+                        "invited",
                         mailText,
                         permissionList
                 ));
@@ -231,7 +271,11 @@ public class KafkaNotificationService implements NotificationService {
 
     @Override
     public void notifyMetadataSetSuggestion(MdsValue mdsValue, MetadataWidget widgetDefinition, List<String> nodes, List<String> nodeTypes, List<List<String>> aspects, List<Map<String, Object>> nodePropertiesList) throws Throwable {
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
+        if (senderAuthorityNodeRef == null) {
+            return;
+        }
+        String senderId = senderAuthorityNodeRef.getId();
 
         String[] receiverAuthorities = widgetDefinition.getSuggestionReceiver().split(",");
         List<String> receivers = Arrays.stream(receiverAuthorities)
@@ -241,7 +285,11 @@ public class KafkaNotificationService implements NotificationService {
                 .collect(Collectors.toList());
 
         for (String receiver : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
+            if (receiverAuthorityNodeRef == null) {
+                continue;
+            }
+            String receiverId = receiverAuthorityNodeRef.getId();
             if (nodes.isEmpty()) {
                 send(new MetadataSuggestionEventDTO(
                         null,
@@ -288,8 +336,14 @@ public class KafkaNotificationService implements NotificationService {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
 
 
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
+        NodeRef receiverNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverNodeRef.getId();
 
         if (Objects.equals(receiverId, senderId)) {
             return;
@@ -314,8 +368,14 @@ public class KafkaNotificationService implements NotificationService {
         String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
 
-        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(senderAuthority);
+        NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverAuthorityNodeRef.getId();
 
         if (Objects.equals(senderId, receiverId)) {
             return;
@@ -338,8 +398,14 @@ public class KafkaNotificationService implements NotificationService {
         String receiverAuthority = (String) collectionProperties.get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = new AuthenticationToolAPI().getCurrentUser();
 
-        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(senderAuthority);
+        NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverAuthorityNodeRef.getId();
 
         if (Objects.equals(senderId, receiverId)) {
             return;
@@ -357,10 +423,17 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     @Override
-    public void notifyRatingChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, ConfigRating.RatingMode ratingMode, Double rating, RatingDetails accumulatedRatings, Status removed)  {
+    public void notifyRatingChanged(String nodeId, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, ConfigRating.RatingMode ratingMode, Double rating, RatingDetails accumulatedRatings, Status removed) {
         String receiverAuthority = (String) nodeProperties.get(CCConstants.CM_PROP_C_CREATOR);
-        String senderId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
+        NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverAuthorityNodeRef.getId();
 
         if (Optional.of(mailSettings).map(MailSettings::getFrom).map(StringUtils::isBlank).orElse(true)) {
             log.warn("notifyRatingChanged: No send mail receiverAuthority is set in the configuration");
@@ -390,6 +463,10 @@ public class KafkaNotificationService implements NotificationService {
     public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws IOException, InsufficientPermissionException {
         try {
             receiverId = resolveReceiverId(receiverId);
+            if (null == receiverId) {
+                throw new IllegalArgumentException("Invalid receiverId: " + receiverId + ".");
+            }
+
             validatePermissions(receiverId);
 
 
@@ -423,7 +500,12 @@ public class KafkaNotificationService implements NotificationService {
             return;
         }
 
-        String currentUser = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+        NodeRef authorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
+        if (authorityNodeRef == null) {
+            throw new IllegalArgumentException("Invalid receiverId: " + receiverId + ".");
+        }
+
+        String currentUser = authorityNodeRef.getId();
         if (!currentUser.equals(receiverId)) {
             throw new InsufficientPermissionException("You are not allowed to get or modify notifications of other users!");
         }
@@ -507,7 +589,11 @@ public class KafkaNotificationService implements NotificationService {
 
     private String resolveReceiverId(String receiverId) {
         if ("-me-".equals(receiverId)) {
-            receiverId = authorityService.getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser()).getId();
+            NodeRef authorityNodeRef = getAuthorityNodeRef(new AuthenticationToolAPI().getCurrentUser());
+            if (authorityNodeRef == null) {
+                return null;
+            }
+            receiverId = authorityNodeRef.getId();
         }
         return receiverId;
     }
@@ -619,9 +705,8 @@ public class KafkaNotificationService implements NotificationService {
 
     private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
         Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLHelper.getNgRenderNodeUrl(nodeId, null, true));
-        props.put("link.static", URLHelper.getNgRenderNodeUrl(nodeId, null, false));
-
+        props.put("link", URLHelper.getNgCollectionUrl(nodeId, true));
+        props.put("link.static", URLHelper.getNgCollectionUrl(nodeId, false));
         return new CollectionDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),

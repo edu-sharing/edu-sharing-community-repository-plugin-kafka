@@ -16,6 +16,6 @@
     </div>
 
     <div class="center">
-        <a class="btn" th:text="#{materialLink}" th:href="${node.properties.link}"></a>
+        <a class="btn" th:text="${type == 'invited_collection'} ? #{collectionLink} : #{materialLink}" th:href="${node.properties.link}"></a>
     </div>
 </div>
