@@ -16,7 +16,7 @@ import java.util.Date;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-@TypeAlias("NodeIssueEvent")
+@TypeAlias("NodeIssueFeedbackEvent")
 @Document(collection = "notification")
 public class NodeIssueFeedbackEvent extends NodeIssueBaseEvent {
     public NodeIssueFeedbackEvent(String id, Date timestamp, String creatorId, String receiverId, Status status, NodeData node, String email, String userComment) {

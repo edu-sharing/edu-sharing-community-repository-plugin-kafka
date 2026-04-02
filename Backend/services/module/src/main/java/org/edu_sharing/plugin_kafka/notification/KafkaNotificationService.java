@@ -5,6 +5,7 @@ import com.google.api.client.http.HttpStatusCodes;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +37,7 @@ import org.edu_sharing.service.notification.NotificationProxyService;
 import org.edu_sharing.service.notification.NotificationService;
 import org.edu_sharing.service.notification.events.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
@@ -124,12 +126,21 @@ public class KafkaNotificationService implements NotificationProxyService {
     }
 
     @EventListener
-    public void onNotifyWorkflowChanged(WorkflowChangedEvent event) {
-        String senderId = authorityService.getAuthorityNodeRef(authTool.getCurrentUser()).getId();
+    public void onNotifyWorkflowChanged(WorkflowChangedEvent event) {        // TODO
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(authTool.getCurrentUser());
+        if (senderAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
 
         Set<String> receivers = getReceiverListFromAuthority(event.receiver());
         for (String receiver : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
+            if (receiverAuthorityNodeRef == null) {
+                continue;
+            }
+            String receiverId = receiverAuthorityNodeRef.getId();
             send(new WorkflowEventDTO(
                     null,
                     null,
@@ -141,6 +152,18 @@ public class KafkaNotificationService implements NotificationProxyService {
                     event.comment()
             ));
         }
+    }
+
+    @Nullable
+    private NodeRef getAuthorityNodeRef(String authority) {
+        NodeRef senderAuthorityNodeRef = authorityService.getAuthorityNodeRef(authority);
+        if (senderAuthorityNodeRef == null) {
+            if (log.isDebugEnabled()) {
+                log.warn("notifyWorkflowChanged: current user {} not found in authority service", authority);
+            }
+            return null;
+        }
+        return senderAuthorityNodeRef;
     }
 
     @EventListener
@@ -180,16 +203,22 @@ public class KafkaNotificationService implements NotificationProxyService {
             return;
         }
 
-        String senderId = authorityService.getAuthorityNodeRef(event.senderAuthority()).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(event.senderAuthority());
+        if (senderAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
         Set<String> receivers = getReceiverListFromAuthority(event.receiverAuthority());
         for (String receiver : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            NodeRef reseiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
+            if (reseiverAuthorityNodeRef == null) {
+                continue;
+            }
+            String receiverId = reseiverAuthorityNodeRef.getId();
+
 
             String internalNodeType = (String) event.nodeProperties().get(CCConstants.NODETYPE);
-            String invitationType = "invited";
-            if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && event.aspects().contains(CCConstants.CCM_ASPECT_COLLECTION)) {
-                invitationType = "invited_collection";
-            }
 
             String name = internalNodeType.equals(CCConstants.CCM_TYPE_IO)
                     ? (String) event.nodeProperties().get(CCConstants.LOM_PROP_GENERAL_TITLE)
@@ -217,6 +246,19 @@ public class KafkaNotificationService implements NotificationProxyService {
                         event.mailText(),
                         permissionList
                 ));
+            } else if (internalNodeType.equals(CCConstants.CCM_TYPE_MAP) && event.aspects().contains(CCConstants.CCM_ASPECT_COLLECTION)) {
+                send(new InviteEventDTO(
+                        null,
+                        null,
+                        senderId,
+                        receiverId,
+                        null,
+                        createCollectionDTO(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                        name,
+                        "invited_collection",
+                        event.mailText(),
+                        permissionList
+                ));
             } else {
                 send(new InviteEventDTO(
                         null,
@@ -226,7 +268,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                         null,
                         createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
                         name,
-                        invitationType,
+                        "invited",
                         event.mailText(),
                         permissionList
                 ));
@@ -237,7 +279,11 @@ public class KafkaNotificationService implements NotificationProxyService {
 
     @EventListener
     public void notifyMetadataSetSuggestion(MetadataSetSuggestionEvent event) {
-        String senderId = authorityService.getAuthorityNodeRef(authTool.getCurrentUser()).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(authTool.getCurrentUser());
+        if (senderAuthorityNodeRef == null) {
+            return;
+        }
+        String senderId = senderAuthorityNodeRef.getId();
 
         String[] receiverAuthorities = event.widgetDefinition().getSuggestionReceiver().split(",");
         List<String> receivers = Arrays.stream(receiverAuthorities)
@@ -247,7 +293,12 @@ public class KafkaNotificationService implements NotificationProxyService {
                 .toList();
 
         for (String receiver : receivers) {
-            String receiverId = authorityService.getAuthorityNodeRef(receiver).getId();
+            NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiver);
+            if (receiverAuthorityNodeRef == null) {
+                continue;
+            }
+            String receiverId = receiverAuthorityNodeRef.getId();
+
             if (event.nodeIds().isEmpty()) {
                 send(new MetadataSuggestionEventDTO(
                         null,
@@ -293,9 +344,14 @@ public class KafkaNotificationService implements NotificationProxyService {
     public void notifyComment(CommentEvent event) {
         String receiverAuthority = (String) event.nodeProperties().get(CCConstants.CM_PROP_C_CREATOR);
 
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(authTool.getCurrentUser());
+        NodeRef receiverNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverNodeRef == null) {
+            return;
+        }
 
-        String senderId = authorityService.getAuthorityNodeRef(authTool.getCurrentUser()).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverNodeRef.getId();
 
         if (Objects.equals(receiverId, senderId)) {
             return;
@@ -319,8 +375,14 @@ public class KafkaNotificationService implements NotificationProxyService {
         String receiverAuthority = (String) event.collectionProperties().get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = authTool.getCurrentUser();
 
-        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(senderAuthority);
+        NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverAuthorityNodeRef.getId();
 
         if (Objects.equals(senderId, receiverId)) {
             return;
@@ -342,8 +404,14 @@ public class KafkaNotificationService implements NotificationProxyService {
         String receiverAuthority = (String) event.collectionProperties().get(CCConstants.CM_PROP_C_CREATOR);
         String senderAuthority = authTool.getCurrentUser();
 
-        String senderId = authorityService.getAuthorityNodeRef(senderAuthority).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(senderAuthority);
+        NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverAuthorityNodeRef.getId();
 
         if (Objects.equals(senderId, receiverId)) {
             return;
@@ -363,8 +431,15 @@ public class KafkaNotificationService implements NotificationProxyService {
     @EventListener
     public void notifyRatingChanged(RatingChangedEvent event) {
         String receiverAuthority = (String) event.nodeProperties().get(CCConstants.CM_PROP_C_CREATOR);
-        String senderId = authorityService.getAuthorityNodeRef(authTool.getCurrentUser()).getId();
-        String receiverId = authorityService.getAuthorityNodeRef(receiverAuthority).getId();
+
+        NodeRef senderAuthorityNodeRef = getAuthorityNodeRef(authTool.getCurrentUser());
+        NodeRef receiverAuthorityNodeRef = getAuthorityNodeRef(receiverAuthority);
+        if (senderAuthorityNodeRef == null || receiverAuthorityNodeRef == null) {
+            return;
+        }
+
+        String senderId = senderAuthorityNodeRef.getId();
+        String receiverId = receiverAuthorityNodeRef.getId();
 
         if (Optional.of(mailSettings).map(MailSettings::getFrom).map(StringUtils::isBlank).orElse(true)) {
             log.warn("notifyRatingChanged: No send mail receiver is set in the configuration");
@@ -394,6 +469,10 @@ public class KafkaNotificationService implements NotificationProxyService {
     public Page<org.edu_sharing.rest.notification.event.NotificationEventDTO> getNotifications(String receiverId, List<org.edu_sharing.rest.notification.data.StatusDTO> status, Pageable pageable) throws InsufficientPermissionException {
         try {
             receiverId = resolveReceiverId(receiverId);
+            if (null == receiverId) {
+                throw new IllegalArgumentException("Invalid receiverId: " + receiverId + ".");
+            }
+
             validatePermissions(receiverId);
 
 
@@ -425,7 +504,12 @@ public class KafkaNotificationService implements NotificationProxyService {
             return;
         }
 
-        String currentUser = authorityService.getAuthorityNodeRef(authTool.getCurrentUser()).getId();
+        NodeRef authorityNodeRef = getAuthorityNodeRef(authTool.getCurrentUser());
+        if (authorityNodeRef == null) {
+            throw new IllegalArgumentException("Invalid receiverId: " + receiverId + ".");
+        }
+
+        String currentUser = authorityNodeRef.getId();
         if (!currentUser.equals(receiverId)) {
             throw new InsufficientPermissionException("You are not allowed to get or modify notifications of other users!");
         }
@@ -509,7 +593,12 @@ public class KafkaNotificationService implements NotificationProxyService {
 
     private String resolveReceiverId(String receiverId) {
         if ("-me-".equals(receiverId)) {
-            receiverId = authorityService.getAuthorityNodeRef(authTool.getCurrentUser()).getId();
+            NodeRef authorityNodeRef = getAuthorityNodeRef(authTool.getCurrentUser());
+            if (authorityNodeRef == null) {
+                return null;
+            }
+            receiverId = authorityNodeRef.getId();
+
         }
         return receiverId;
     }
@@ -621,9 +710,8 @@ public class KafkaNotificationService implements NotificationProxyService {
 
     private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
         Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLHelper.getNgRenderNodeUrl(nodeId, null, true));
-        props.put("link.static", URLHelper.getNgRenderNodeUrl(nodeId, null, false));
-
+        props.put("link", URLHelper.getNgCollectionUrl(nodeId, true));
+        props.put("link.static", URLHelper.getNgCollectionUrl(nodeId, false));
         return new CollectionDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
