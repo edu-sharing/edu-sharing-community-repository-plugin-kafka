@@ -12,7 +12,7 @@
             <td th:text="${event.creator.firstName + ' ' + event.creator.lastName}"/>
             <td th:text="${event.userComment}"/>
             <td>
-                <a class="btn-flat" th:text="#{materialLink}" th:href="${event.node.properties.link}"></a>
+                <a class="btn-flat" th:text="${event.type == 'invited_collection'} ? #{collectionLink} : #{materialLink}" th:href="${event.node.properties.link}"></a>
             </td>
         </tr>
     </table>
