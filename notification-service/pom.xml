@@ -113,6 +113,10 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+      <!-- Override the Lombok 1.18.24 pinned by the imported spring-boot 3.0.2 BOM:
+           that version crashes on JDK 21's javac internals (JCImport.qualid).
+           1.18.30+ is required for JDK 21; use the same version as the main repository. -->
+      <version>1.18.46</version>
       <optional>true</optional>
     </dependency>
     <dependency>
