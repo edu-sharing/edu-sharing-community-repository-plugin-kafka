@@ -50,9 +50,9 @@
       12.0.1
     </docker.edu_sharing.community.common.minideb.tag>
 
-    <docker.from.openjdk.21>
-      dockerio.mirror.docker.edu-sharing.com/openjdk:21-jdk
-    </docker.from.openjdk.21>
+    <docker.from.eclipse-temurin.21.jdk>
+      dockerio.mirror.docker.edu-sharing.com/eclipse-temurin:21-jdk
+    </docker.from.eclipse-temurin.21.jdk>
 
     <docker.from.eclipse-temurin.21>
       dockerio.mirror.docker.edu-sharing.com/eclipse-temurin:21-jre-alpine

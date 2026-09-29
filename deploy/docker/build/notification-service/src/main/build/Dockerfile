@@ -1,4 +1,4 @@
-FROM ${docker.from.openjdk.21} as builder
+FROM ${docker.from.eclipse-temurin.21.jdk} as builder
 WORKDIR application
 ARG JAR_FILE=artifacts/*.jar
 COPY ${JAR_FILE} application.jar
@@ -40,7 +40,7 @@ COPY --chown=worker:worker assets/profiler profiler/
 ########################################################################################################################
 
 EXPOSE 8080
-ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} --enable-preview -Dspring.profiles.active=docker org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} -Dspring.profiles.active=docker org.springframework.boot.loader.JarLauncher"]
 
 ########################################################################################################################
 

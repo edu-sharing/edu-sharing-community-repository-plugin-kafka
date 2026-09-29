@@ -33,16 +33,17 @@ services:
 
   notification-service:
     image: "${docker.repository}/${docker.prefix}-deploy-docker-build-notification-service:${docker.tag}"
-    command:
-      - -Xms${NOTIFICATION_SERVICE_JAVA_XMS:-512m}
-      - -Xmx${NOTIFICATION_SERVICE_JAVA_XMX:-512m}
-      - -Dcom.sun.management.jmxremote
-      - -Dcom.sun.management.jmxremote.authenticate=false
-      - -Dcom.sun.management.jmxremote.port=7199
-      - -Dcom.sun.management.jmxremote.ssl=false
     volumes:
       - "./templates:/application/templates"
     environment:
+      # JVM flags must be passed via JAVA_OPTS, arguments in "command" are not passed to the JVM by the entrypoint
+      JAVA_OPTS: >-
+        -Xms${NOTIFICATION_SERVICE_JAVA_XMS:-512m}
+        -Xmx${NOTIFICATION_SERVICE_JAVA_XMX:-512m}
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.port=7199
+        -Dcom.sun.management.jmxremote.ssl=false
       SERVER_PORT: "8080"
       KAFKA_TOPICS_NOTIFICATION: "notification"
       KAFKA_TOPICS_USERDATA: "userdata"
