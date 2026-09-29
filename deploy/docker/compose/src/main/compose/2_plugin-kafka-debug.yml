@@ -3,7 +3,15 @@ version: '3.7'
 services:
   notification-service:
     environment:
-      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"
+      # replaces JAVA_OPTS of the common file, so the common flags are repeated here
+      JAVA_OPTS: >-
+        -Xms${NOTIFICATION_SERVICE_JAVA_XMS:-512m}
+        -Xmx${NOTIFICATION_SERVICE_JAVA_XMX:-512m}
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.port=7199
+        -Dcom.sun.management.jmxremote.ssl=false
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000
     ports:
       - "${COMMON_BIND_HOST:-127.0.0.1}:8403:8000"
 
