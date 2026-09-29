@@ -1,4 +1,4 @@
-FROM ${docker.from.openjdk.17} as builder
+FROM ${docker.from.openjdk.21} as builder
 WORKDIR application
 ARG JAR_FILE=artifacts/*.jar
 COPY ${JAR_FILE} application.jar
@@ -6,7 +6,7 @@ RUN java -Djarmode=layertools -jar application.jar extract && ls -la
 RUN if [[ -z "$(ls -A ./snapshot-dependencies)" ]] ; then touch ./snapshot-dependencies/.keep; fi
 
 
-FROM ${docker.from.eclipse-temurin.17}
+FROM ${docker.from.eclipse-temurin.21}
 
 
 VOLUME /tmp
