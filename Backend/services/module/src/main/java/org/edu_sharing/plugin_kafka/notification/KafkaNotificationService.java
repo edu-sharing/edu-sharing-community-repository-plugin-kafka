@@ -30,12 +30,12 @@ import org.edu_sharing.repository.client.tools.CCConstants;
 import org.edu_sharing.repository.client.tools.I18nAngular;
 import org.edu_sharing.repository.server.AuthenticationToolAPI;
 import org.edu_sharing.repository.server.tools.mailtemplates.MailTemplate;
-import org.edu_sharing.repository.tools.URLHelper;
 import org.edu_sharing.restservices.mds.v1.model.MdsValue;
 import org.edu_sharing.service.InsufficientPermissionException;
 import org.edu_sharing.service.authority.AuthorityService;
 import org.edu_sharing.service.authority.AuthorityServiceHelper;
 import org.edu_sharing.service.notification.NotificationService;
+import org.edu_sharing.service.mime.MimeTypesV2;
 import org.edu_sharing.service.notification.Status;
 import org.edu_sharing.service.rating.RatingDetails;
 import org.jetbrains.annotations.NotNull;
@@ -102,7 +102,7 @@ public class KafkaNotificationService implements NotificationService {
     @Override
     public void notifyNodeIssue(String nodeId, NotifyMode mode, String reason, String nodeType, List<String> aspects, Map<String, Object> nodeProperties, String userEmail, String userComment) throws Throwable {
 
-        NodeDataDTO nodeData = createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties));
+        NodeDataDTO nodeData = createNodeData(nodeId, nodeType, aspects, nodeProperties);
         if (NotifyMode.Feedback.equals(mode)) {
             send(new NodeIssueFeedbackEventDTO(
                     null,
@@ -151,7 +151,7 @@ public class KafkaNotificationService implements NotificationService {
                     senderId,
                     receiverId,
                     null,
-                    createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                    createNodeData(nodeId, nodeType, aspects, nodeProperties),
                     I18nAngular.getTranslationAngular("common", "WORKFLOW." + status),
                     comment
             ));
@@ -233,7 +233,7 @@ public class KafkaNotificationService implements NotificationService {
                         senderId,
                         receiverId,
                         null,
-                        createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        createNodeData(nodeId, nodeType, aspects, nodeProperties),
                         name,
                         mailText,
                         permissionList
@@ -245,7 +245,7 @@ public class KafkaNotificationService implements NotificationService {
                         senderId,
                         receiverId,
                         null,
-                        createCollectionDTO(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        createCollectionDTO(nodeId, nodeType, aspects, nodeProperties),
                         name,
                         "invited_collection",
                         mailText,
@@ -258,7 +258,7 @@ public class KafkaNotificationService implements NotificationService {
                         senderId,
                         receiverId,
                         null,
-                        createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                        createNodeData(nodeId, nodeType, aspects, nodeProperties),
                         name,
                         "invited",
                         mailText,
@@ -316,7 +316,7 @@ public class KafkaNotificationService implements NotificationService {
                         senderId,
                         receiverId,
                         null,
-                        createNodeData(nodes.get(i), nodeTypes.get(i), aspects.get(i), getSimplifiedNodeProperties(nodePropertiesList.get(i))),
+                        createNodeData(nodes.get(i), nodeTypes.get(i), aspects.get(i), nodePropertiesList.get(i)),
                         mdsValue.getId(),
                         mdsValue.getCaption(),
                         mdsValue.getParent(),
@@ -355,7 +355,7 @@ public class KafkaNotificationService implements NotificationService {
                 senderId,
                 receiverId,
                 null,
-                createNodeData(node, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                createNodeData(node, nodeType, aspects, nodeProperties),
                 comment,
                 commentReference,
                 status.toString()
@@ -387,8 +387,8 @@ public class KafkaNotificationService implements NotificationService {
                 senderId,
                 receiverId,
                 null,
-                createNodeData(refNodeId, nodeType, nodeAspects, getSimplifiedNodeProperties(nodeProperties)),
-                createCollectionDTO(collectionId, collectionType, collectionAspects, getSimplifiedNodeProperties(collectionProperties))
+                createNodeData(refNodeId, nodeType, nodeAspects, nodeProperties),
+                createCollectionDTO(collectionId, collectionType, collectionAspects, collectionProperties)
         ));
     }
 
@@ -417,8 +417,8 @@ public class KafkaNotificationService implements NotificationService {
                 senderId,
                 receiverId,
                 null,
-                createNodeData(refNodeId, nodeType, nodeAspects, getSimplifiedNodeProperties(nodeProperties)),
-                createCollectionDTO(collectionId, collectionType, collectionAspects, getSimplifiedNodeProperties(collectionProperties))
+                createNodeData(refNodeId, nodeType, nodeAspects, nodeProperties),
+                createCollectionDTO(collectionId, collectionType, collectionAspects, collectionProperties)
         ));
     }
 
@@ -450,7 +450,7 @@ public class KafkaNotificationService implements NotificationService {
                 "system",
                 receiverId,
                 null,
-                createNodeData(nodeId, nodeType, aspects, getSimplifiedNodeProperties(nodeProperties)),
+                createNodeData(nodeId, nodeType, aspects, nodeProperties),
                 ratingMode.toString(),
                 rating,
                 accumulatedRatings.getOverall().getSum(),
@@ -694,9 +694,7 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     private static NodeDataDTO createNodeData(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
-        Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLHelper.getNgRenderNodeUrl(nodeId, null, true));
-        props.put("link.static", URLHelper.getNgRenderNodeUrl(nodeId, null, false));
+        Map<String, Object> props = createPropertiesWithContentLinks(nodeId, type, aspects, nodeProperties);
         return new NodeDataDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
@@ -704,15 +702,25 @@ public class KafkaNotificationService implements NotificationService {
     }
 
     private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
-        Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLHelper.getNgCollectionUrl(nodeId, true));
-        props.put("link.static", URLHelper.getNgCollectionUrl(nodeId, false));
+        Map<String, Object> props = createPropertiesWithContentLinks(nodeId, type, aspects, nodeProperties);
         return new CollectionDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
                 props);
     }
 
+
+    /**
+     * @param nodeProperties raw node properties (global names), as returned by the node service
+     */
+    private static Map<String, Object> createPropertiesWithContentLinks(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
+        Map<String, Object> props = getSimplifiedNodeProperties(nodeProperties);
+        Map<String, String> links = new HashMap<>();
+        MailTemplate.addContentLinks(nodeId, links, "link",
+                MimeTypesV2.getNodeType(type, nodeProperties == null ? new HashMap<>() : nodeProperties, aspects));
+        props.putAll(links);
+        return props;
+    }
 
     private static Map<String, Object> getSimplifiedNodeProperties(Map<String, Object> nodeProperties) {
         if (nodeProperties == null) {
