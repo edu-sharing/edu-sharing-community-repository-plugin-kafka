@@ -8,8 +8,10 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.edu_sharing.notification.data.Collection;
+import org.edu_sharing.notification.data.NodeData;
+import org.edu_sharing.notification.data.Permission;
+import org.edu_sharing.notification.data.WidgetData;
 import org.edu_sharing.notification.event.*;
-import org.edu_sharing.notification.data.*;
 import org.edu_sharing.notification.repository.NotificationRepository;
 import org.edu_sharing.service.EmailService;
 import org.edu_sharing.userData.UserData;
@@ -21,7 +23,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.*;
 
@@ -41,10 +43,10 @@ class EMailNotifierApplicationTests {
     @Value("${spring.application.name}")
     private String applicationName;
 
-    @MockBean
+    @MockitoBean
     private UserDataRepository userDataRepository;
 
-    @MockBean
+    @MockitoBean
     private NotificationRepository notificationRepository;
 
     @Autowired
