@@ -2,8 +2,8 @@ FROM ${docker.from.eclipse-temurin.21.jdk} as builder
 WORKDIR application
 ARG JAR_FILE=artifacts/*.jar
 COPY ${JAR_FILE} application.jar
-RUN java -Djarmode=layertools -jar application.jar extract && ls -la
-RUN if [[ -z "$(ls -A ./snapshot-dependencies)" ]] ; then touch ./snapshot-dependencies/.keep; fi
+RUN java -Djarmode=tools -jar application.jar extract --layers --launcher --destination extracted && ls -la extracted
+RUN for layer in dependencies spring-boot-loader snapshot-dependencies application; do mkdir -p "extracted/$layer" && touch "extracted/$layer/.keep"; done
 
 
 FROM ${docker.from.eclipse-temurin.21}
@@ -24,10 +24,10 @@ RUN set -eux \
 
 USER worker
 
-COPY --from=builder application/dependencies/ ./
-COPY --from=builder application/spring-boot-loader/ ./
-COPY --from=builder application/snapshot-dependencies/ ./
-COPY --from=builder application/application/ ./
+COPY --from=builder application/extracted/dependencies/ ./
+COPY --from=builder application/extracted/spring-boot-loader/ ./
+COPY --from=builder application/extracted/snapshot-dependencies/ ./
+COPY --from=builder application/extracted/application/ ./
 
 ########################################################################################################################
 
@@ -40,7 +40,7 @@ COPY --chown=worker:worker assets/profiler profiler/
 ########################################################################################################################
 
 EXPOSE 8080
-ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} -Dspring.profiles.active=docker org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh" ,"-c", "exec java ${JAVA_OPTS} -Dspring.profiles.active=docker org.springframework.boot.loader.launch.JarLauncher"]
 
 ########################################################################################################################
 
