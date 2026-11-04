@@ -29,12 +29,12 @@ import org.edu_sharing.repository.client.tools.CCConstants;
 import org.edu_sharing.repository.client.tools.I18nAngular;
 import org.edu_sharing.repository.server.AuthenticationToolAPI;
 import org.edu_sharing.repository.server.tools.mailtemplates.MailTemplate;
-import org.edu_sharing.repository.tools.URLHelper;
 import org.edu_sharing.service.InsufficientPermissionException;
 import org.edu_sharing.service.authority.AuthorityService;
 import org.edu_sharing.service.authority.AuthorityServiceHelper;
 import org.edu_sharing.service.notification.NotificationProxyService;
 import org.edu_sharing.service.notification.NotificationService;
+import org.edu_sharing.service.mime.MimeTypesV2;
 import org.edu_sharing.service.notification.events.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -98,7 +98,7 @@ public class KafkaNotificationService implements NotificationProxyService {
 
     @EventListener
     public void onNotifyNodeIssue(NodeIssueEvent event) {
-        NodeDataDTO nodeData = createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties()));
+        NodeDataDTO nodeData = createNodeData(event.nodeId(), event.nodeType(), event.aspects(), event.nodeProperties());
         if (NotificationService.NotifyMode.Feedback.equals(event.mode())) {
             send(new NodeIssueFeedbackEventDTO(
                     null,
@@ -147,7 +147,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                     senderId,
                     receiverId,
                     null,
-                    createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                    createNodeData(event.nodeId(), event.nodeType(), event.aspects(), event.nodeProperties()),
                     I18nAngular.getTranslationAngular("common", "WORKFLOW." + event.status()),
                     event.comment()
             ));
@@ -174,7 +174,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                 event.senderAuthority(),
                 event.receiverAuthority(),
                 null,
-                createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.properties()))
+                createNodeData(event.nodeId(), event.nodeType(), event.aspects(), event.properties())
         ));
     }
 
@@ -241,7 +241,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                         senderId,
                         receiverId,
                         null,
-                        createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                        createNodeData(event.nodeId(), event.nodeType(), event.aspects(), event.nodeProperties()),
                         name,
                         event.mailText(),
                         permissionList
@@ -253,7 +253,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                         senderId,
                         receiverId,
                         null,
-                        createCollectionDTO(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                        createCollectionDTO(event.nodeId(), event.nodeType(), event.aspects(), event.nodeProperties()),
                         name,
                         "invited_collection",
                         event.mailText(),
@@ -266,7 +266,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                         senderId,
                         receiverId,
                         null,
-                        createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                        createNodeData(event.nodeId(), event.nodeType(), event.aspects(), event.nodeProperties()),
                         name,
                         "invited",
                         event.mailText(),
@@ -325,7 +325,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                         senderId,
                         receiverId,
                         null,
-                        createNodeData(event.nodeIds().get(i), event.nodeTypes().get(i), event.aspects().get(i), getSimplifiedNodeProperties(event.nodePropertiesList().get(i))),
+                        createNodeData(event.nodeIds().get(i), event.nodeTypes().get(i), event.aspects().get(i), event.nodePropertiesList().get(i)),
                         event.mdsValue().getId(),
                         event.mdsValue().getCaption(),
                         event.mdsValue().getParent(),
@@ -363,7 +363,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                 senderId,
                 receiverId,
                 null,
-                createNodeData(event.nodeId(), event.nodeType(), event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                createNodeData(event.nodeId(), event.nodeType(), event.aspects(), event.nodeProperties()),
                 event.comment(),
                 event.commentReference(),
                 event.status().toString()
@@ -394,8 +394,8 @@ public class KafkaNotificationService implements NotificationProxyService {
                 senderId,
                 receiverId,
                 null,
-                createNodeData(event.refNodeId(), event.nodeType(), event.nodeAspects(), getSimplifiedNodeProperties(event.nodeProperties())),
-                createCollectionDTO(event.collectionId(), event.collectionType(), event.collectionAspects(), getSimplifiedNodeProperties(event.collectionProperties()))
+                createNodeData(event.refNodeId(), event.nodeType(), event.nodeAspects(), event.nodeProperties()),
+                createCollectionDTO(event.collectionId(), event.collectionType(), event.collectionAspects(), event.collectionProperties())
         ));
     }
 
@@ -423,8 +423,8 @@ public class KafkaNotificationService implements NotificationProxyService {
                 senderId,
                 receiverId,
                 null,
-                createNodeData(event.refNodeId(), event.nodeType(), event.nodeAspects(), getSimplifiedNodeProperties(event.nodeProperties())),
-                createCollectionDTO(event.collectionId(), event.collectionType(), event.collectionAspects(), getSimplifiedNodeProperties(event.collectionProperties()))
+                createNodeData(event.refNodeId(), event.nodeType(), event.nodeAspects(), event.nodeProperties()),
+                createCollectionDTO(event.collectionId(), event.collectionType(), event.collectionAspects(), event.collectionProperties())
         ));
     }
 
@@ -456,7 +456,7 @@ public class KafkaNotificationService implements NotificationProxyService {
                 "system",
                 receiverId,
                 null,
-                createNodeData(event.nodeId(), event.nodeType(),event.aspects(), getSimplifiedNodeProperties(event.nodeProperties())),
+                createNodeData(event.nodeId(), event.nodeType(),event.aspects(), event.nodeProperties()),
                 event.ratingMode().toString(),
                 event.rating(),
                 event.accumulatedRatings().getOverall().getSum(),
@@ -699,9 +699,7 @@ public class KafkaNotificationService implements NotificationProxyService {
     }
 
     private static NodeDataDTO createNodeData(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
-        Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLHelper.getNgRenderNodeUrl(nodeId, null, true));
-        props.put("link.static", URLHelper.getNgRenderNodeUrl(nodeId, null, false));
+        Map<String, Object> props = createPropertiesWithContentLinks(nodeId, type, aspects, nodeProperties);
         return new NodeDataDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
@@ -709,15 +707,27 @@ public class KafkaNotificationService implements NotificationProxyService {
     }
 
     private static CollectionDTO createCollectionDTO(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
-        Map<String, Object> props = new HashMap<>(nodeProperties);
-        props.put("link", URLHelper.getNgCollectionUrl(nodeId, true));
-        props.put("link.static", URLHelper.getNgCollectionUrl(nodeId, false));
+        Map<String, Object> props = createPropertiesWithContentLinks(nodeId, type, aspects, nodeProperties);
         return new CollectionDTO(
                 CCConstants.getValidLocalName(type),
                 aspects.stream().map(CCConstants::getValidLocalName).collect(Collectors.toList()),
                 props);
     }
 
+
+    /**
+     * @param nodeProperties raw node properties (global names), as returned by the node service
+     */
+    private static Map<String, Object> createPropertiesWithContentLinks(String nodeId, String type, List<String> aspects, Map<String, Object> nodeProperties) {
+        Map<String, Object> props = getSimplifiedNodeProperties(nodeProperties);
+        Map<String, String> links = new HashMap<>();
+        MailTemplate.addContentLinks(nodeId, links, "link",
+                MimeTypesV2.getNodeType(
+                        new MimeTypesV2.NodeInfo(type, nodeProperties == null ? new HashMap<>() : nodeProperties, aspects),
+                        MimeTypesV2.Type.Mediatype));
+        props.putAll(links);
+        return props;
+    }
 
     private static Map<String, Object> getSimplifiedNodeProperties(Map<String, Object> nodeProperties) {
         if (nodeProperties == null) {
